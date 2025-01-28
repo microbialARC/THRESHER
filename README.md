@@ -29,9 +29,63 @@ THRESHER utilizes a Snakemake pipeline complemented by a Python script for input
     ```bash
     conda activate thresher
     conda install --use-local thresher
-
 ## **Usage**  
+### Command line options
+```
+usage: thresher [-h] -i INPUT -o OUTPUT --species SPECIES [--whatsgnu_db_path WHATSGNU_DB_PATH] [-db BAKTA_DB] [--bakta_db_path BAKTA_DB_PATH] [-t THREADS] [--memory MEMORY] [-m MODE] [-e ENDPOINT]
+                [--plateau_length PLATEAU_LENGTH]
 
+options:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Path to the input file, which is a CSV file with at least 3 columns(lite mode), separated by tab, no header.
+                        The first column is the genome name(lite & full).
+                        The second column is the GenBank accession number(lite & full). If the accession number is not available, put "new"(all lowercase) in the column.
+                        The third column is the path to the genome(lite & full).
+                        The forth column is the patient ID (full).
+                        The fifth column is the collection date. Format: yyyy-mm-dd (full).
+  -o OUTPUT, --output OUTPUT
+                        Path to the output directory.
+  --species SPECIES     Bacteria species.
+                        Available options: [sau, sepi, cdiff, kp]
+                        sau: Staphylococcus aureus
+                        sepi: Staphylococcus epidermidis
+                        cdiff: Clostridium difficile
+                        kp: Klebsiella pneumoniae
+  --whatsgnu_db_path WHATSGNU_DB_PATH
+                        The path to the existing WhatsGNU database.
+                        If provided, the WhatsGNU database will not be downloaded
+  -db BAKTA_DB, --bakta_db BAKTA_DB
+                        Bakta database.
+                        Available options: [full, light]
+                        Default is full
+  --bakta_db_path BAKTA_DB_PATH
+                        The path of the directory where the existing Bakta database locates.
+                        If provided, the Bakta database will not be downloaded
+  -t THREADS, --threads THREADS
+                        Number of threads to use.
+                        Default is 16
+  --memory MEMORY       RAM(Gb) to use.
+                        WhatsGNU database requires loading the database into memory.
+                        All WhatsGNU databases require at least 64Gb to run.
+                        Default is 64Gb
+  -m MODE, --mode MODE  Whether to make cluster plots and persistence plot.
+                        Availabel Options: [full, lite] 
+                        full: Determine strains, clusters and make plots.
+                        lite: Determine strains without determing clusters and making plots.
+                        Default is lite
+  -e ENDPOINT, --endpoint ENDPOINT
+                        The endpoint method to use for determing clusters and making plots.
+                        Availabel Options: [plateau, peak, discrepancy, global]
+                        plateau : Threshold set at the plateau where strain compositions are stable in the group.
+                        peak: Threshold set at the peak number of clones defined in the group.
+                        discrepancy: Threshold set at the point where the discrepancy is minimized in the group. 
+                        global: Threshold set at the first time a global genome is included in any strain in the group.
+                        Default is plateau
+  --plateau_length PLATEAU_LENGTH
+                        The plateau length for the plateau endpoint method.
+                        Default is 15
+```
 ### Required Inputs
 
 1. **Input Metadata**
@@ -142,7 +196,7 @@ The pipeline generates the following outputs, organized into corresponding direc
 
 #### Full Mode Outputs (if enabled)
 - **Cluster Plots:**
-  - Cluster plots RDS: `plots/ClusterPlots/`
+  - Cluster plots: `plots/ClusterPlots/`
   - Persistence plot: `plots/PersistencePlot.pdf`
   - Clusters summary:
     - RDS: `thresher/output/clusters_summary.RDS`
@@ -152,6 +206,6 @@ The pipeline generates the following outputs, organized into corresponding direc
 Qianxuan(Sean) She
 
 
-![PennMedicine](data/PennMedicine.png)  
-![CHOP_Research](data/CHOP_Research.png)  
-![PennCHOP](data/PennCHOP.png)
+[![PennMedicine](data/PennMedicine.png)](https://www.pennmedicine.org/)  
+[![CHOP_Research](data/CHOP_Research.png)](https://www.research.chop.edu/)  
+[![PennCHOP](data/PennCHOP.png)](https://www.research.chop.edu/pennchop-microbiome-program)
