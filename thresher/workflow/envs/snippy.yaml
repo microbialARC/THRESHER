@@ -1,0 +1,13 @@
+name: snippy
+channels:
+ - conda-forge
+ - bioconda
+ - defaults
+ - r
+dependencies:
+ - snippy =4.6.0
+ - samtools =1.15
+ - bcftools =1.15
+ - freebayes =1.3.6
+ - snpEff =4.3
+ - bwa =0.7.17

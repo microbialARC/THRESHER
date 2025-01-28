@@ -1,0 +1,7 @@
+name: whatsgnu
+channels:
+ - bioconda
+ - conda-forge
+ - defaults
+dependencies:
+ - whatsgnu =1.5.0

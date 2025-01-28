@@ -1,1 +1,157 @@
-# THRESHER
+# **THRESHER**  
+THRESHER is a pipeline designed to implement dynamic and unbiased SNP thresholds, corrected for phylogenetic structures. With the SNP thresholds, this tool determines clonality and identifies transmission clusters.
+
+---
+
+## **Workflow**  
+The THRESHER workflow is illustrated below:  
+![Thresher workflow](data/workflow_schematic.png)
+
+---
+
+## **Installation**  
+THRESHER utilizes a Snakemake pipeline complemented by a Python script for input validation, configuration file generation, and execution of the workflow.
+
+### **Bioconda Installation**  
+*Coming soon.*
+
+### **Manual Installation via Git**  
+1. Clone the repository:  
+   ```bash
+   git clone https://github.com/microbialARC/THRESHER
+   cd THRESHER
+2. Install dependencies:
+    ```bash
+    conda install conda-build
+    conda-build .
+    conda env create -f thresher.yml
+3. Activate THRESHER environment and install:
+    ```bash
+    conda activate thresher
+    conda install --use-local thresher
+
+## **Usage**  
+
+### Required Inputs
+
+1. **Input Metadata**
+
+   - Path to a tab-delimited CSV file containing at least three columns (for lite mode) with no header. For full mode, additional columns are required.
+   - Columns:
+     - **Column 1:** Genome name (required for both lite and full modes).
+     - **Column 2:** GenBank accession number (required for both lite and full modes). If unavailable, use "new" (all lowercase).
+     - **Column 3:** Path to the genome (required for both lite and full modes).
+     - **Column 4:** Patient ID (required for full mode).
+     - **Column 5:** Collection date in the format `yyyy-mm-dd` (required for full mode).
+
+2. **Output Directory**
+
+   - Specify the directory where output files will be saved.
+
+3. **Species**
+
+   - Indicate the species being analyzed. Currently supported species include:
+     - `sau` (Staphylococcus aureus)
+     - `sepi` (Staphylococcus epidermidis)
+     - `cdiff` (Clostridium difficile)
+     - `kp` (Klebsiella pneumoniae)
+
+### Outputs
+
+The pipeline generates the following outputs, organized into corresponding directories based on the input configurations:
+
+- **MLST Analysis:**
+  - `mlst/mlst_results.csv`
+
+- **BlastX results for MRSA: (species: `sau`):**
+    - `blastx/mrsa/output/blastx_MRSA_strains.csv`
+    - `blastx/mrsa/output/blastx_MRSA_genomes.csv`
+
+- **Bakta Annotation:**
+  - `bakta_annotation/`
+
+- **Assembly Scan:**
+  - `assembly_scan/{genome_name}_assembly_scan.txt`
+
+- **Pair-wise comparison using Mummer4:**
+  - Study concatenated reports: `/mummer4_study/{genome_name}_concatenated.report`
+  - Global concatenated reports: `/mummer4_global/{genome_name}_concatenated.report`
+  - Global SNP matrix: `/mummer4_global/global_snp_matrix.RDS`
+  - Study SNP matrix: `/mummer4_study/study_snp_matrix.RDS`
+
+- **WhatsGNU:**
+  - `/whatsgnu/{genome_name}/{genome_name}_WhatsGNU_topgenomes.txt`
+
+- **Global genomes downloaded using Datasets:**
+  - `datasets_topgenomes/`
+
+- **Pan-genome analysis using Panaroo:**
+  - `panaroo/`
+
+- **Snippy:**
+  - Snippy analysis of groups: `snippy/output/`
+  - Snippy core-genome alignments: `snippy/output/cleaned_aln/`
+
+- **IQTree:**
+  - Everything tree:
+    - `iqtree/everything_tree/`
+  - Group trees:
+    - `iqtree/group_tree`
+
+#### Thresher Outputs
+- **Input Data:**
+  - Hierarchical clustering groups(RDS): `thresher/input/hierarchical_clustering_groups.RDS`
+  - Hierarchical clustering groups(csv): `thresher/input/hierarchical_clustering_groups_simplified.csv`
+  - Thresher input: `thresher/input/thresher_input.RDS`
+
+- **Output Data:**
+  - Plateau strains:
+    - `thresher/output/plateau_strains.RDS`
+    - `thresher/output/plateau_strains.csv`
+  - Peak strains:
+    - `thresher/output/peak_strains.RDS`
+    - `thresher/output/peak_strains.csv`
+  - Discrepancy strains:
+    - `thresher/output/discrepancy_strains.RDS`
+    - `thresher/output/discrepancy_strains.csv`
+  - Global strains:
+    - `thresher/output/global_strains.RDS`
+    - `thresher/output/global_strains.csv`
+  - Group-specific thresholds:
+    - Plateau thresholds: `thresher/output/group_plateau.csv`
+    - Peak thresholds: `thresher/output/group_peak.csv`
+    - Discrepancy thresholds: `thresher/output/group_discrepancy.csv`
+    - Global thresholds: `thresher/output/group_global.csv`
+
+- **Sanity Check Plots:**
+  - Plateau: `thresher/output/QC/plateau_qc_plot.pdf`
+  - Peak: `thresher/output/QC/peak_qc_plot.pdf`
+  - Global: `thresher/output/QC/global_qc_plot.pdf`
+  - Discrepancy: `thresher/output/QC/discrepancy_qc_plot.pdf`
+
+- **Sanity Check Tables:**
+  - Plateau: `thresher/output/QC/plateau_qc_table.csv`
+  - Peak: `thresher/output/QC/peak_qc_table.csv`
+  - Global: `thresher/output/QC/global_qc_table.csv`
+  - Discrepancy: `thresher/output/QC/discrepancy_qc_table.csv`
+
+#### Plots
+- **Visualization Outputs:**
+  - Core-gene tree: `plots/everything_tree.pdf`
+  - SNP distance: `plots/SNP_Distance.pdf`
+
+#### Full Mode Outputs (if enabled)
+- **Cluster Plots:**
+  - Cluster plots RDS: `plots/ClusterPlots/`
+  - Persistence plot: `plots/PersistencePlot.pdf`
+  - Clusters summary:
+    - RDS: `thresher/output/clusters_summary.RDS`
+    - CSV: `thresher/output/clusters_summary.csv`
+
+## **Author**
+Qianxuan(Sean) She
+
+
+![PennMedicine](data/PennMedicine.png)  
+![CHOP_Research](data/CHOP_Research.png)  
+![PennCHOP](data/PennCHOP.png)

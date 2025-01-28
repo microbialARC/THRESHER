@@ -1,0 +1,7 @@
+name: mummer4
+channels:
+ - bioconda
+ - defaults
+ - r
+dependencies:
+ - mummer4 =4.0.0rc1

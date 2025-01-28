@@ -1,0 +1,8 @@
+name: assembly_scan
+channels:
+ - conda-forge
+ - bioconda
+ - defaults
+ - r
+dependencies:
+ - assembly-scan =1.0.0

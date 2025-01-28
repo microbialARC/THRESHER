@@ -1,0 +1,9 @@
+name: thresher
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+    - python = 3.12
+    - pandas = 2.2.3
+    - snakemake = 8.26.0

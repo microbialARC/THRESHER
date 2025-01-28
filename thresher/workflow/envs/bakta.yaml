@@ -1,0 +1,8 @@
+name: bakta
+channels:
+ - conda-forge
+ - bioconda
+ - defaults
+ - r
+dependencies:
+ - bakta =1.10.3
