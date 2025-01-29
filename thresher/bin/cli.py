@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # This script serves as the wrapper for the workflow
 # It creates the config for snakemake and executes the workflow
 import argparse
