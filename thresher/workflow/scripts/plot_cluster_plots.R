@@ -147,10 +147,10 @@ if(length(clusters_summary) > 0){
       data.frame(
         cluster = NA,
         strain = strain,
-        MLST = paste(unique(mlst_results[[3]][mlst_results$genome %in% strain_genomes]),collapse = ", "),
+        MLST = paste(unique(mlst_results[[3]][mlst_results$genome %in% strain_genomes]),collapse = "|"),
         AMR = if(species == "sau") mrsa_results$MRSA[mrsa_results$strain == strain] else "N/A",
-        genomes = paste(strain_genomes, collapse = ", "),
-        patients = paste(strain_patients, collapse = ", "),
+        genomes = paste(strain_genomes, collapse = "|"),
+        patients = paste(strain_patients, collapse = "|"),
         first_seen = format(min(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])), "%y-%m-%d"),
         last_seen = format(max(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])), "%y-%m-%d"),
         persistence = as.integer(max(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])) - min(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])))
@@ -160,12 +160,14 @@ if(length(clusters_summary) > 0){
     `[`(order(nchar(.$patients)), ) %>%
     within(cluster <- seq_along(cluster))
   write.csv(clusters_summary_csv,
+            row.names = FALSE,
             file = snakemake@output[["clusters_summary_csv"]],
             quote = FALSE)
 }else{
   clusters_summary_csv <- "No Clusters Found"
   write.csv(clusters_summary_csv,
             file = snakemake@output[["clusters_summary_csv"]],
+            row.names = FALSE,
             quote = FALSE)
 }
 
