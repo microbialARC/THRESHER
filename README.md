@@ -22,13 +22,11 @@ THRESHER utilizes a Snakemake pipeline complemented by a Python script for input
    cd THRESHER
 2. Install dependencies:
     ```bash
-    conda install conda-build
-    conda-build .
     conda env create -f thresher.yml
 3. Activate THRESHER environment and install:
     ```bash
     conda activate thresher
-    conda install --use-local thresher
+    bash install.sh
 ## **Usage**  
 ### Command line options
 ```
