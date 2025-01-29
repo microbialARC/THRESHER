@@ -50,7 +50,9 @@ get_plateau_strains <- function(determine_strains_input,
     
     plateau_strains <- if(plateau_cutoff != "No Plateau Found"){
       group_input[which(sapply(group_input, `[[`, "cutoff") == plateau_cutoff)][[1]]
-    }else NULL
+    }else{
+      group_input[1][[1]]
+    }
     
     return(list(
       group = group_id,

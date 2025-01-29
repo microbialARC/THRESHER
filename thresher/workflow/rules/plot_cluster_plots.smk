@@ -2,7 +2,7 @@ rule plot_cluster_plots:
     conda:
         os.path.join(BASE_PATH,"envs/R_env.yaml")
     input:
-        mrsa_results = [os.path.join(config["output"],"blastx","mrsa","output","blastx_MRSA_strains.csv")] if config["species"] == "Staphylococcus aureus" else [],
+        mrsa_results = [os.path.join(config["output"],"blastx","mrsa","output","blastx_MRSA_strains.csv")] if config["species"] == "sau" else [],
         peak_strains_rds = os.path.join(config["output"], "thresher", "output",  "peak_strains.RDS"),
         plateau_strains_rds = os.path.join(config["output"], "thresher", "output",  "plateau_strains.RDS"),
         global_strains_rds = os.path.join(config["output"],  "thresher", "output", "global_strains.RDS"),

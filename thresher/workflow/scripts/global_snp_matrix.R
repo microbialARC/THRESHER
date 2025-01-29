@@ -30,7 +30,7 @@ concatenate_output <- function(i){
   sorted_output_df <- as.data.frame(matrix(nrow = nrow(ori_output_df)/4,
                                            ncol = 6))
   
-  colnames(sorted_output_df) <- c("reference",
+  colnames(sorted_output_df) <- c("subject",
                                   "query",
                                   "snp",
                                   "gsnp",
@@ -39,7 +39,7 @@ concatenate_output <- function(i){
   
   for(n in 1:(nrow(ori_output_df)/4)){
     #reference
-    sorted_output_df$reference[n] <- gsub(".fna|.fasta|.fa",
+    sorted_output_df$subject[n] <- gsub(".fna|.fasta|.fa",
                                           "",
                                           strsplit(strsplit(ori_output_df$V1[4*n-3],
                                                             split = " ")[[1]][1],
@@ -98,7 +98,7 @@ unique_comparisons <- do.call(rbind,
                                        list_df <- read.table(list_entry, skip=1)
                                        return(data.frame(
                                          subject = study_genome,
-                                         query = list_df$V1[grepl("GCA_", list_df$V1)]
+                                         query = list_df$V1[grepl("GCA_", list_df$V1)][1:10]
                                        ))
                                      }))
 
@@ -113,13 +113,13 @@ clusterExport(cl,
 remove_redundancy <- function(i){
   return(data.frame(subject = unique_comparisons$subject[i],
                     query = unique_comparisons$query[i],
-                    snp = mean(c(sum_snp_df$snp[sum_snp_df$reference==unique_comparisons$subject[i] & sum_snp_df$query == unique_comparisons$query[i]],
-                                 sum_snp_df$snp[sum_snp_df$reference==unique_comparisons$query[i] & sum_snp_df$query == unique_comparisons$subject[i]])),
-                    gsnp = mean(c(sum_snp_df$gsnp[sum_snp_df$reference==unique_comparisons$subject[i] & sum_snp_df$query == unique_comparisons$query[i]],
-                                  sum_snp_df$gsnp[sum_snp_df$reference==unique_comparisons$query[i] & sum_snp_df$query == unique_comparisons$subject[i]])),
-                    AlignedBases_reference = sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$subject[i] &
+                    snp = mean(c(sum_snp_df$snp[sum_snp_df$subject==unique_comparisons$subject[i] & sum_snp_df$query == unique_comparisons$query[i]],
+                                 sum_snp_df$snp[sum_snp_df$subject==unique_comparisons$query[i] & sum_snp_df$query == unique_comparisons$subject[i]])),
+                    gsnp = mean(c(sum_snp_df$gsnp[sum_snp_df$subject==unique_comparisons$subject[i] & sum_snp_df$query == unique_comparisons$query[i]],
+                                  sum_snp_df$gsnp[sum_snp_df$subject==unique_comparisons$query[i] & sum_snp_df$query == unique_comparisons$subject[i]])),
+                    AlignedBases_reference = sum_snp_df$AlignedBases_reference[sum_snp_df$subject == unique_comparisons$subject[i] &
                                                                                  sum_snp_df$query == unique_comparisons$query[i]],
-                    AlignedBases_query = sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$query[i] &
+                    AlignedBases_query = sum_snp_df$AlignedBases_reference[sum_snp_df$subject == unique_comparisons$query[i] &
                                                                              sum_snp_df$query == unique_comparisons$subject[i]]
                     ))
 }

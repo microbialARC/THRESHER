@@ -41,6 +41,12 @@ thresher_MSTP <- function(output_path,
     # Plateau position
     plateau_pos <- plateau_strains$plateaus$plateau[plateau_strains$plateaus$group == group_id]
     plateau_length <- unique(plateau_strains$plateaus$plateau_length)
+    plateau_plot_pos <- ifelse(plateau_pos == "No Plateau Found",
+                               peak_strains$peaks$peak[peak_strains$peaks$group == group_id],
+                               (as.integer(plateau_pos) + plateau_length))
+    plateau_plot_label <- ifelse(plateau_pos == "No Plateau Found",
+                                 "No Plateau Found",
+                                 paste0("Plateau: ",plateau_pos," - ",(as.integer(plateau_pos) + plateau_length)))
     # Peak position
     peak_pos <- peak_strains$peaks$peak[peak_strains$peaks$group == group_id]
     # Discrepancy position
@@ -60,15 +66,15 @@ thresher_MSTP <- function(output_path,
                 linewidth = 2) +
       # The plateau
       annotate("rect",
-               xmin=plateau_pos,
-               xmax=plateau_pos + plateau_length,
+               xmin=plateau_plot_pos,
+               xmax=plateau_plot_pos+15,
                ymin=-Inf,
                ymax=Inf,
                alpha=0.35,
                fill="#B3C16D") + 
-      annotate(x=plateau_pos + plateau_length,
+      annotate(x=plateau_plot_pos+15,
                y=+Inf,
-               label=paste0("Plateau: ",plateau_pos," - ",plateau_pos+plateau_length),
+               label=plateau_plot_label,
                vjust=5,
                geom="label",
                color="#829726",
@@ -182,15 +188,20 @@ thresher_MSTP <- function(output_path,
     # Store the combined plot in the list with group_id as name
     all_combined_plots[[paste0("Group", group_id)]] <- combined_plot
     
-    # Export the combined plot
-    pdf(file= file.path(output_path,
-                        paste0("Group",
-                               group_id,
-                               "_MSTP.pdf")),
-        width=15,
-        height=10)
-    print(combined_plot)
-    dev.off()
+    # Store the combined plot in the list with group_id as name
+    all_combined_plots[[paste0("Group", group_id)]] <- combined_plot
+    
+    # Only save PDF if minimum threshold is less than 500
+    if(min(main_plot_df$threshold) < 500) {
+      pdf(file= file.path(output_path,
+                          paste0("Group",
+                                 group_id,
+                                 "_MSTP.pdf")),
+          width=15,
+          height=10)
+      print(combined_plot)
+      dev.off()
+    }
   }
   return(all_combined_plots)
 }
