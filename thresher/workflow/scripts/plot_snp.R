@@ -9,8 +9,8 @@ library(ggforce)
 output_path <- snakemake@params[["output_dir"]]
 # Make the directory if not existed
 system(paste0("mkdir -p ",output_path))
-study_matrix_path <- snakemake@input[["global_snp_matrix"]]
-global_matrix_path <- snakemake@input[["study_snp_matrix"]]
+study_matrix_path <- snakemake@input[["study_snp_matrix"]]
+global_matrix_path <- snakemake@input[["global_snp_matrix"]]
 
 # Function to visualize the gSNP distributions ----
 
