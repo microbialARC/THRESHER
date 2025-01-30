@@ -39,7 +39,8 @@ everything_tree_visual <- function(everything_tree_path,
                                    }
                             ))
   
-  hc_groups_node$group <- as.character(hc_groups_node$group)
+  hc_groups_node$group <- factor(as.character(hc_groups_node$group),
+                                 levels = as.character(sort(as.integer(hc_groups_node$group))))
   # HC_groups color 
   hc_groups_color <- setNames(qualitative_hcl(length(unique(hc_groups$group)), palette = "Dark 3"),
                               as.character(sort(unique(hc_groups$group))))
@@ -60,7 +61,7 @@ everything_tree_visual <- function(everything_tree_path,
       alpha = 0.35,
       type = "rect"
     ) +
-  scale_fill_manual(name = "HC Group(>= 2 genomes)",
+  scale_fill_manual(name = "Group",
                     values = hc_groups_color)
   
   
