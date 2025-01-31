@@ -119,7 +119,7 @@ clusters_summary <- lapply(unique(strains_rds[["strains"]]$strain_id), function(
   strain_patients <- unique(metadata$V4[metadata$V1 %in% strain_genomes])
   
   if(length(strain_patients) > 1) {
-    list(
+    return(list(
       cluster = NA,
       strain = strain,
       genomes = strain_genomes,
@@ -129,36 +129,37 @@ clusters_summary <- lapply(unique(strains_rds[["strains"]]$strain_id), function(
       first_seen = format(min(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])), "%y-%m-%d"),
       last_seen = format(max(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])), "%y-%m-%d"),
       persistence = as.integer(max(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])) - min(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])))
-    )
+    ))
+  }else{
+    return(NULL)
   }
-}) %>%
-  compact() %>%
+}) %>% 
+  Filter(Negate(is.null), .) %>%
+  # Sort by number of patients
   {.[order(sapply(., function(x) length(x$patients)), decreasing = TRUE)]} %>%
+  # Assign cluster numbers
   mapply(function(x, i) {x$cluster <- i; x}, ., seq_along(.), SIMPLIFY = FALSE)
 
                  
 
 if(length(clusters_summary) > 0){
-  clusters_summary_csv <- do.call(rbind, lapply(unique(strains_rds[["strains"]]$strain_id), function(strain) {
-    strain_genomes <- strains_rds[["strains"]]$genome[strains_rds[["strains"]]$strain_id == strain]
-    strain_patients <- unique(metadata$V4[metadata$V1 %in% strain_genomes])
-    
-    if(length(strain_patients) > 1) {
-      data.frame(
-        cluster = NA,
-        strain = strain,
-        MLST = paste(unique(mlst_results[[3]][mlst_results$genome %in% strain_genomes]),collapse = "|"),
-        AMR = if(species == "sau") mrsa_results$MRSA[mrsa_results$strain == strain] else "N/A",
-        genomes = paste(strain_genomes, collapse = "|"),
-        patients = paste(strain_patients, collapse = "|"),
-        first_seen = format(min(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])), "%y-%m-%d"),
-        last_seen = format(max(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])), "%y-%m-%d"),
-        persistence = as.integer(max(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])) - min(as.Date(metadata$V5[metadata$V1 %in% strain_genomes])))
-      )
-    }
-  })) %>%
-    `[`(order(nchar(.$patients)), ) %>%
-    within(cluster <- seq_along(cluster))
+  clusters_summary_csv <- do.call(rbind,
+                                  lapply(clusters_summary,
+                                         function(cluster) {
+                                           
+                                           return(data.frame(
+                                             cluster = cluster$cluster,
+                                             strain = cluster$strain,
+                                             MLST = paste(cluster$MLST,collapse = "|"),
+                                             AMR = cluster$AMR,
+                                             genomes = paste(cluster$genomes, collapse = "|"),
+                                             patients = paste(cluster$patients, collapse = "|"),
+                                             first_seen = cluster$first_seen,
+                                             last_seen = cluster$last_seen,
+                                             persistence = cluster$persistence
+                                           ))
+  }))
+  
   write.csv(clusters_summary_csv,
             row.names = FALSE,
             file = snakemake@output[["clusters_summary_csv"]],
