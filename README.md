@@ -28,6 +28,9 @@ THRESHER utilizes a Snakemake pipeline complemented by a Python script for input
     conda activate thresher
     bash install.sh
 ## **Usage**  
+### System Requirements
+- **Minimum RAM:** 64 Gb (required)
+- **Recommended CPUs:** 16 or more cores
 ### Command line options
 ```
 usage: thresher [-h] -i INPUT -o OUTPUT --species SPECIES [--whatsgnu_db_path WHATSGNU_DB_PATH] [-db BAKTA_DB] [--bakta_db_path BAKTA_DB_PATH] [-t THREADS] [--memory MEMORY] [-m MODE] [-e ENDPOINT]
@@ -126,13 +129,13 @@ The pipeline generates the following outputs, organized into corresponding direc
   - `assembly_scan/{genome_name}_assembly_scan.txt`
 
 - **Pair-wise comparison using Mummer4:**
-  - Study concatenated reports: `/mummer4_study/{genome_name}_concatenated.report`
-  - Global concatenated reports: `/mummer4_global/{genome_name}_concatenated.report`
-  - Global SNP matrix: `/mummer4_global/global_snp_matrix.RDS`
-  - Study SNP matrix: `/mummer4_study/study_snp_matrix.RDS`
+  - Study concatenated reports: `mummer4_study/{genome_name}_concatenated.report`
+  - Global concatenated reports: `mummer4_global/{genome_name}_concatenated.report`
+  - Global SNP matrix: `mummer4_global/global_snp_matrix.RDS`
+  - Study SNP matrix: `mummer4_study/study_snp_matrix.RDS`
 
 - **WhatsGNU:**
-  - `/whatsgnu/{genome_name}/{genome_name}_WhatsGNU_topgenomes.txt`
+  - `whatsgnu/{genome_name}/{genome_name}_WhatsGNU_topgenomes.txt`
 
 - **Global genomes downloaded using Datasets:**
   - `datasets_topgenomes/`
