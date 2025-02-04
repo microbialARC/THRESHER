@@ -42,7 +42,13 @@ rule whatsgnu:
             fi
         elif [ "{params.db_path}" != "None" ]; then
             db_path="{params.db_path}"
+            if [ "{params.species}" == "sepi" ]; then
+                whatsgnu_mode="basic"
+            else
+                whatsgnu_mode="ortholog"
+            fi
         fi
+        
         cd {params.output_dir}/whatsgnu/
 
         for ((i=0; i<${{#genome_names[@]}}; i++)); do

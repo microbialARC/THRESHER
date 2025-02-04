@@ -25,7 +25,7 @@ concatenate_output <- function(i){
   ori_output_df <- read.delim(output_list[i],
                               header = FALSE)
   
-  ori_output_df$V1 <- gsub(".fasta|.fna",
+  ori_output_df$V1 <- gsub(".fasta|.fna|.fa",
                            "",
                            basename(ori_output_df$V1))
   
