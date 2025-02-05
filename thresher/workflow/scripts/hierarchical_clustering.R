@@ -93,16 +93,10 @@ hierarchical_clustering <- function(everything_tree_path,
   
   
   if(condition1 & condition2){
-    # Hierarchical Clustering will NOT be performed
     
-    return(list(
-      hc_group = 1,
-      genomes = everything_tree$tip.label,
-      all_overlimit = FALSE,
-      genomes_overlimit = NULL,
-      SHaLRT_support = "N/A",
-      bootstrap_support = "N/A"
-    ))
+    # Hierarchical Clustering will NOT be performed
+    final_group <- setNames(rep(1,length(everything_tree$tip.label)),
+                            everything_tree$tip.label)
     
   }else{
     # Hierarchical Clustering will be performed
@@ -196,7 +190,9 @@ hierarchical_clustering <- function(everything_tree_path,
                                          function(group){
                                            data.frame(
                                              genome = group$genomes,
-                                             group = group$hc_group
+                                             group = group$hc_group,
+                                             overlimit = sapply(group$genomes, 
+                                                                function(genome) if(genome %in% group$genomes_overlimit) TRUE else FALSE)
                                            )
                                          }))
   #return hc_groups_qc full and simplified csv

@@ -2,6 +2,8 @@
 THRESHER is a pipeline designed to implement dynamic and unbiased SNP thresholds, corrected for phylogenetic structures. With the SNP thresholds, this tool determines clonality and identifies transmission clusters.
 
 ---
+## **Development Status**
+Please be advised that this pipeline is still in its early development stage. It is subject to significant changes in terms of options, outputs, and other functionalities. Users should be prepared for potential modifications and updates in future releases.
 
 ## **Workflow**  
 The THRESHER workflow is illustrated below:  
@@ -88,7 +90,7 @@ options:
                         Default is 15
 ```
 ### Required Inputs
-
+**Note:** At least 4 genomes are required to perform the analysis. 
 1. **Input Metadata**
 
    - Path to a tab-delimited CSV file containing at least three columns (for lite mode) with no header. For full mode, additional columns are required.

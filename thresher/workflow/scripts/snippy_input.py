@@ -30,7 +30,8 @@ snippy_groups = sorted(hc_group['group'].value_counts()[hc_group['group'].value_
 # Used for creating the snippy-multi command
 reference_dict = {}
 for group in snippy_groups:
-    group_genomes = hc_group[hc_group['group'] == group]['genome'].tolist()
+    # Exclude the overlimit genomes from snippy and later IQtree
+    group_genomes = hc_group[(hc_group['group'] == group) & (hc_group['overlimit'] != True)]['genome'].tolist()
     group_n50_dict = {}
     group_global_genomes = set()
     for genome in group_genomes:
@@ -64,4 +65,4 @@ with open(f'{tab_dir}/snippy_reference.txt', 'w') as f:
 # Create the snippy-multi command
 with open(f'{script_dir}/snippy_multi.sh', 'w') as f:
     for group in snippy_groups:
-        f.write(f"snippy-multi {tab_dir}/Group{group}.tab --ref {genome_path[reference_dict[group]]} --cpus {threads} --ram {int(memory/1000)} > Group{group}.sh\n")
+        f.write(f"snippy-multi {tab_dir}/Group{group}.tab --ref {genome_path[reference_dict[group]]} --cpus {threads} --ram {int(memory)} > Group{group}.sh\n")

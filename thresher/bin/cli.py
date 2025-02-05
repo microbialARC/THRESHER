@@ -19,6 +19,7 @@ def parse_args():
     "--input",
     required=True,
     help="""Path to the input file, which is a CSV file with at least 3 columns(lite mode), separated by tab, no header.
+At least 4 genomes should be provided to perform the analysis.
 The first column is the genome name(lite & full).
 The second column is the GenBank accession number(lite & full). If the accession number is not available, put "new"(all lowercase) in the column.
 The third column is the path to the genome(lite & full).
@@ -141,8 +142,12 @@ Default is 15"""
             input_df[5] = None
         elif input_df.shape[1] not in [3, 5]:
             raise ValueError("Invalid number of columns in the input dataframe, provide 3(lite) or 5 columns(full)")
+        # At least 4 genomes should be provided to perform the analysis.
+        if input_df.shape[0] < 4:
+            raise ValueError("At least 4 genomes should be provided to perform the analysis.")
         
         input_df.columns = ["genome_name", "genome_accession", "genome_path", "patient_id", "collection_date"]
+        
         if input_df["patient_id"].isnull().any():
             # If the patient ID is not provided, skip the rule of making cluster plots
             args.mode = "lite"
