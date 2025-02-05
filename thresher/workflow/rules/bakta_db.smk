@@ -1,10 +1,11 @@
 if config.get("bakta_db_path") == "None":
-    config["bakta_db_path"] = os.path.join(config["output"],"bakta_db/")
+    config["bakta_db_path"] = os.path.join(config["output"],"bakta_db")
     rule bakta_db:
             conda:
                 os.path.join(BASE_PATH,"envs/bakta.yaml")
             params:
-                bakta_db_type = config["bakta_db"]
+                bakta_db_type = config["bakta_db"],
+                bakta_db_path = config["bakta_db_path"]
             output:
                 os.path.join(config["bakta_db_path"],"bakta.db")
             shell:
@@ -15,8 +16,8 @@ if config.get("bakta_db_path") == "None":
                 fi
 
                 echo "Creating the directory for database"
-                mkdir -p output/bakta_db/
+                mkdir -p {params.bakta_db_path}
 
                 echo "Downloading database"
-                bakta_db download --output output/bakta_db/ --type {params.bakta_db_type}
+                bakta_db download --output {params.bakta_db_path} --type {params.bakta_db_type}
                 """
