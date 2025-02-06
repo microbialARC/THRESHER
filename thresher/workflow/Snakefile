@@ -75,6 +75,7 @@ rule all:
         # Plots
         # Visualization of the core-gene tree
         os.path.join(config["output"], "plots", "everything_tree.pdf"),
+        os.path.join(config["output"], "plots","everything_tree.RDS"),
         os.path.join(config["output"], "plots", "SNP_Distance.pdf"),
         os.path.join(config["output"], "thresher", "output", "MSTP","MSTP.RDS"),
         # Thresher QC
