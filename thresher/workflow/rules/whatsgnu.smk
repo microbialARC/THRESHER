@@ -21,12 +21,12 @@ rule whatsgnu:
             if [ "{params.species}" == "sau" ]; then
                 wget -O {params.output_dir}/whatsgnu/db/whatsgnu_db.tar.gz https://zenodo.org/records/13388052/files/Saureus.tar.gz?download=1 
                 tar -xvzf {params.output_dir}/whatsgnu/db/whatsgnu_db.tar.gz -C {params.output_dir}/whatsgnu/db
-                db_path="{params.output_dir}/whatsgnu/db/Cdiff/Cdiff_WhatsGNU_Ortholog_db.pickle"
+                db_path="{params.output_dir}/whatsgnu/db/Saureus/Sau_WhatsGNU_Ortholog_db.pickle"
                 whatsgnu_mode="ortholog"
             elif [ "{params.species}" == "cdiff" ]; then
                 wget -O {params.output_dir}/whatsgnu/db/whatsgnu_db.tar.gz https://zenodo.org/records/13387715/files/Cdiff.tar.gz?download=1
                 tar -xvzf {params.output_dir}/whatsgnu/db/whatsgnu_db.tar.gz -C {params.output_dir}/whatsgnu/db
-                db_path="{params.output_dir}/whatsgnu/db/Saureus/Sau_WhatsGNU_Ortholog_db.pickle"
+                db_path="{params.output_dir}/whatsgnu/db/Cdiff/Cdiff_WhatsGNU_Ortholog_db.pickle"
                 whatsgnu_mode="ortholog"
             elif [ "{params.species}" == "kp" ]; then
                 wget -O {params.output_dir}/whatsgnu/db/whatsgnu_db.zip https://zenodo.org/record/7812697/files/Kp.zip?download=1
