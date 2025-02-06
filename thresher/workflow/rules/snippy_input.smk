@@ -12,10 +12,9 @@ rule snippy_input:
         tab_dir = os.path.join(config["output"], "snippy","tabs"),
         genome_path = genome_path_dict,
         global_genome_path = os.path.join(config["output"],"datasets_topgenomes"),
-        study_accession = genome_accession
+        study_accession = genome_accession,
+        memory = config["memory"]
     threads:
         config["threads"]
-    resources:
-        mem_mb = int(config["threads"])*1000
     script:
         os.path.join(BASE_PATH,"scripts","snippy_input.py")

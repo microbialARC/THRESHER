@@ -13,7 +13,7 @@ assembly_scan_path = snakemake.input.assembly_scan_results
 tab_dir = snakemake.params.tab_dir
 script_dir = snakemake.params.script_dir
 threads = snakemake.threads
-memory = snakemake.resources.mem_mb
+memory = snakemake.params.memory
 
 os.makedirs(tab_dir, exist_ok=True)
 os.makedirs(script_dir, exist_ok=True)
