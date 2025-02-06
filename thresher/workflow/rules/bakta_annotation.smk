@@ -2,7 +2,8 @@ rule bakta_annotation:
     conda:
         os.path.join(BASE_PATH,"envs/bakta.yaml")
     input:
-        genome_paths = list(genome_path_dict.values())
+        genome_paths = list(genome_path_dict.values()),
+        bakta_db = [os.path.join(config["output"],"bakta_db","bakta.db")] if config["bakta_db_path"] == "None" else []
     threads:
         config["threads"]
     output:
@@ -13,7 +14,7 @@ rule bakta_annotation:
         species = config["species"],
         output_dir = config["output"],
         script_dir = os.path.join(config["output"],"bakta_annotation","scripts"),
-        db_path = config["bakta_db_path"]
+        db_path = [config["bakta_db_path"] if config["bakta_db_path"] != "None" else os.path.join(config["output"],"bakta_db")]
     shell:
         """
         mkdir -p {params.output_dir}/bakta_annotation/

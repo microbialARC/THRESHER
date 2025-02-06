@@ -27,8 +27,9 @@ rule all:
         # only when species is "sau"
         [expand(os.path.join(config["output"],"blastx","mrsa","output","{genome_name}_blastx_mrsa.tsv"), genome_name=genome_path_dict.keys())] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","blastx_MRSA_strains.csv")] if config["species"] == "sau" else [],
-        [os.path.join(config["output"],"blastx","mrsa","output","blastx_MRSA_genomes.csv")] if config["species"] == "sau" else [],
         # Bakta annotation
+        # If the bakta database is not provided by users, the database will be downloaded
+        [os.path.join(config["output"],"bakta_db","bakta.db")] if config["bakta_db_path"] == "None" else [],
         expand(os.path.join(config["output"], "bakta_annotation","{genome_name}","{genome_name}.gff3"), genome_name=genome_path_dict.keys()),
         expand(os.path.join(config["output"], "bakta_annotation","{genome_name}","{genome_name}.faa"), genome_name=genome_path_dict.keys()),
         # Assembly scan
@@ -99,7 +100,8 @@ if config["species"] == "sau":
 # Lite Mode
 include: os.path.join(BASE_PATH,"rules","assembly_scan.smk")
 include: os.path.join(BASE_PATH,"rules","mlst.smk")
-include: os.path.join(BASE_PATH,"rules","bakta_db.smk")
+if config["bakta_db_path"] == "None":
+    include: os.path.join(BASE_PATH,"rules","bakta_db.smk")
 include: os.path.join(BASE_PATH,"rules","bakta_annotation.smk")
 include: os.path.join(BASE_PATH,"rules","panaroo.smk")
 include: os.path.join(BASE_PATH,"rules","iqtree_everything.smk")
