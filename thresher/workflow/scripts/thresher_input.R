@@ -24,6 +24,7 @@ get_determine_strains_input <- function(hierarchical_clustering_groups,
   
   ## Summarize group tree ----
   group_tree_newick <- read.tree(file.path(group_tree_path,group_tree))
+  group_tree_newick <- phytools::midpoint_root(group_tree_newick)
   group_tree_newick <- Preorder(group_tree_newick)
   group_tree_newick_all_nodes <- (length(group_tree_newick$tip.label) + 1):(length(group_tree_newick$tip.label) + group_tree_newick$Nnode)
   
@@ -307,10 +308,14 @@ get_determine_strains_input <- function(hierarchical_clustering_groups,
                                unique_strain_df$correction[is.na(unique_strain_df$correction)] <- FALSE
                                
                                # Fill in the bootstrap support
-                               invisible(sapply(unique(unique_strain_df$strain_id[is.na(unique_strain_df$bootstrap_support)]),
-                                                function(id){
-                                                  unique_strain_df$bootstrap_support[unique_strain_df$strain_id == id] <<- unique_strain_tree[[as.integer(id)]]$bootstrap_support 
-                                                }))
+                               for(id in unique(unique_strain_df$strain_id[is.na(unique_strain_df$bootstrap_support)])){
+                                 
+                                 if(suppressWarnings((is.null(unique_strain_tree[[as.integer(id)]]$bootstrap_support)))){
+                                   unique_strain_df$bootstrap_support[unique_strain_df$strain_id == id] <- 0
+                                 }else{
+                                   unique_strain_df$bootstrap_support[unique_strain_df$strain_id == id] <- unique_strain_tree[[as.integer(id)]]$bootstrap_support 
+                                 }
+                               }
                                
                                # Count before-correction singleton/clones
                                after_correction_clones <- length(unique(unique_strain_df$strain_id[unique_strain_df$category == "clone"]))
