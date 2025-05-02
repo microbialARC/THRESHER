@@ -17,7 +17,7 @@ get_plateau_strains <- function(determine_strains_input,
         group = group_id,
         plateau = "Singletons",
         plateau_length = "Singletons",
-        composition = group_input[[1]]$strain_composition
+        composition = group_input[[1]]
       ))
     }else{
       
