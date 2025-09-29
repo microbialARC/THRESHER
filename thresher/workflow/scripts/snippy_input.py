@@ -21,9 +21,11 @@ os.makedirs(script_dir, exist_ok=True)
 whatsgnu_path_dict = {os.path.basename(path_entry).replace('_WhatsGNU_topgenomes.txt', ''): path_entry for path_entry in whatsgnu_path}
 assembly_scan_path_dict = {os.path.basename(path_entry).replace('_assembly_scan.txt', ''): path_entry for path_entry in assembly_scan_path}
 
-# Snippy groups with no less than 2 genomes
+# Snippy groups with no less than 4 genomes
+# IQtree: It makes no sense to perform bootstrap with less than 4 sequences.
+
 hc_group = pd.read_csv(hc_group_path)
-snippy_groups = sorted(hc_group['group'].value_counts()[hc_group['group'].value_counts() >= 2].index.tolist())
+snippy_groups = sorted(hc_group['group'].value_counts()[hc_group['group'].value_counts() >= 4].index.tolist())
 
 # This iteration will find the genome with largest N50 as reference 
 # Create the tab files for each group

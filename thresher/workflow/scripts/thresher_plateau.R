@@ -115,8 +115,7 @@ get_plateau_strains <- function(determine_strains_input,
     arrange(group)
   
   # Use group_output to generate the final strain data frame
-  
-  # Groups >= 2 genomes 
+
   strain_df <- do.call(rbind,
                        lapply(group_output,
                               function(group){
@@ -138,24 +137,6 @@ get_plateau_strains <- function(determine_strains_input,
                                                       })))
                                 
                               }))
-  
-  # Groups with only 1 genome
-  singleton_groups <-  hierarchical_clustering_groups$full[sapply(hierarchical_clustering_groups$full,
-                                                                  function(group){
-                                                                    length(group$genomes) == 1
-                                                                  })]
-  strain_df <- rbind(strain_df,
-                     do.call(rbind,
-                             lapply(singleton_groups,
-                                    function(singleton_group){
-                                      return(
-                                        data.frame(
-                                          strain_id = paste0(singleton_group$hc_group,
-                                                             "_1"),
-                                          genome = unlist(singleton_group$genomes)
-                                        )
-                                      )
-                                    })))
   
   write.csv(strain_df,
             quote = FALSE,
