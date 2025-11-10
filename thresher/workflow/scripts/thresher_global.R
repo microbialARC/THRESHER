@@ -1,9 +1,10 @@
-get_global_strains <- function(determine_strains_input,
+get_global_strains <- function(thresher_input,
                                hierarchical_clustering_groups,
                                global_snp_matrix,
-                               output_dir){
+                               output_dir,
+                               ncores){
   
-  group_output <- lapply(determine_strains_input, function(group_input){
+  group_output <- mclapply(thresher_input, function(group_input){
     
     group_id <- group_input[[1]]$HC_group
     
@@ -27,7 +28,8 @@ get_global_strains <- function(determine_strains_input,
       global = global_cutoff,
       composition = global_strains
     ))
-  })
+  },
+  mc.cores = ncores)
   
   # A data frame describing the peaks for groups
   
@@ -82,21 +84,24 @@ get_global_strains <- function(determine_strains_input,
 }
 
 # Get the input from Snakemake
-determine_strains_input_path <- snakemake@input[["thresher_input"]]
+thresher_input_path <- snakemake@input[["thresher_input"]]
 hierarchical_clustering_groups_path <- snakemake@input[["hc_groups"]]
 global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
 output_dir <- snakemake@params[["output_dir"]]
+ncores <- snakemake@threads
 setwd(dir = output_dir)
 #Libraries 
 library(dplyr)
+library(parallel)
 hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
-determine_strains_input <- readRDS(determine_strains_input_path)
+thresher_input <- readRDS(thresher_input_path)
 global_snp_matrix <- readRDS(global_snp_matrix_path)
 
-final_strains <- get_global_strains(determine_strains_input,
+final_strains <- get_global_strains(thresher_input,
                                     hierarchical_clustering_groups,
                                     global_snp_matrix,
-                                    output_dir)
+                                    output_dir,
+                                    ncores)
 
 saveRDS(final_strains,
         snakemake@output[["global_strains_rds"]])

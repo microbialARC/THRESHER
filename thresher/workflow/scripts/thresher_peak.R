@@ -1,8 +1,9 @@
-get_peak_strains <- function(determine_strains_input,
+get_peak_strains <- function(thresher_input,
                              hierarchical_clustering_groups,
-                             output_dir){
+                             output_dir,
+                             ncores){
   
-  group_output <- lapply(determine_strains_input, function(group_input){
+  group_output <- mclapply(thresher_input, function(group_input){
     
     group_id <- group_input[[1]]$HC_group
     # Find the threshold that generates most clones in this group
@@ -15,7 +16,8 @@ get_peak_strains <- function(determine_strains_input,
       peak = peak_cutoff,
       composition = peak_strains
     ))
-  })
+  },
+  mc.cores = ncores)
   
   # A data frame describing the peaks for groups
   
@@ -72,18 +74,21 @@ get_peak_strains <- function(determine_strains_input,
 
 #Libraries
 library(dplyr)
+library(parallel)
 # Get the input from Snakemake
-determine_strains_input_path <- snakemake@input[["thresher_input"]]
+thresher_input_path <- snakemake@input[["thresher_input"]]
 hierarchical_clustering_groups_path <- snakemake@input[["hc_groups"]]
 output_dir <- snakemake@params[["output_dir"]]
+ncores <- snakemake@threads
 system(paste0("mkdir -p ",output_dir))
 setwd(dir = output_dir)
 hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
-determine_strains_input <- readRDS(determine_strains_input_path)
+thresher_input <- readRDS(thresher_input_path)
 
-final_strains <- get_peak_strains(determine_strains_input,
+final_strains <- get_peak_strains(thresher_input,
                                   hierarchical_clustering_groups,
-                                  output_dir)
+                                  output_dir,
+                                  ncores)
 saveRDS(final_strains,
         snakemake@output[["peak_strains_rds"]])
 

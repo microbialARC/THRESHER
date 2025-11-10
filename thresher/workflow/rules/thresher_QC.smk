@@ -2,7 +2,7 @@ rule thresher_QC:
     conda:
         os.path.join(BASE_PATH,"envs/R_env.yaml")
     input:
-        everything_tree = os.path.join(config["output"],"iqtree","everything_tree","everything_tree.contree"),
+        comprehensive_tree = os.path.join(config["output"],"iqtree","comprehensive_tree","comprehensive_tree.contree"),
         study_snp_matrix = os.path.join(config["output"],"mummer4_study","study_snp_matrix.RDS"),
         peak_strains_rds = os.path.join(config["output"], "thresher", "output",  "peak_strains.RDS"),
         plateau_strains_rds = os.path.join(config["output"], "thresher", "output",  "plateau_strains.RDS"),

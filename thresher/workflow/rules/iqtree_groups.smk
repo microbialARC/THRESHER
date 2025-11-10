@@ -7,7 +7,9 @@ rule iqtree_groups:
         iqtree_group_path = os.path.join(config["output"], "iqtree","group_tree","iqtree_group.txt")
     params:
         iqtree_dir = os.path.join(config["output"], "iqtree","group_tree"),
-        cleaned_aln_dir = os.path.join(config["output"], "snippy","output","cleaned_aln")
+        cleaned_aln_dir = os.path.join(config["output"], "snippy","output","cleaned_aln"),
+        bootstrap_method = config["group_bootstrap_method"],
+        bootstrap_number = config["group_bootstrap_number"]
     threads:
         config["threads"]
     shell:
@@ -16,11 +18,18 @@ rule iqtree_groups:
         mkdir -p {params.iqtree_dir}
         cd {params.iqtree_dir}
 
-        # Run iqtree for each group
+        # If bootstrap method is "nonparametric", use "--boot " option; if "ultrafast", use "--ufboot" option
+        # Redo option is used to overwrite previous runs (can be removed if not desired)
+        # Here instead of using parallel in shell, I use a for loop to go through each alignment file and use iqtree's "-T" option to use multiple threads
+
         for aln in $(cat {input.snippy_aln}); do
             group_name=$(basename "$aln" | sed 's#_cleaned.aln##')
-            iqtree -redo -s "${{aln}}" -m GTR+R -ninit 100 --boot 100 -T {threads} --prefix "${{group_name}}"
-        done 
+            if [ "{params.bootstrap_method}" == "nonparametric" ]; then
+                iqtree -redo -s "${{aln}}" -m GTR+R --boot {params.bootstrap_number} -T {threads} --prefix "${{group_name}}"
+            elif [ "{params.bootstrap_method}" == "ultrafast" ]; then
+                iqtree -redo -s "${{aln}}" -m GTR+R --ufboot {params.bootstrap_number} -T {threads} --prefix "${{group_name}}"
+            fi
+        done
 
         # Check if every group has an iqtree output
 

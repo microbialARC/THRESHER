@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thresher"
+version = "0.1.0-beta"
+description = "THRESHER: A toolkit for bacterial genome analysis including strain identification, genome profiling, and evolution simulation."
+readme = "README.md"
+authors = [
+    {name = "Qianxuan(Sean) She", email = "sheq@chop.edu"},
+    {name = "Paul J Planet", email = "planetp@chop.edu"},
+    {name = "Ahmed M Moustafa", email = "moustafaam@chop.edu"},
+    {name = "Joseph P Zackular", email = "joseph.zackular@pennmedicine.upenn.edu"}
+]
+dependencies = [
+    "snakemake>=9.0",
+    "pyyaml>=6.0",
+    "pandas>=2.0"
+]
+
+[project.scripts]
+thresher = "thresher.bin.main:main"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["thresher*"]
+exclude = ["thresher.workflow*"]
+
+[tool.setuptools.package-data]
+thresher = [
+    "workflow/**/*",
+]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["__pycache__", "*.pyc", "*.pyo"]

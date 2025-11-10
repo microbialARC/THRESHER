@@ -8,4 +8,4 @@ rule unique_topgenomes:
         input_dir = os.path.join(config["output"],"whatsgnu"),
         study_accession = genome_accession
     script:
-        os.path.join(BASE_PATH,"scripts/unique_topgenomes.py")
+        os.path.join(BASE_PATH,"scripts","unique_topgenomes.py")

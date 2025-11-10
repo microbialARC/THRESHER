@@ -1,13 +1,13 @@
 
-get_plateau_strains <- function(determine_strains_input,
+get_plateau_strains <- function(thresher_input,
                                 hierarchical_clustering_groups,
                                 plateau_length,
-                                output_dir){
+                                output_dir,
+                                ncores){
   
-  group_output <- lapply(thresher_input, function(group_input){
+  group_output <- mclapply(thresher_input, function(group_input){
     
     group_id <- group_input[[1]]$HC_group
-    
     
     # Check if the group start with singleton 
     # If yes proceed without finding plateau
@@ -99,7 +99,8 @@ get_plateau_strains <- function(determine_strains_input,
         ))
       }
     }
-  })
+  },
+  mc.cores = ncores)
   
   # A data frame describing the plateaus for groups
   
@@ -158,20 +159,23 @@ get_plateau_strains <- function(determine_strains_input,
 }
 # Libraries
 library(dplyr)
+library(parallel)
 # Get the input from Snakemake
-determine_strains_input_path <- snakemake@input[["thresher_input"]]
+thresher_input_path <- snakemake@input[["thresher_input"]]
 hierarchical_clustering_groups_path <- snakemake@input[["hc_groups"]]
 plateau_length <- as.integer(snakemake@params[["plateau_length"]])
 output_dir <- snakemake@params[["output_dir"]]
+ncores <- snakemake@threads
 system(paste0("mkdir -p ",output_dir))
 setwd(dir = output_dir)
 hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
-determine_strains_input <- readRDS(determine_strains_input_path)
+thresher_input <- readRDS(thresher_input_path)
 
-final_strains <- get_plateau_strains(determine_strains_input,
+final_strains <- get_plateau_strains(thresher_input,
                                      hierarchical_clustering_groups,
                                      plateau_length,
-                                     output_dir)
+                                     output_dir,
+                                     ncores)
 saveRDS(final_strains,
         snakemake@output[["plateau_strains_rds"]])
 

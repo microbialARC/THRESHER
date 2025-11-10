@@ -31,6 +31,14 @@ __pycache__/
 *.pyo
 *.pyd
 *.pdb
+*.egg-info/
+dist/
+build/
+*.egg
+
+# R
+.Rdata
+.Rhistory
 
 # IDEs and editors
 .idea/

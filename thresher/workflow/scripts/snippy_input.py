@@ -13,7 +13,8 @@ assembly_scan_path = snakemake.input.assembly_scan_results
 tab_dir = snakemake.params.tab_dir
 script_dir = snakemake.params.script_dir
 threads = snakemake.threads
-memory = snakemake.params.memory
+# Use the maximum memory in the system for snippy-multi in GB
+memory = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') // (1024 ** 3)
 
 os.makedirs(tab_dir, exist_ok=True)
 os.makedirs(script_dir, exist_ok=True)
@@ -22,14 +23,16 @@ whatsgnu_path_dict = {os.path.basename(path_entry).replace('_WhatsGNU_topgenomes
 assembly_scan_path_dict = {os.path.basename(path_entry).replace('_assembly_scan.txt', ''): path_entry for path_entry in assembly_scan_path}
 
 # Snippy groups with no less than 4 genomes
-# IQtree: It makes no sense to perform bootstrap with less than 4 sequences.
+# IQtree: It makes no sense to perform bootstrap with less than 4 sequences
+# The sequences include both study genomes and global genomes
 
 hc_group = pd.read_csv(hc_group_path)
-snippy_groups = sorted(hc_group['group'].value_counts()[hc_group['group'].value_counts() >= 4].index.tolist())
+snippy_groups = sorted(hc_group['group'].value_counts().index.tolist())
 
 # This iteration will find the genome with largest N50 as reference 
 # Create the tab files for each group
 # Used for creating the snippy-multi command
+# Only groups with total genome count (study + global) >=4 will have tab files created and be included in reference_dict
 reference_dict = {}
 for group in snippy_groups:
     # Exclude the overlimit genomes from snippy and later IQtree
@@ -48,23 +51,28 @@ for group in snippy_groups:
         group_global_genomes.update(top3_genomes)
         if study_accession: 
             group_global_genomes = group_global_genomes - study_accession
-        
-    reference = max(group_n50_dict, key=group_n50_dict.get)
-    reference_dict[group] = reference
+    # If the count of global genomes and study genomes together is less than 4, skip
+    group_total_genomes_count = len(group_genomes) + len(group_global_genomes)
+    if group_total_genomes_count < 4:
+        continue
+    else:
+        reference = max(group_n50_dict, key=group_n50_dict.get)
+        reference_dict[group] = reference
+        # Create the tab file
+        with open(f'{tab_dir}/Group{group}.tab', 'w') as f:
+            for genome in group_genomes:
+                if genome != reference:
+                    f.write(f"{genome}\t{genome_path[genome]}\n")
+            for global_genome in group_global_genomes:
+                f.write(f"{global_genome}\t{global_genome_path}/{global_genome}.fna\n")
 
-    # Create the tab file
-    with open(f'{tab_dir}/Group{group}.tab', 'w') as f:
-        for genome in group_genomes:
-            if genome != reference:
-                f.write(f"{genome}\t{genome_path[genome]}\n")
-        for global_genome in group_global_genomes:
-            f.write(f"{global_genome}\t{global_genome_path}/{global_genome}.fna\n")
-# Create the reference.txt file summarizing the reference genome for each group
+# Create the reference.txt file summarizing the reference genome for each group in analysis_groups
+
 with open(f'{tab_dir}/snippy_reference.txt', 'w') as f:
         f.write(f"Group\tReference\n")
         for group, reference in reference_dict.items():
             f.write(f"Group{group}\t{reference}\n")
 # Create the snippy-multi command
 with open(f'{script_dir}/snippy_multi.sh', 'w') as f:
-    for group in snippy_groups:
-        f.write(f"snippy-multi {tab_dir}/Group{group}.tab --ref {genome_path[reference_dict[group]]} --cpus {threads} --ram {int(memory)} > Group{group}.sh\n")
+    for group in reference_dict.keys():
+        f.write(f"snippy-multi {tab_dir}/Group{group}.tab --ref {genome_path[reference_dict[group]]} --cpus {threads} --ram {memory} > Group{group}.sh\n")

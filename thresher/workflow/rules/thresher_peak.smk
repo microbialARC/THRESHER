@@ -6,6 +6,8 @@ rule thresher_peak:
         hc_groups = os.path.join(config["output"], "thresher", "input","hierarchical_clustering_groups.RDS")
     params:
         output_dir = os.path.join(config["output"], "thresher", "output")
+    threads:
+        config["threads"]
     output:
         peak_strains_rds = os.path.join(config["output"],"thresher", "output",  "peak_strains.RDS"),
         peak_strains_csv = os.path.join(config["output"], "thresher", "output", "peak_strains.csv"),

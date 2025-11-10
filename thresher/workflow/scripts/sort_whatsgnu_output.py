@@ -6,7 +6,7 @@ import os
 whatsgnu_output_dir = snakemake.params.whatsgnu_output_dir
 script_path = snakemake.params.script_path
 output_path = snakemake.params.output_path
-study_genome_dict = snakemake.params.stduy_genome_dict
+study_genome_dict = snakemake.params.study_genome_dict
 global_genome_dir = snakemake.params.global_genome_dir
 
 # get all files in the whatsgnu output directory

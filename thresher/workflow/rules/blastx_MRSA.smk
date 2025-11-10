@@ -6,11 +6,11 @@ rule blastx_mrsa:
     threads:
         config["threads"]
     params:
-        output_dir = os.path.join(config["output"],"blastx","mrsa","output"),
+        output_dir = os.path.join(config["output"],"blastx","mrsa","output","raw"),
         script_dir = os.path.join(config["output"],"blastx","mrsa","scripts"),
         db = os.path.join(BASE_PATH,"db/MRSA/sequences.fasta")
     output:
-        blastx_mrsa = [os.path.join(config["output"],"blastx","mrsa","output",f"{genome}_blastx_mrsa.tsv") for genome in list(genome_path_dict.keys())]
+        blastx_mrsa = [os.path.join(config["output"],"blastx","mrsa","output","raw",f"{genome}_blastx_mrsa.tsv") for genome in list(genome_path_dict.keys())]
     shell:
         """
         # Create output directory
@@ -37,16 +37,17 @@ rule blastx_mrsa_results:
     conda:
         os.path.join(BASE_PATH,"envs/R_env.yaml")
     input:
-        blastx_mrsa = expand(os.path.join(config["output"],"blastx","mrsa","output","{genome_name}_blastx_mrsa.tsv"), genome_name=genome_path_dict.keys()),
+        blastx_mrsa = expand(os.path.join(config["output"],"blastx","mrsa","output","raw","{genome_name}_blastx_mrsa.tsv"), genome_name=genome_path_dict.keys()),
         plateau_strains_rds = os.path.join(config["output"],"thresher", "output", "plateau_strains.RDS"),
         global_strains_rds = os.path.join(config["output"], "thresher", "output", "global_strains.RDS"),
         peak_strains_rds = os.path.join(config["output"],"thresher", "output",  "peak_strains.RDS"),
         discrepancy_strains_rds = os.path.join(config["output"], "thresher", "output", "discrepancy_strains.RDS")
     output:
-        strain_results = os.path.join(config["output"],"blastx","mrsa","output","blastx_MRSA_strains.csv"),
-        genome_results = os.path.join(config["output"],"blastx","mrsa","output","blastx_MRSA_genomes.csv")
+        strain_results = os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_strains.csv"),
+        genome_results = os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_genomes.csv")
     params:
-        output_dir = os.path.join(config["output"],"blastx","mrsa","output"),
+        raw_dir = os.path.join(config["output"],"blastx","mrsa","output","raw"),
+        summary_dir = os.path.join(config["output"],"blastx","mrsa","output","summary"),
         endpoint = config["endpoint"]
     script:
         os.path.join(BASE_PATH,"scripts","blastx_MRSA.R")

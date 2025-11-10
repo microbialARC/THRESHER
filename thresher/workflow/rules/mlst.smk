@@ -4,9 +4,9 @@ rule mlst_output:
     input:
         genome_paths = list(genome_path_dict.values())
     output:
-        mlst_output = os.path.join(config["output"], "mlst","mlst_raw.csv")
+        mlst_output = os.path.join(config["output"], "mlst","raw","mlst_raw.csv")
     params:
-        output_dir=os.path.join(config["output"], "mlst")
+        output_dir=os.path.join(config["output"], "mlst","raw")
     shell:
         """
         mkdir -p {params.output_dir}
@@ -18,9 +18,9 @@ rule mlst_output:
 
 rule mlst_results: 
     input:
-        mlst_output = os.path.join(config["output"], "mlst","mlst_raw.csv")
+        mlst_output = os.path.join(config["output"], "mlst","raw","mlst_raw.csv")
     output:
-        mlst_results = os.path.join(config["output"], "mlst","mlst_results.csv")
+        mlst_results = os.path.join(config["output"], "mlst","summary","mlst_results.csv")
     params:
         species = config["species"],
         mlst_sau_db = os.path.join(BASE_PATH,"db/mlst/Sau_mlst.txt"),

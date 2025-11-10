@@ -25,9 +25,7 @@ concatenate_output <- function(i){
   ori_output_df <- read.delim(output_list[i],
                               header = FALSE)
   
-  ori_output_df$V1 <- gsub(".fasta|.fna|.fa",
-                           "",
-                           basename(ori_output_df$V1))
+  ori_output_df$V1 <- tools::file_path_sans_ext(basename(ori_output_df$V1))
   
   reference_genome <- gsub("_concatenated.report",
                            "",

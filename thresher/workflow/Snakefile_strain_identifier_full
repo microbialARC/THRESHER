@@ -3,12 +3,9 @@ import sys
 import pandas as pd
 
 BASE_PATH = os.path.dirname(os.path.abspath(workflow.snakefile))
-configfile: os.path.join(BASE_PATH, "config", "config.yaml")
 
 # Read metadata
-genomes_metadata = pd.read_csv(config["input"], header=None, sep="\t")
-if genomes_metadata.shape[1] not in [3, 5]:
-    raise ValueError("Input file must have either 3(lite) or 5 columns(full)")
+genomes_metadata = pd.read_csv(config["metadata"], header=None, sep="\t")
 if genomes_metadata.shape[1] == 3:
     genomes_metadata[4] = None
     genomes_metadata[5] = None
@@ -16,17 +13,14 @@ if genomes_metadata.shape[1] == 3:
 genomes_metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
 genome_path_dict = dict(zip(genomes_metadata["genome_name"], genomes_metadata["genome_path"]))
 
-if genomes_metadata["accession"].isnull().any():
-    raise ValueError("Accession column contains missing values. If you don't have GenBank accession, please use 'new'(all lower case)")
-
 genome_accession = set(genomes_metadata["accession"])
 
 rule all:
     input:
         # BlastN for MRSA
         # only when species is "sau"
-        [expand(os.path.join(config["output"],"blastx","mrsa","output","{genome_name}_blastx_mrsa.tsv"), genome_name=genome_path_dict.keys())] if config["species"] == "sau" else [],
-        [os.path.join(config["output"],"blastx","mrsa","output","blastx_MRSA_strains.csv")] if config["species"] == "sau" else [],
+        [expand(os.path.join(config["output"],"blastx","mrsa","output","raw","{genome_name}_blastx_mrsa.tsv"), genome_name=genome_path_dict.keys())] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_strains.csv")] if config["species"] == "sau" else [],
         # Bakta annotation
         # If the bakta database is not provided by users, the database will be downloaded
         [os.path.join(config["output"],"bakta_db","bakta.db")] if config["bakta_db_path"] == "None" else [],
@@ -47,12 +41,12 @@ rule all:
         # Panaroo 
         os.path.join(config["output"],"panaroo","core_gene_alignment_filtered.aln"),
         # IQTree
-        os.path.join(config["output"],"iqtree","everything_tree","everything_tree.treefile"),
-        os.path.join(config["output"],"iqtree","everything_tree","everything_tree.contree"),
+        os.path.join(config["output"],"iqtree","comprehensive_tree","comprehensive_tree.treefile"),
+        os.path.join(config["output"],"iqtree","comprehensive_tree","comprehensive_tree.contree"),
         os.path.join(config["output"], "iqtree","group_tree","iqtree_group.txt"),
-        # MLST 
-        os.path.join(config["output"], "mlst","mlst_results.csv"),
-        # Thresher
+        # MLST
+        os.path.join(config["output"], "mlst","summary","mlst_results.csv"),
+        # Thresher intermediate files
         os.path.join(config["output"], "thresher", "input","hierarchical_clustering_groups.RDS"),
         os.path.join(config["output"], "thresher", "input","hierarchical_clustering_groups_simplified.csv"),
         os.path.join(config["output"], "thresher", "input", "thresher_input.RDS"),
@@ -73,10 +67,14 @@ rule all:
         os.path.join(config["output"], "snippy","tabs","snippy_reference.txt"),
         os.path.join(config["output"], "snippy","output","snippy_aln.txt"),
         # Plots
-        # Visualization of the core-gene tree
-        os.path.join(config["output"], "plots", "everything_tree.pdf"),
-        os.path.join(config["output"], "plots","everything_tree.RDS"),
+        # Visualization of the comprehensive tree
+        os.path.join(config["output"], "plots", "comprehensive_tree_mlst.pdf"),
+        os.path.join(config["output"], "plots","comprehensive_tree_mlst.RDS"),
+        os.path.join(config["output"], "plots", "comprehensive_tree_group.pdf"),
+        os.path.join(config["output"], "plots","comprehensive_tree_group.RDS"),
+        # SNP Distance Plot
         os.path.join(config["output"], "plots", "SNP_Distance.pdf"),
+        # Multi-SNP-Threshold Plot
         os.path.join(config["output"], "thresher", "output", "MSTP","MSTP.RDS"),
         # Thresher QC
         os.path.join(config["output"], "thresher", "output", "QC", "plateau_qc_plot.pdf"),
@@ -88,10 +86,11 @@ rule all:
         os.path.join(config["output"], "thresher", "output", "QC", "global_qc_table.csv"),
         os.path.join(config["output"], "thresher", "output", "QC", "discrepancy_qc_table.csv"),
         # Full Mode
-        [os.path.join(config["output"], "plots", "ClusterPlots","ClusterPlots.RDS")] if config["mode"] == "full" else [],
-        [os.path.join(config["output"], "plots", "PersistencePlot.pdf")] if config["mode"] == "full" else [],
-        [os.path.join(config["output"], "thresher", "output", "clusters_summary.RDS")] if config["mode"] == "full" else [],
-        [os.path.join(config["output"], "thresher", "output", "clusters_summary.csv")] if config["mode"] == "full" else []
+        [os.path.join(config["output"], "plots", "ClusterPlots","ClusterPlots.RDS")] if config["mode"] == "full-pipeline" else [],
+        [os.path.join(config["output"], "plots", "PersistencePlot.pdf")] if config["mode"] == "full-pipeline" else [],
+        [os.path.join(config["output"], "plots", "PersistencePlot.RDS")] if config["mode"] == "full-pipeline" else [],
+        [os.path.join(config["output"], "thresher", "output", "clusters_summary.RDS")] if config["mode"] == "full-pipeline" else [],
+        [os.path.join(config["output"], "thresher", "output", "clusters_summary.csv")] if config["mode"] == "full-pipeline" else []
         
         
         
@@ -105,7 +104,7 @@ if config["bakta_db_path"] == "None":
     include: os.path.join(BASE_PATH,"rules","bakta_db.smk")
 include: os.path.join(BASE_PATH,"rules","bakta_annotation.smk")
 include: os.path.join(BASE_PATH,"rules","panaroo.smk")
-include: os.path.join(BASE_PATH,"rules","iqtree_everything.smk")
+include: os.path.join(BASE_PATH,"rules","iqtree_comprehensive.smk")
 include: os.path.join(BASE_PATH,"rules","mummer4_study.smk")
 include: os.path.join(BASE_PATH,"rules","whatsgnu.smk")
 include: os.path.join(BASE_PATH,"rules","unique_topgenomes.smk")
@@ -114,7 +113,7 @@ include: os.path.join(BASE_PATH,"rules","mummer4_global.smk")
 include: os.path.join(BASE_PATH,"rules","snp_matrix.smk")
 include: os.path.join(BASE_PATH,"rules","plot_snp.smk")
 include: os.path.join(BASE_PATH,"rules","hierarchical_clustering.smk")
-include: os.path.join(BASE_PATH,"rules","plot_everything_tree.smk")
+include: os.path.join(BASE_PATH,"rules","plot_comprehensive_tree.smk")
 include: os.path.join(BASE_PATH,"rules","snippy_input.smk")
 include: os.path.join(BASE_PATH,"rules","snippy_groups.smk")
 include: os.path.join(BASE_PATH,"rules","iqtree_groups.smk")
@@ -126,6 +125,6 @@ include: os.path.join(BASE_PATH,"rules","thresher_global.smk")
 include: os.path.join(BASE_PATH,"rules","thresher_MSTP.smk")
 include: os.path.join(BASE_PATH,"rules","thresher_QC.smk")
 # Full Mode
-if config["mode"] == "full":
+if config["mode"] == "full-pipeline":
     include: os.path.join(BASE_PATH,"rules","plot_cluster_plots.smk")
     include: os.path.join(BASE_PATH,"rules","plot_persistence_plot.smk")

@@ -9,7 +9,7 @@ rule mummer4_study:
     threads:
         config["threads"]
     output:
-        reports = expand(os.path.join(config["output"], "mummer4_study/{genome_name}_concatenated.report"), genome_name=genome_path_dict.keys())
+        reports = expand(os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report"), genome_name=genome_path_dict.keys())
     shell:
         """
         mkdir -p {params.output_dir}/mummer4_study/

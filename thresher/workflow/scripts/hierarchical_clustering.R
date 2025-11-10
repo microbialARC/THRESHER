@@ -10,16 +10,15 @@ library(dplyr)
 library(purrr)
 
 # Get the input from Snakemake
-everything_tree_path <- snakemake@input[["everything_tree_path"]]
+comprehensive_tree_path <- snakemake@input[["comprehensive_tree_path"]]
 study_snp_matrix_path <- snakemake@input[["study_snp_matrix_path"]]
 mlst_results_path <- snakemake@input[["mlst_results_path"]]
-
 output_dir <- snakemake@params[["thresher_input_dir"]]
 system(paste0("mkdir -p ",output_dir))
 # Function for hierarchical clustering ----
 # Hierarchical Clustering ----
 #A CC-free way to group the study genomes in the everything-tree using the pairwise distances
-hierarchical_clustering <- function(everything_tree_path,
+hierarchical_clustering <- function(comprehensive_tree_path,
                                     study_snp_matrix_path,
                                     mlst_results_path){
   
@@ -28,36 +27,36 @@ hierarchical_clustering <- function(everything_tree_path,
   # read mlst results
   mlst_results <- read.csv(mlst_results_path,sep = "\t")
   # read the tree
-  everything_tree <- ape::read.tree(everything_tree_path)
+  comprehensive_tree <- ape::read.tree(comprehensive_tree_path)
   # mid-point rooting of the tree
-  everything_tree <- phytools::midpoint_root(everything_tree)
+  comprehensive_tree <- phytools::midpoint_root(comprehensive_tree)
   # pre-order the tree
-  everything_tree <- Preorder(everything_tree)
+  comprehensive_tree <- Preorder(comprehensive_tree)
   # summarize the tree by iterating through nodes in the tree
-  all_nodes <- (length(everything_tree$tip.label) + 1):(length(everything_tree$tip.label) + everything_tree$Nnode)
+  all_nodes <- (length(comprehensive_tree$tip.label) + 1):(length(comprehensive_tree$tip.label) + comprehensive_tree$Nnode)
   
-  everything_tree_sum <- lapply(seq_along(all_nodes),
+  comprehensive_tree_sum <- lapply(seq_along(all_nodes),
                                 function(node_entry){
-                                  sub_everything_tree <- Subtree(everything_tree,all_nodes[node_entry])
+                                  sub_comprehensive_tree <- Subtree(comprehensive_tree,all_nodes[node_entry])
                                   
-                                  if(everything_tree$node.label[node_entry] == "Root"){
+                                  if(comprehensive_tree$node.label[node_entry] == "Root"){
                                     
                                     return(list(
                                       node = all_nodes[node_entry],
                                       SHaLRT_support = "Root",
                                       bootstrap_support = "Root",
-                                      genomes = sub_everything_tree$tip.label
+                                      genomes = sub_comprehensive_tree$tip.label
                                       ))
                                     
                                   }else{
                                     
                                     return(list(
                                       node = all_nodes[node_entry],
-                                      SHaLRT_support = as.numeric(strsplit(everything_tree$node.label[node_entry],
+                                      SHaLRT_support = as.numeric(strsplit(comprehensive_tree$node.label[node_entry],
                                                                 split = "/")[[1]][1]),
-                                      bootstrap_support = as.numeric(strsplit(everything_tree$node.label[node_entry],
+                                      bootstrap_support = as.numeric(strsplit(comprehensive_tree$node.label[node_entry],
                                                                    split = "/")[[1]][2]),
-                                      genomes = sub_everything_tree$tip.label
+                                      genomes = sub_comprehensive_tree$tip.label
                                     ))
                                   }
                                 })
@@ -70,8 +69,8 @@ hierarchical_clustering <- function(everything_tree_path,
   condition1 <- if(sum(unique(unlist(mlst_results[[3]])) != "Unassigned", na.rm=TRUE) == 1){
     # the genomes of identified groups
     condition1_genomes <- mlst_results$genome[mlst_results[[3]] != "Unassigned"]
-    #iterate everything_tree_sum to find the clades covering all genomes
-    condition1_clade <- everything_tree_sum[sapply(everything_tree_sum, function(clade) 
+    #iterate comprehensive_tree_sum to find the clades covering all genomes
+    condition1_clade <- comprehensive_tree_sum[sapply(comprehensive_tree_sum, function(clade) 
       all(condition1_genomes %in% clade$genomes))] %>%
       #the best final clade is the one with least number of genomes 
       {.[which.min(sapply(., function(clade) length(clade$genomes)))]}
@@ -95,19 +94,19 @@ hierarchical_clustering <- function(everything_tree_path,
   if(condition1 & condition2){
     
     # Hierarchical Clustering will NOT be performed
-    final_group <- setNames(rep(1,length(everything_tree$tip.label)),
-                            everything_tree$tip.label)
+    final_group <- setNames(rep(1,length(comprehensive_tree$tip.label)),
+                            comprehensive_tree$tip.label)
     
   }else{
     # Hierarchical Clustering will be performed
     # matrix of pairwise distances from tree
-    distance_matrix <-  cophenetic.phylo(everything_tree)
+    distance_matrix <-  cophenetic.phylo(comprehensive_tree)
     # the various methods can become options in the future
     hclust_result <- hclust(as.dist(distance_matrix),
                             method = "complete")
     
     # we test the range from 2 to (number of genomes in the everything - 1) clustering patterns 
-    hclust_result_silhouette_scores <- as.numeric(unlist(sapply((2:(length(everything_tree$tip.label)-1)),
+    hclust_result_silhouette_scores <- as.numeric(unlist(sapply((2:(length(comprehensive_tree$tip.label)-1)),
                                                                 function(clustering_pattern_entry){
                                                                   clusters <- cutree(hclust_result, k = clustering_pattern_entry)
                                                                   return(mean(silhouette(clusters,distance_matrix)[, "sil_width"]))
@@ -130,12 +129,12 @@ hierarchical_clustering <- function(everything_tree_path,
                            if(length(group_genomes) > 1){
                              
                              # Find the SHaLRT/bootstrap support of this HC group
-                             sum_entry <- which(sapply(everything_tree_sum,
+                             sum_entry <- which(sapply(comprehensive_tree_sum,
                                                        function(summary){identical(sort(summary$genomes),
                                                                                    sort(group_genomes))}))
                              
-                             group_SHaLRT_support <- everything_tree_sum[[sum_entry]]$SHaLRT_support
-                             group_bootstrap_support <- everything_tree_sum[[sum_entry]]$bootstrap_support
+                             group_SHaLRT_support <- comprehensive_tree_sum[[sum_entry]]$SHaLRT_support
+                             group_bootstrap_support <- comprehensive_tree_sum[[sum_entry]]$bootstrap_support
                              
                              # If all genomes over 1000gsnp limit? 
                              group_study_snp_matrix <- study_snp_matrix[(study_snp_matrix$subject %in% group_genomes) &
@@ -200,7 +199,7 @@ hierarchical_clustering <- function(everything_tree_path,
               "simplified " = hc_groups_simplified))
 }
 
-hierarchical_clustering_groups <- hierarchical_clustering(everything_tree_path,
+hierarchical_clustering_groups <- hierarchical_clustering(comprehensive_tree_path,
                                                           study_snp_matrix_path,
                                                           mlst_results_path)
 

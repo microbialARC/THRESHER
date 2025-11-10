@@ -1,0 +1,146 @@
+import os
+import sys
+import pandas as pd
+
+BASE_PATH = os.path.dirname(os.path.abspath(workflow.snakefile))
+
+# Read new metadata
+new_metadata = pd.read_csv(config["new_metadata"], header=None, sep="\t")
+if new_metadata.shape[1] == 3:
+    new_metadata[4] = None
+    new_metadata[5] = None
+new_metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+new_genome_path_dict = dict(zip(new_metadata["genome_name"], new_metadata["genome_path"]))
+new_genome_accession = set(new_metadata["accession"])
+# Read original metadata
+original_metadata = pd.read_csv(config["original_metadata"], header=None, sep="\t")
+if original_metadata.shape[1] == 3:
+    original_metadata[4] = None
+    original_metadata[5] = None
+original_metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+original_genome_path_dict = dict(zip(original_metadata["genome_name"], original_metadata["genome_path"]))
+original_genome_accession = set(original_metadata["accession"])
+
+rule all:
+    input:
+        # Updated Thresher outputs
+        # new_full: updated files keep the original names so they can be reused by subsequent thresher new_full runs.
+        # new_snps: updated files use different names because new_snps results are not compatible with thresher new_full.
+        os.path.join(config["output"], "thresher", "input","hierarchical_clustering_groups.RDS"),
+        os.path.join(config["output"], "thresher", "input","hierarchical_clustering_groups_simplified.csv"),
+        # Clusters will be updated only when the previous analysis defined the transmission clusters
+        [os.path.join(config["output"], "thresher", "output", "clusters_summary.RDS")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        [os.path.join(config["output"], "thresher", "output", "clusters_summary.csv")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        [os.path.join(config["output"], "thresher", "output", "genomes_summary_new_full.csv")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        # Updated blastx MRSA results will be generated only when the species is S. aureus
+        [expand(os.path.join(config["output"],"blastx","mrsa","output","raw","{genome_name}_blastx_mrsa.tsv"), genome_name=new_genome_path_dict.keys())] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_genomes.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_plateau_strains.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_peak_strains.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_discrepancy_strains.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_global_strains.csv")] if config["species"] == "sau" else [],
+        # MLST
+        os.path.join(config["output"], "mlst","summary","mlst_results.csv"),
+        # Assembly scan
+        expand(os.path.join(config["output"], "assembly_scan","{genome_name}_assembly_scan.txt"),genome_name=new_genome_path_dict.keys()),
+        # Bakta annotation
+        [os.path.join(config["output"],"bakta_db","bakta.db")] if config["bakta_db_path"] == "None" else [],
+        expand(os.path.join(config["output"], "bakta_annotation","{genome_name}","{genome_name}.gff3"), genome_name=new_genome_path_dict.keys()),
+        expand(os.path.join(config["output"], "bakta_annotation","{genome_name}","{genome_name}.faa"), genome_name=new_genome_path_dict.keys()),
+        # Mummer4
+        expand(os.path.join(config["output"], "mummer4_study","{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys()),
+        expand(os.path.join(config["output"], "mummer4_global","{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys()),
+        os.path.join(config["output"], "mummer4_global", "global_snp_matrix.RDS"),
+        os.path.join(config["output"], "mummer4_study", "study_snp_matrix.RDS"),
+        # datasets
+        os.path.join(config["output"], "datasets_topgenomes","topgenomes.txt"),
+        os.path.join(config["output"], "datasets_topgenomes","result_check.txt"),
+        # Panaroo 
+        os.path.join(config["output"], "panaroo_new","final_graph.gml"),
+        os.path.join(config["output"], "panaroo","core_gene_alignment_filtered.aln"),
+         # IQTree
+        os.path.join(config["output"], "iqtree","comprehensive_tree","comprehensive_tree.treefile"),
+        os.path.join(config["output"], "iqtree","comprehensive_tree","comprehensive_tree.contree"),
+        os.path.join(config["output"], "iqtree","group_tree","iqtree_group.txt"),
+        # Snippy
+        os.path.join(config["output"], "snippy","scripts","snippy_multi.sh"),
+        os.path.join(config["output"], "snippy","tabs","snippy_reference.txt"),
+        os.path.join(config["output"], "snippy","output","snippy_aln.txt"),
+        # Thresher intermediate input files
+        os.path.join(config["output"], "thresher", "input","hierarchical_clustering_groups.RDS"),
+        os.path.join(config["output"], "thresher", "input","hierarchical_clustering_groups_simplified.csv"),
+        os.path.join(config["output"], "thresher", "input", "thresher_input.RDS"),
+        os.path.join(config["output"], "thresher", "output", "plateau_strains.RDS"),
+        os.path.join(config["output"], "thresher", "output", "plateau_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "peak_strains.RDS"),
+        os.path.join(config["output"], "thresher", "output", "peak_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "discrepancy_strains.RDS"),
+        os.path.join(config["output"], "thresher", "output", "discrepancy_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "global_strains.RDS"),
+        os.path.join(config["output"], "thresher", "output", "global_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "group_plateau.csv"),
+        os.path.join(config["output"], "thresher", "output", "group_peak.csv"),
+        os.path.join(config["output"], "thresher", "output", "group_discrepancy.csv"),
+        os.path.join(config["output"], "thresher", "output", "group_global.csv"),
+        # Plots & Summaries
+        # Visualization of the comprehensive tree
+        os.path.join(config["output"], "plots", "comprehensive_tree_mlst.pdf"),
+        os.path.join(config["output"], "plots","comprehensive_tree_mlst.RDS"),
+        os.path.join(config["output"], "plots", "comprehensive_tree_group.pdf"),
+        os.path.join(config["output"], "plots","comprehensive_tree_group.RDS"),
+        # SNP Distance Plot
+        os.path.join(config["output"], "plots", "SNP_Distance.pdf"),
+        # Multi-SNP-Threshold Plot
+        os.path.join(config["output"], "thresher", "output", "MSTP","MSTP.RDS"),
+        # Thresher Cluster Plots and Persistence Plot (if applicable)
+        [os.path.join(config["output"], "plots","ClusterPlots_new_full.RDS")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        [os.path.join(config["output"], "plots", "PersistencePlot_new_full.pdf")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        [os.path.join(config["output"], "plots", "PersistencePlot_new_full.RDS")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        # Thresher QC
+        os.path.join(config["output"], "thresher", "output", "QC", "plateau_qc_plot.pdf"),
+        os.path.join(config["output"], "thresher", "output", "QC", "peak_qc_plot.pdf"),
+        os.path.join(config["output"], "thresher", "output", "QC", "global_qc_plot.pdf"),
+        os.path.join(config["output"], "thresher", "output", "QC", "discrepancy_qc_plot.pdf"),
+        os.path.join(config["output"], "thresher", "output", "QC", "plateau_qc_table.csv"),
+        os.path.join(config["output"], "thresher", "output", "QC", "peak_qc_table.csv"),
+        os.path.join(config["output"], "thresher", "output", "QC", "global_qc_table.csv"),
+        os.path.join(config["output"], "thresher", "output", "QC", "discrepancy_qc_table.csv")
+
+
+# For the rules, if the suffix is "_new", it means the rule is designed for both new_snps and new_full workflows
+# If the suffix is "_new_full", it means the rule is designed for new_full workflow only
+
+if config["bakta_db_path"] == "None":
+    include: os.path.join(BASE_PATH,"rules","bakta_db.smk")
+include: os.path.join(BASE_PATH,"rules","assembly_scan_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","mlst_new.smk")
+include: os.path.join(BASE_PATH,"rules","bakta_annotation_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","panaroo_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","mummer4_study_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","whatsgnu_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","unique_topgenomes_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","datasets_topgenomes.smk")
+include: os.path.join(BASE_PATH,"rules","mummer4_global_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","iqtree_comprehensive.smk")
+include: os.path.join(BASE_PATH,"rules","iqtree_groups.smk")
+include: os.path.join(BASE_PATH,"rules","plot_comprehensive_tree.smk")
+include: os.path.join(BASE_PATH,"rules","hierarchical_clustering.smk")
+include: os.path.join(BASE_PATH,"rules","snp_matrix_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","snippy_input_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","snippy_groups.smk")
+include: os.path.join(BASE_PATH,"rules","plot_snp.smk")
+include: os.path.join(BASE_PATH,"rules","thresher_input.smk")
+# The following thresher rules(plateau, peak, discrepancy, global) are included the same way as thresher full_pipeline
+# Another new rule/script will be applied in this workflow to indicate the changes between new and original results
+include: os.path.join(BASE_PATH,"rules","thresher_plateau.smk")
+include: os.path.join(BASE_PATH,"rules","thresher_peak.smk")
+include: os.path.join(BASE_PATH,"rules","thresher_discrepancy.smk")
+include: os.path.join(BASE_PATH,"rules","thresher_global.smk")
+include: os.path.join(BASE_PATH,"rules","thresher_MSTP.smk")
+include: os.path.join(BASE_PATH,"rules","thresher_QC.smk")
+if os.path.exists(os.path.join(config["thresher_output"],"blastx","mrsa")):
+    include: os.path.join(BASE_PATH,"rules","blastx_MRSA_new_full.smk")
+if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")):
+    include: os.path.join(BASE_PATH, "rules", "plot_cluster_plots_new_full.smk")
+    include: os.path.join(BASE_PATH, "rules", "plot_persistence_plot_new_full.smk")
+

@@ -1,27 +1,38 @@
-get_discrepancy_strains <- function(determine_strains_input,
+get_discrepancy_strains <- function(thresher_input,
                                     hierarchical_clustering_groups,
-                                    output_dir){
+                                    output_dir,
+                                    ncores){
   
-  group_output <- lapply(determine_strains_input, function(group_input){
+  group_output <- mclapply(thresher_input, function(group_input){
     
     group_id <- group_input[[1]]$HC_group
     # After the peak at the beginning of the threshold 
     # Find the threshold that have minimal discrepancy in this group
     # Find the peak <= 50 gSNP
     
-    peak_discrepancy <- group_input[[which.max(sapply(group_input, \(x) x$discrepancy * (x$cutoff <= 50)))]]$cutoff
+    if(length(group_input) == 1){
+    # If length(group_input) == 1, skip because the discrepancy function does not work here
+    group_result <- list(
+        group = group_id,
+        discpreancy = NA,
+        composition = list(strain_composition = group_input[[1]]$strain_composition)
+      )
     
-    discrepancy_cutoff <- group_input[[which.min(sapply(group_input, \(x) if(x$cutoff > peak_discrepancy) x$discrepancy else Inf))]]$cutoff
-    
-    # Pull the discrepancy strains
-    discrepancy_strains <- group_input[which(sapply(group_input, `[[`, "cutoff") == discrepancy_cutoff)][[1]]
-    
-    return(list(
-      group = group_id,
-      discpreancy = discrepancy_cutoff,
-      composition = discrepancy_strains
-    ))
-  })
+    }else{
+      # Only consider the cutoff range below 100
+      peak_discrepancy <- group_input[[which.max(sapply(group_input, \(x) x$discrepancy * (x$cutoff <= 100)))]]$cutoff
+      discrepancy_cutoff <- group_input[[which.min(sapply(group_input, \(x) if(x$cutoff > peak_discrepancy) x$discrepancy else Inf))]]$cutoff
+      # Pull the discrepancy strains
+      discrepancy_strains <- group_input[which(sapply(group_input, `[[`, "cutoff") == discrepancy_cutoff)][[1]]
+      group_result <- list(
+        group = group_id,
+        discpreancy = discrepancy_cutoff,
+        composition = discrepancy_strains
+      )
+    }
+    return(group_result)
+  },
+  mc.cores = ncores)
   
   # A data frame describing the discrepancy for groups
   
@@ -30,7 +41,14 @@ get_discrepancy_strains <- function(determine_strains_input,
                             function(group){
                               data.frame(
                                 group = group$group,
-                                discrepancy = group$discpreancy
+                                discrepancy = sapply(group$discpreancy,
+                                                     function(disc_entry){
+                                                       if(is.na(disc_entry)){
+                                                         "Singletons"
+                                                       }else{
+                                                         as.integer(disc_entry)
+                                                       }
+                                                     })
                               )
                             })) %>%
     arrange(group)
@@ -79,19 +97,21 @@ get_discrepancy_strains <- function(determine_strains_input,
 
 #Libraries
 library(dplyr)
-
+library(parallel)
 # Get the input from Snakemake
-determine_strains_input_path <- snakemake@input[["thresher_input"]]
+thresher_input_path <- snakemake@input[["thresher_input"]]
 hierarchical_clustering_groups_path <- snakemake@input[["hc_groups"]]
 output_dir <- snakemake@params[["output_dir"]]
+ncores = snakemake@threads
 system(paste0("mkdir -p ",output_dir))
 setwd(dir = output_dir)
 hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
-determine_strains_input <- readRDS(determine_strains_input_path)
+thresher_input <- readRDS(thresher_input_path)
 
-final_strains <- get_discrepancy_strains(determine_strains_input,
+final_strains <- get_discrepancy_strains(thresher_input,
                                          hierarchical_clustering_groups,
-                                         output_dir)
+                                         output_dir,
+                                         ncores)
 
 saveRDS(final_strains,
         snakemake@output[["discrepancy_strains_rds"]])

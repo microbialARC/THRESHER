@@ -1,0 +1,68 @@
+import os
+import sys
+import pandas as pd
+
+BASE_PATH = os.path.dirname(os.path.abspath(workflow.snakefile))
+
+# Read new metadata
+new_metadata = pd.read_csv(config["new_metadata"], header=None, sep="\t")
+if new_metadata.shape[1] == 3:
+    new_metadata[4] = None
+    new_metadata[5] = None
+new_metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+new_genome_path_dict = dict(zip(new_metadata["genome_name"], new_metadata["genome_path"]))
+new_genome_accession = set(new_metadata["accession"])
+# Read original metadata
+original_metadata = pd.read_csv(config["original_metadata"], header=None, sep="\t")
+if original_metadata.shape[1] == 3:
+    original_metadata[4] = None
+    original_metadata[5] = None
+original_metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+original_genome_path_dict = dict(zip(original_metadata["genome_name"], original_metadata["genome_path"]))
+
+rule all:
+    input:
+        # Updated SNP matrix 
+        expand(os.path.join(config["output"], "mummer4","{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys()),
+        os.path.join(config["output"],"mummer4","study_snp_matrix_new.RDS"),
+        # Updated New Thresher output
+        os.path.join(config["output"], "thresher", "output", "new_plateau.RDS"),
+        os.path.join(config["output"], "thresher", "output", "new_plateau_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "new_plateau_genomes.csv"),
+        os.path.join(config["output"], "thresher", "output", "new_peak.RDS"),
+        os.path.join(config["output"], "thresher", "output", "new_peak_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "new_peak_genomes.csv"),
+        os.path.join(config["output"], "thresher", "output", "new_discrepancy.RDS"),
+        os.path.join(config["output"], "thresher", "output", "new_discrepancy_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "new_discrepancy_genomes.csv"),
+        os.path.join(config["output"], "thresher", "output", "new_global.RDS"),
+        os.path.join(config["output"], "thresher", "output", "new_global_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "new_global_genomes.csv"),
+        # Clusters will be updated only when the previous analysis defined the transmission clusters
+        [os.path.join(config["output"], "plots","ClusterPlots_new_snps.RDS")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        [os.path.join(config["output"], "plots", "PersistencePlot_new_snps.pdf")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        [os.path.join(config["output"], "plots", "PersistencePlot_new_snps.RDS")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        [os.path.join(config["output"], "thresher", "output", "clusters_summary_new_snps.RDS")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        [os.path.join(config["output"], "thresher", "output", "clusters_summary_new_snps.csv")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        [os.path.join(config["output"], "thresher", "output", "genomes_summary_new_snps.csv")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
+        # Updated blastx MRSA results will be generated only when the species is S. aureus
+        [expand(os.path.join(config["output"],"blastx","mrsa","output","raw","{genome_name}_blastx_mrsa.tsv"), genome_name=new_genome_path_dict.keys())] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_genomes.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_plateau_strains.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_peak_strains.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_discrepancy_strains.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_global_strains.csv")] if config["species"] == "sau" else [],
+        # MLST 
+        os.path.join(config["output"], "mlst","summary","mlst_results.csv")
+
+# For the rules, if the suffix is "_new", it means the rule is designed for both new_snps and new_full workflows
+# If the suffix is "_new_full", it means the rule is designed for new_full workflow only
+include: os.path.join(BASE_PATH,"rules","mlst_new.smk")
+include: os.path.join(BASE_PATH,"rules","mummer4_study_new_snps.smk")
+include: os.path.join(BASE_PATH,"rules","snp_matrix_new_snps.smk")
+include: os.path.join(BASE_PATH,"rules","thresher_new_snps.smk")
+if os.path.exists(os.path.join(config["thresher_output"],"blastx","mrsa")):
+    include: os.path.join(BASE_PATH,"rules","blastx_MRSA_new_snps.smk")
+if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")):
+    include: os.path.join(BASE_PATH, "rules", "plot_cluster_plots_new_snps.smk")
+    include: os.path.join(BASE_PATH, "rules", "plot_persistence_plot_new_snps.smk")

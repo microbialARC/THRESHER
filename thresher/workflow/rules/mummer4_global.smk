@@ -7,7 +7,7 @@ rule mummer4_global_cmd:
     params:
         whatsgnu_output_dir = os.path.join(config["output"],"whatsgnu"),
         global_genome_dir = os.path.join(config["output"],"datasets_topgenomes"),
-        stduy_genome_dict = genome_path_dict,
+        study_genome_dict = genome_path_dict,
         script_path = os.path.join(config["output"],"mummer4_global","scripts"),
         output_path = os.path.join(config["output"],"mummer4_global")
     script:
@@ -19,7 +19,7 @@ rule mummer4_global:
     input:
         script = [os.path.join(config["output"],"mummer4_global","scripts",f"dnadiff_{genome}.sh") for genome in list(genome_path_dict.keys())]
     output:
-        reports = expand(os.path.join(config["output"], "mummer4_global/{genome_name}_concatenated.report"), genome_name=genome_path_dict.keys())
+        reports = expand(os.path.join(config["output"], "mummer4_global","{genome_name}_concatenated.report"), genome_name=genome_path_dict.keys())
     params:
         output_dir = config["output"]
     threads:

@@ -1,0 +1,45 @@
+import os
+import sys
+import pandas as pd
+
+BASE_PATH = os.path.dirname(os.path.abspath(workflow.snakefile))
+
+# Get the genome name from the input genome path
+input_genome_path = config["input_genome"]
+genome_name = os.path.splitext(os.path.basename(input_genome_path))[0]
+
+rule all:
+    input:
+        # WhatsGNU topgenomes dataset
+        os.path.join(config["output"], "whatsgnu",f"{genome_name}_topgenomes.txt"),
+        # FastANI
+        os.path.join(config["output"], "fastani",f"{genome_name}_fastani_matrix.csv"),
+        # Mummer4
+        # *_list.txt files list the paths to all MUMmer4 output files for the top genomes that passed the FastANI cutoff
+        # This serves as the validation that MUMmer4 has been run for these genomes
+        os.path.join(config["output"], "mummer4",f"{genome_name}_coords_list.txt"),
+        os.path.join(config["output"], "mummer4",f"{genome_name}_snps_list.txt"),
+        # Bakta
+        os.path.join(config["output"], "bakta",genome_name,f"{genome_name}.gff3"),
+        os.path.join(config["output"], "bakta",genome_name,f"{genome_name}.fna"),
+        # Genome Profiler
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_bin_summary.csv"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_chr_bins.RDS"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_concat.fasta"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_entropy.csv"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_entropy.RDS"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_mges_seq.fasta"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_mges.csv"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_mges.RDS"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_new_pos.RDS"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_plot_df.RDS"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_position_coverage.RDS"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_profiler_plot.pdf"),
+        os.path.join(config["output"], "genome_profiler",genome_name,f"{genome_name}_snps_sum.RDS")
+    include:
+        os.path.join(BASE_PATH,"workflow","rules","bakta_db.smk"),
+        os.path.join(BASE_PATH,"workflow","rules","genome_profiler_bakta.smk"),
+        os.path.join(BASE_PATH,"workflow","rules","genome_profiler_whatsgnu.smk"),
+        os.path.join(BASE_PATH,"workflow","rules","genome_profiler_fastani.smk"),
+        os.path.join(BASE_PATH,"workflow","rules","genome_profiler_mummer4.smk"),
+        os.path.join(BASE_PATH,"workflow","rules","genome_profiler_main.smk")

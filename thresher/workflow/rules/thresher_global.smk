@@ -7,6 +7,8 @@ rule thresher_global:
         global_snp_matrix = os.path.join(config["output"], "mummer4_global", "global_snp_matrix.RDS")
     params:
         output_dir = os.path.join(config["output"], "thresher", "output")
+    threads:
+        config["threads"]
     output:
         global_strains_rds = os.path.join(config["output"], "thresher", "output", "global_strains.RDS"),
         global_strains_csv = os.path.join(config["output"], "thresher", "output", "global_strains.csv"),

@@ -29,8 +29,8 @@ with open(os.path.join(output_dir, 'topgenomes.txt'), 'w') as f:
 os.makedirs(os.path.join(output_dir, "scripts"), exist_ok=True)
 for genome in unique_topgenomes:
     with open(os.path.join(output_dir, 'scripts', f'datasets_{genome}.sh'), 'w') as f:
-        f.write(f"datasets download genome accession {genome} --assembly-source GenBank --chromosomes all --filename {os.path.join(output_dir, genome + '.zip')}\n")
-        f.write(f"unzip {os.path.join(output_dir, genome + '.zip')} -d {os.path.join(output_dir, genome)}\n"),
+        f.write(f"datasets download genome accession {genome} --filename {os.path.join(output_dir, genome + '.zip')}\n")
+        f.write(f"unzip {os.path.join(output_dir, genome + '.zip')} -d {os.path.join(output_dir, genome)}\n")
         f.write(f"mv {os.path.join(output_dir, genome, 'ncbi_dataset', 'data', genome, genome + '*.fna')} {os.path.join(output_dir, genome + '.fna')}\n")
         f.write(f"rm {os.path.join(output_dir, genome + '.zip')}\n")
         f.write(f"rm -rf {os.path.join(output_dir, genome)}\n")

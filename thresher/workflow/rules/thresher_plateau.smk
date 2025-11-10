@@ -7,6 +7,8 @@ rule thresher_plateau:
     params:
         plateau_length = config["plateau_length"],
         output_dir = os.path.join(config["output"], "thresher", "output")
+    threads:
+        config["threads"]
     output:
         plateau_strains_rds = os.path.join(config["output"],"thresher", "output", "plateau_strains.RDS"),
         plateau_strains_csv = os.path.join(config["output"], "thresher", "output", "plateau_strains.csv"),

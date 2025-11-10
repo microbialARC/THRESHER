@@ -1,9 +1,8 @@
 name: snippy
 channels:
-- bioconda
 - conda-forge
+- bioconda
 - defaults
-- r
 dependencies:
 - _libgcc_mutex=0.1=conda_forge
 - _openmp_mutex=4.5=2_gnu

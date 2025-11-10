@@ -1,10 +1,11 @@
 # Analysis of the output of blastx ----
 library(dplyr)
 # Function to determine MRSA
-analyze_blastx_output <- function(output_dir,
+analyze_blastx_output <- function(raw_dir,
+                                  summary_dir,
                                   strains){
   
-  output_list <- list.files(path = output_dir,
+  output_list <- list.files(path = raw_dir,
                             pattern = "blastx_*",
                             all.files = TRUE,
                             full.names = TRUE,
@@ -66,7 +67,7 @@ analyze_blastx_output <- function(output_dir,
                                      
                                      
                                      #determine MRSA/MSSA of the isolates
-                                     if(sum(output_df$pident >= 70) >= 1 & sum(output_df$coverage >= 70) >= 1){
+                                     if(any(output_df$coverage >= 70 & output_df$pident >= 70)){
                                        category <- "MRSA"
                                      }else{
                                        category <- "MSSA"
@@ -96,19 +97,20 @@ analyze_blastx_output <- function(output_dir,
   
   
   write.csv(mrsa_strain_df,
-            "blastx_MRSA_strains.csv",
+            file.path(summary_dir,"blastx_MRSA_strains.csv"),
             quote = FALSE,
             row.names = FALSE)
   
   write.csv(mrsa_genome_df,
-            "blastx_MRSA_genomes.csv",
+            file.path(summary_dir,"blastx_MRSA_genomes.csv"),
             quote = FALSE,
             row.names = FALSE)
   
 }
 
 # Import from snakemake
-output_dir <- snakemake@params[["output_dir"]]
+raw_dir <- snakemake@params[["raw_dir"]]
+summary_dir <- snakemake@params[["summary_dir"]]
 plateau_strains_rds_path <- snakemake@input[["plateau_strains_rds"]]
 peak_strains_rds_path <- snakemake@input[["peak_strains_rds"]]
 global_strains_rds_path <- snakemake@input[["global_strains_rds"]]
@@ -126,7 +128,6 @@ if(endpoint == "plateau"){
   strains <- readRDS(discrepancy_strains_rds_path)[["strains"]]
 }
 
-setwd(dir = output_dir)
-
-analyze_blastx_output(output_dir,
-                      strains)
+analyze_blastx_output(raw_dir = raw_dir,
+                      summary_dir = summary_dir,
+                      strains = strains)

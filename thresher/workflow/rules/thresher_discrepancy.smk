@@ -6,6 +6,8 @@ rule thresher_discrepancy:
         hc_groups = os.path.join(config["output"], "thresher", "input", "hierarchical_clustering_groups.RDS")
     params:
         output_dir = os.path.join(config["output"], "thresher", "output")
+    threads:
+        config["threads"]
     output:
         discrepancy_strains_rds = os.path.join(config["output"], "thresher", "output", "discrepancy_strains.RDS"),
         discrepancy_strains_csv = os.path.join(config["output"],"thresher", "output",  "discrepancy_strains.csv"),

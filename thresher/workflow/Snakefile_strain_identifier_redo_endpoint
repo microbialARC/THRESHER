@@ -1,0 +1,15 @@
+import os
+import sys
+
+BASE_PATH = os.path.dirname(os.path.abspath(workflow.snakefile))
+
+rule all:
+    input:
+        [os.path.join(config["output"], "plots", "ClusterPlots_redo_endpoint.RDS")],
+        [os.path.join(config["output"], "plots", "PersistencePlot_redo_endpoint.pdf")],
+        [os.path.join(config["output"], "plots", "PersistencePlot_redo_endpoint.RDS")],
+        [os.path.join(config["output"], "files", "clusters_summary_redo_endpoint.RDS")],
+        [os.path.join(config["output"], "files", "clusters_summary_redo_endpoint.csv")]
+
+include: os.path.join(BASE_PATH, "rules", "plot_cluster_plots_redo_endpoint.smk")
+include: os.path.join(BASE_PATH, "rules", "plot_persistence_plot_redo_endpoint.smk")

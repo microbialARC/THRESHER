@@ -15,12 +15,15 @@ metadata <- read.csv(metadata_path,
   select(V1,V4,V5)
 colnames(metadata) <- c("genome","patientID","collection_date")
 clusters_summary_path <- snakemake@input[["clusters_summary_rds"]]
-clusters_summary <- readRDS(clusters_summary_path)
+clusters_summary_rds <- readRDS(clusters_summary_path)
+clusters_summary <- clusters_summary_rds$clusters
 output_pdf <- snakemake@output[["persistence_plot_pdf"]]
+output_rds <- snakemake@output[["persistence_plot_rds"]]
 
 # Function to generate plots 
 persistence_plot <- function(output_dir,
-                             clusters_summary){
+                             clusters_summary,
+                             metadata){
   setwd(dir = output_dir)
   # Only make the plot when length(clusters_summary) > 0
   if(length(clusters_summary) > 0){
@@ -103,6 +106,11 @@ persistence_plot <- function(output_dir,
         height=20)
     print(all_persistence_plot)
     dev.off()
+
+    # Export the RDS of the plot
+    saveRDS(all_persistence_plot,
+            file = output_rds)
+
   }else{
     # Create an empty plot with text when no clusters are found
     empty_plot <- ggplot() + 
@@ -120,9 +128,13 @@ persistence_plot <- function(output_dir,
         height=20)
     print(empty_plot)
     dev.off()
+    # Export the RDS of the empty plot
+    saveRDS(empty_plot,
+            file = output_rds)
   }
 }
 
 # Execute the function
-persistence_plot(output_dir,
-                 clusters_summary)
+persistence_plot(output_dir = output_dir,
+                 clusters_summary = clusters_summary,
+                 metadata = metadata)

@@ -139,8 +139,7 @@ clusters_summary <- lapply(unique(strains_rds[["strains"]]$strain_id), function(
   {.[order(sapply(., function(x) length(x$patients)), decreasing = TRUE)]} %>%
   # Assign cluster numbers
   mapply(function(x, i) {x$cluster <- i; x}, ., seq_along(.), SIMPLIFY = FALSE)
-
-                 
+    
 
 if(length(clusters_summary) > 0){
   clusters_summary_csv <- do.call(rbind,
@@ -172,6 +171,11 @@ if(length(clusters_summary) > 0){
             quote = FALSE)
 }
 
+# Add the endpoint method used to cluster summary
+clusters_summary <- list(
+  method = endpoint,
+  clusters = clusters_summary
+)
 
 saveRDS(clusters_summary,
         snakemake@output[["clusters_summary_rds"]])

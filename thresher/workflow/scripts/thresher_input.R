@@ -21,7 +21,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                      }))
 
   ### Read HC groups RDS
-  hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)[["full"]]
+  hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
 
   ### Get the list of trees from group_tree_path
   group_trees <- list.files(path = group_tree_dir,
@@ -42,19 +42,19 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                group_genomes <- setdiff(group_genomes,
                                                         group_entry$genomes_overlimit)
                                
+                               # theoretically the group tree will have path:
+                               group_tree_path <- file.path(group_tree_dir,paste0("Group",group_id,".contree"))
                                # IQtree: It makes no sense to perform bootstrap with less than 4 sequences.
                                # Thus group with less than 4 genomes will not have the tree
                                # In this case no phylogenetic correction will be applied
-                               
-                               if_phylogenetic_correction <- length(group_genomes)>=4
+                               if_phylogenetic_correction <- file.exists(group_tree_path)
                                
                                group_snp_matrix <- study_snp_matrix[study_snp_matrix$subject %in% group_genomes &
                                                                       study_snp_matrix$query %in% group_genomes,]
                                
-                               
                                # Summarize group tree if group with no less than 4 genomes
                                if(if_phylogenetic_correction){
-                                 group_tree_newick <- read.tree(file.path(group_tree_path,group_tree))
+                                 group_tree_newick <- read.tree(group_tree_path)
                                  group_tree_newick <- phytools::midpoint_root(group_tree_newick)
                                  group_tree_newick <- Preorder(group_tree_newick)
                                  group_tree_newick_all_nodes <- (length(group_tree_newick$tip.label) + 1):(length(group_tree_newick$tip.label) + group_tree_newick$Nnode)
@@ -439,13 +439,14 @@ study_snp_matrix_path <- snakemake@input[["study_snp_matrix"]]
 study_global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
 output_dir <- snakemake@params[["thresher_input_dir"]]
 
-# Execute the function to prepare thresher input
-thresher_input <- prepare_thresher_input(hierarchical_clustering_groups_path = hierarchical_clustering_groups_path,
-                                        group_tree_dir = group_tree_dir,
-                                        study_snp_matrix_path = study_snp_matrix_path,
-                                        study_global_snp_matrix_path = study_global_snp_matrix_path,
-                                        output_dir = output_dir,
-                                        ncores = ncores)
+# Execute the function to get thresher input
+setwd(dir = output_dir)
+
+thresher_input <- get_thresher_input(hierarchical_clustering_groups_path = hierarchical_clustering_groups_path,
+                                     group_tree_dir = group_tree_dir,
+                                     study_snp_matrix_path = study_snp_matrix_path,
+                                     study_global_snp_matrix_path = study_global_snp_matrix_path,
+                                     ncores = ncores)
 
 # Export the output back to Snakemake
 saveRDS(thresher_input, snakemake@output[["thresher_input"]])
