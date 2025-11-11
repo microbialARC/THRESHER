@@ -78,7 +78,7 @@ def validate_strain_identifier_full(args):
         if not os.path.exists(args.whatsgnu_db_path):
             print(f"WhatsGNU database file not found in the provided whatsgnu_db_path: {args.whatsgnu_db_path}")
             print(f"WhatsGNU database will be downloaded to {args.output}/whatsgnu/db")
-            args.whatsgnu_db_path = ""
+            args.whatsgnu_db_path = "None"
         else:
             print(f"WhatsGNU database file found at: {args.whatsgnu_db_path}")
 
@@ -94,7 +94,7 @@ def validate_strain_identifier_full(args):
         if not os.path.exists(bakta_db_file):
             print(f"Bakta database file not found in the provided bakta_db_path: {bakta_db_file}")
             print(f"Bakta database will be downloaded to Bakta database will be downloaded to {args.output}/bakta/db")
-            args.bakta_db_path = ""
+            args.bakta_db_path = "None"
         else:
             print(f"Bakta database file found at: {bakta_db_file}")
 
@@ -433,7 +433,7 @@ def validate_strain_identifier_new_full(args):
         if not os.path.exists(args.whatsgnu_db_path):
             print(f"WhatsGNU database file not found in the provided whatsgnu_db_path: {args.whatsgnu_db_path}")
             print(f"WhatsGNU database will be downloaded to {args.output}/whatsgnu/db")
-            args.whatsgnu_db_path = ""
+            args.whatsgnu_db_path = "None"
         else:
             print(f"WhatsGNU database file found at: {args.whatsgnu_db_path}")
 
@@ -449,7 +449,7 @@ def validate_strain_identifier_new_full(args):
         if not os.path.exists(bakta_db_file):
             print(f"Bakta database file not found in the provided bakta_db_path: {bakta_db_file}")
             print(f"Bakta database will be downloaded to Bakta database will be downloaded to {args.output}/bakta/db")
-            args.bakta_db_path = ""
+            args.bakta_db_path = "None"
         else:
             print(f"Bakta database file found at: {bakta_db_file}")
 
@@ -529,6 +529,8 @@ def validate_strain_identifier_new_full(args):
 def validate_genome_profiler(args):
     """Validate the arguments used in genome_profiler function"""
     # Check if input_genome exists
+    # For now I don't check if the input_genome is a valid fasta file for simplicity
+    # But this will be checked during the actual analysis
     if not os.path.exists(args.input_genome):
         raise SystemExit(
             f"Input genome {args.input_genome} does not exist"
@@ -541,8 +543,8 @@ def validate_genome_profiler(args):
 
     # Check output directory
     if not args.output:
-        print(f"Output directory not provided, creating a directory named thresher_genome_profiler_output_{args.prefix} under current working directory({os.getcwd()}) as output directory")
-        args.output = os.path.join(os.getcwd(), f"thresher_genome_profiler_output_{args.prefix}")
+        print(f"Output directory not provided, creating a directory named thresher_genome_profiler_{args.prefix} under current working directory({os.getcwd()}) as output directory")
+        args.output = os.path.join(os.getcwd(), f"thresher_genome_profiler_{args.prefix}")
     if not os.path.exists(args.output):
         print(f"Output directory {args.output} does not exist, creating it.")
         os.makedirs(args.output)
@@ -570,23 +572,23 @@ def validate_genome_profiler(args):
         if not os.path.exists(args.whatsgnu_db_path):
             print(f"WhatsGNU database file not found in the provided whatsgnu_db_path: {args.whatsgnu_db_path}")
             print(f"WhatsGNU database will be downloaded to {args.output}/whatsgnu/db")
-            args.whatsgnu_db_path = ""
+            args.whatsgnu_db_path = "None"
         else:
             print(f"WhatsGNU database file found at: {args.whatsgnu_db_path}")
 
     # Check bakta_db_path and bakta_db_type
     if not args.bakta_db_path:
         print(f"Bakta database path not provided. Bakta database will be downloaded to {args.output}/bakta/db")
-        if not args.bakta_db:
+        if not args.bakta_db_type:
             print("Bakta database type not provided, using default 'full'")
-            args.bakta_db = "full"
+            args.bakta_db_type = "full"
     elif args.bakta_db_path:
         # Check if bakta.db exists in the provided bakta_db_path
         bakta_db_file = os.path.join(args.bakta_db_path, "bakta.db")
         if not os.path.exists(bakta_db_file):
             print(f"Bakta database file not found in the provided bakta_db_path: {bakta_db_file}")
-            print(f"Bakta database will be downloaded to Bakta database will be downloaded to {args.output}/bakta/db")
-            args.bakta_db_path = ""
+            print(f"Bakta database will be downloaded to {args.output}/bakta/db")
+            args.bakta_db_path = "None"
         else:
             print(f"Bakta database file found at: {bakta_db_file}")
 

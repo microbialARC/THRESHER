@@ -207,9 +207,9 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    # For now, put a temporary hold for using functions otheer than strain_identifier because the other 2 are not ready yet
-    # Will remove this hold in future releases before Q1 2026
-    if args.command != "strain_identifier":
+    # For now, put a temporary hold for using functions other than strain_identifier and genome_profiler
+    # Will remove the hold for evolution simulator in future releases before Q1 2026
+    if args.command not in ["strain_identifier", "genome_profiler"]:
         print()
         print("=" * term_width)
         print(f"The function '{args.command}' is not yet available in this version of THRESHER.".center(term_width))
@@ -248,15 +248,16 @@ def main():
         print("Checking system RAM".center(term_width))
         print("=" * term_width)
         ram_gb =  os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') / (1024 ** 3)
-        if args.command == "strain_identifier" and args.mode in ["full-pipeline","new-full"] and ram_gb < 60:
-            print("At least \033[91m60 GB\033[0m memory is required for THRESHER, as WhatsGNU requires loading large databases into memory.")
+        if args.command == "strain_identifier" and args.mode in ["full-pipeline","new-full"] and ram_gb < 40:
+            print("At least \033[91m40 GB\033[0m memory is required for THRESHER, as WhatsGNU requires loading large databases into memory.")
             print("Please run THRESHER Strain Identifier on a system with sufficient RAM.")
             print("Thresher quitting...")
             return 1
         else:
             print(f"RAM check passed for Function: {args.command} Mode: {args.mode}.")
             print(f"Detected RAM: \033[92m{int(ram_gb)} GB\033[0m. Proceeding...")
-    else:
+    elif args.force and (args.command == "strain_identifier" and args.mode in ["full-pipeline","new-full"]):
+        # This elif might seem redundant but it reminds me to handle the --force flag specifically for strain_identifier full-pipeline and new-full modes
         print()
         print("=" * term_width)
         print("Bypassing OS and RAM checks".center(term_width))

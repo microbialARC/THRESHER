@@ -62,12 +62,12 @@ THRESHER utilizes a Snakemake pipeline complemented by a Python script for input
 Strain Identifier comprises four modes:
 #### **Full Pipeline:** Run the complete analysis pipeline from scratch.
 ```
-thresher strain_identifier full_pipeline -h
+thresher strain_identifier full-pipeline -h
 ```
 
 #### **Redo Endpoint:** Only rerun the final endpoint analysis using existing intermediate files.
 ```
-thresher strain_identifier redo_endpoint -h
+thresher strain_identifier redo-endpoint -h
 ```
 
   - Current supported endpoints. For each hierarchical clustering group defined in the core gene comphrehensive tree:
@@ -78,17 +78,17 @@ thresher strain_identifier redo_endpoint -h
 
 #### **New SNPs:** Update existing strain/transmission compositions with new genomes using predefined phylothresholds.
 ```
-thresher strain_identifier new_snps -h
+thresher strain_identifier new-snps -h
 ```
 
 #### **New Full:** Rerun the full pipeline to update the phylothresholds, and update strain/transmission compositions with new genomes.
 ```
-thresher strain_identifier new_full -h
+thresher strain_identifier new-full -h
 ```
 
 ## Requirements
 - **Operating System:** Linux
-- **Minimum RAM:** 60 GB — required for Full Pipeline and New Full modes
+- **Minimum RAM:** 40 GB — required for Full Pipeline and New Full modes
 (required for WhatsGNU database. This will be reduced in future versions after we optimize the WhatsGNU database usage.)
 - Internet connection is required.
 
