@@ -556,8 +556,13 @@ def validate_genome_profiler(args):
         raise ValidationError("top_genomes must be at least 100 for reliable profiling")
     
     # Check ani_threshold
-    if not (95 <= args.ani_threshold <= 100):
-        raise ValidationError("ani_threshold must be between 95 and 100 for reliable profiling")
+    if not args.ani_threshold:
+        print("ani_threshold not provided, using default 99.5")
+        args.ani_threshold = 99.5
+    elif args.ani_threshold < 95 or args.ani_threshold > 100:
+        print("Warning: ani_threshold must be between 95 and 100 for reliable profiling.\n"
+        "Using default threshold 99.5.")
+        args.ani_threshold = 99.5
     
     # Check conda prefix
     if not args.conda_prefix:

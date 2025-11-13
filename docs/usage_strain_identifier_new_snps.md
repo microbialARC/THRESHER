@@ -1,0 +1,95 @@
+# Strain Identifier - New SNPs: Update existing strain/transmission compositions with new genomes using predefined phylothresholds with previous endpoint method.
+```
+thresher strain_identifier new-snps -h
+options:
+  -h, --help            show this help message and exit
+  --original_metadata ORIGINAL_METADATA
+                        Path to the input metadata file containing original genomes.
+                        The input file should be a tab-delimited file with 3 or 5 columns.
+                        3 columns: genome_name, genome_accession, genome_path
+                        5 columns: genome_name, genome_accession, genome_path, patient_id, collection_date
+  --new_metadata NEW_METADATA
+                        Path to the input metadata file containing new genomes.
+                        At least 1 new genome should be provided to perform new-snps analysis.
+                        The description of the file format is the same as that for --original_metadata.
+  --thresher_output THRESHER_OUTPUT
+                        Path to the existing THRESHER strain_identifier directory.
+                        The existing analysis directory should contain the previous transmission cluster results.
+                        (analysis_mode should be 'full' in the prior run)
+  --output OUTPUT       Path to output directory of new-snps analysis.
+                        If not provided, defaults to thresher_strain_identifier_new_snps_<YYYY_MM_DD_HHMMSS> under the current working directory.
+  --species {sau,sepi,cdiff,kp}
+                        Bacteria species.
+                        Available options: [sau, sepi, cdiff, kp]
+                        sau: Staphylococcus aureus
+                        sepi: Staphylococcus epidermidis
+                        cdiff: Clostridium difficile
+                        kp: Klebsiella pneumoniae
+  -t THREADS, --threads THREADS
+                        Thread number. Default is the maximum available.
+  --prefix PREFIX       Prefix for config file. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
+  --conda_prefix CONDA_PREFIX
+                        Directory for conda environments needed for this analysis. If not provided, defaults to <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>
+```
+## Required Input
+1. **Original Metadata File:** 
+
+    A tab-delimited file containing information about the original genomes used in the previous THRESHER analysis.
+    - Example metadata file for full mode: 
+      
+      [Example Input Metadata File](example/example_metadata.txt)
+2. **New Metadata File:** 
+
+    A tab-delimited file containing information about the new genomes to be added to the analysis.
+    - Example metadata file for full mode: 
+      
+      [Example Input Metadata File](example/example_metadata.txt)
+3. **Existing THRESHER Output Directory:** 
+
+    The path to the existing THRESHER Strain Identifier full-pipeline or new-full output directory containing the previous analysis results.
+4. **Species:** 
+
+    The bacterial species being analyzed (e.g., sau, sepi, cdiff, kp).
+
+## Optional Input
+1. **Output Directory:** 
+
+    Path to the output directory for the new-snps analysis. If not provided, defaults to `thresher_strain_identifier_new_snps_<YYYY_MM_DD_HHMMSS>` under the current working directory.
+2. **Thread Number:**
+
+    Number of threads to use for the analysis. Default is the maximum available.
+3. **Prefix:**
+
+    Prefix for config file. If not provided, defaults to timestamp: `YYYY_MM_DD_HHMMSS`.
+4. **Conda Environment Directory:**
+    Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.  You can reuse the conda environments from previous THRESHER runs to save time and disk space.
+
+## Output
+1. **Updated Genomes:**
+- Plateau: `thresher/output/new_plateau_genomes.csv`
+- Peak: `thresher/output/new_peak_genomes.csv`
+- Discrepancy: `thresher/output/new_discrepancy_genomes.csv`
+- Global: `thresher/output/new_global_genomes.csv`
+2. **Updated Strains:**
+- Plateau:
+  - `thresher/output/new_plateau.RDS` (R object)
+  - `thresher/output/new_plateau_strains.csv`
+- Peak:
+  - `thresher/output/new_peak.RDS` (R object)
+  - `thresher/output/new_peak_strains.csv`
+- Discrepancy:
+  - `thresher/output/new_discrepancy.RDS` (R object)
+  - `thresher/output/new_discrepancy_strains.csv`
+- Global:
+  - `thresher/output/new_global.RDS` (R object)
+  - `thresher/output/new_global_strains.csv`
+3. **Updated Clusters:**
+- RDS: `thresher/output/clusters_summary_new_snps.RDS`
+- CSV: `thresher/output/clusters_summary_new_snps.csv`
+- Summary table listing each strain/cluster and its composition, including original genomes and newly added genomes: `thresher/output/genomes_summary_new_snps.csv`
+  - Column 1 `genome_name`: Name of the genome
+  - Column 2 `genome_category`: "original" or "new" indicating whether the genome was part of the original analysis or newly added
+  - Column 3 `original_strain`: ID of the strain the genome belongs to in the original analysis ("New-Genome" for new genomes)
+  - Column 4 `new_strain`: ID of the strain the genome belongs to in the updated analysis
+  - Column 5 `original_cluster`: ID of the cluster the genome belongs to in the original analysis ("New-Cluster" for new genomes, "Non-Cluster" if not belonging to any cluster)
+  - Column 6 `new_cluster`: ID of the cluster the genome belongs to in the updated analysis ("Non-Cluster" if not belonging to any cluster)

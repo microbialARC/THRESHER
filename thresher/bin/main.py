@@ -2,7 +2,7 @@
 """THRESHER Main Entry
 This script creates the configuration files and executes the Snakemake workflow.
 """
-VERSION = "0.1.0-beta"
+VERSION = "0.1.1-beta"
 # Import standard libraries and custom modules
 import argparse
 import os
@@ -81,6 +81,41 @@ Usage:
     add_evo_simulator_parser(subparsers)
 
     return parser
+
+# Helper functions to check OS and RAM since these checks are used multiple times
+def check_os(term_width):
+    """Check the operating system"""
+    print()
+    print("=" * term_width)
+    print("Checking operating system".center(term_width))
+    print("=" * term_width)
+    system_os = sys.platform
+    if system_os != 'linux':
+        print("THRESHER supports Linux only. Required dependencies are currently available only on Linux.")
+        print("Please run THRESHER on a Linux system.")
+        print("Thresher quitting...")
+        return 1
+    else:
+        print(f"Current Operating system: {system_os}. Proceeding...")
+        return 0
+
+def check_ram(term_width,
+              min_ram_gb):
+    """Check if the system has at least min_ram_gb of RAM"""
+    print()
+    print("=" * term_width)
+    print("Checking system RAM".center(term_width))
+    print("=" * term_width)
+    ram_gb =  os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') / (1024 ** 3)
+    if ram_gb < min_ram_gb:
+        print("At least \033[91m40 GB\033[0m memory is required for THRESHER, as WhatsGNU requires loading large databases into memory.")
+        print("Please run THRESHER on a system with sufficient RAM.")
+        print("Thresher quitting...")
+        return 1
+    else:
+        print(f"Detected RAM: \033[92m{int(ram_gb)} GB\033[0m. Proceeding...")
+        return 0
+    
 
 def execute_snakemake(config_path, snakefile, conda_prefix, threads, output_dir, prefix):
     """
@@ -218,52 +253,52 @@ def main():
         print("=" * term_width)
         return 1
     # Print the mode and function being executed
-    print(f"Function: {args.command} Mode: {args.mode}".center(term_width))
+    if args.command in ["strain_identifier", "evo_simulator"]:
+        print(f"Function: {args.command} Mode: {args.mode}".center(term_width))
+    elif args.command == "genome_profiler":
+        print(f"Function: {args.command}".center(term_width))
 
     # Check the OS and RAM for strain_identifier function and full-pipeline and new-full modes
     # This tool can only run on Linux for now
     # Windows and MacOS are not supported due to dependency issues
     
     # If the strain_identifier mode, full-pipeline or new-full, check RAM and OS
-    if not args.force and (args.command == "strain_identifier" and args.mode in ["full-pipeline","new-full"]):
-        print()
-        print("=" * term_width)
-        print("Checking operating system".center(term_width))
-        print("=" * term_width)
-        system_os = sys.platform
-        if system_os != 'linux':
-            print("THRESHER supports Linux only. Required dependencies are currently available only on Linux.")
-            print("Please run THRESHER on a Linux system.")
-            print("Thresher quitting...")
-            return 1
-        else:
-            print(f"Current Operating system: {system_os}. Proceeding...")
+    if args.command == "strain_identifier" and args.mode in ["full-pipeline","new-full"]:
+        if not args.force:
+            # Check OS and abort early on failure
+            if (check_os_rc := check_os(term_width)):
+                return check_os_rc
+            # Check if RAM is enough (at least 40 GB for WhatsGNU database loading)
+            # This is required for WhatsGNU database loading
+            # the number is highlighted in red for visibility
+            if (check_ram_rc := check_ram(term_width, 40)):
+                return check_ram_rc
+            print(f"RAM check passed for Function: {args.command} Mode: {args.mode}. Proceeding...")
 
-        # Check if RAM is enough (at least 60 GB)
-        # This is required for WhatsGNU database loading
-        # the number is highlighted in red for visibility
-    
-        print()
-        print("=" * term_width)
-        print("Checking system RAM".center(term_width))
-        print("=" * term_width)
-        ram_gb =  os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') / (1024 ** 3)
-        if args.command == "strain_identifier" and args.mode in ["full-pipeline","new-full"] and ram_gb < 40:
-            print("At least \033[91m40 GB\033[0m memory is required for THRESHER, as WhatsGNU requires loading large databases into memory.")
-            print("Please run THRESHER Strain Identifier on a system with sufficient RAM.")
-            print("Thresher quitting...")
-            return 1
-        else:
-            print(f"RAM check passed for Function: {args.command} Mode: {args.mode}.")
-            print(f"Detected RAM: \033[92m{int(ram_gb)} GB\033[0m. Proceeding...")
-    elif args.force and (args.command == "strain_identifier" and args.mode in ["full-pipeline","new-full"]):
-        # This elif might seem redundant but it reminds me to handle the --force flag specifically for strain_identifier full-pipeline and new-full modes
-        print()
-        print("=" * term_width)
-        print("Bypassing OS and RAM checks".center(term_width))
-        print("=" * term_width)
-        print(f"\033[93m--force flag set: skipping OS and RAM checks for function: {args.command} mode: {args.mode}.\nProceeding may lead to WhatsGNU-related and other dependency errors during execution.\033[0m")
-        
+        elif args.force:
+            # This elif might seem redundant but it reminds me to handle the --force flag specifically for strain_identifier full-pipeline and new-full modes
+            print()
+            print("=" * term_width)
+            print("Bypassing OS and RAM checks".center(term_width))
+            print("=" * term_width)
+            print(f"\033[93m--force flag set: skipping OS and RAM checks for function: {args.command} mode: {args.mode}.\nProceeding may lead to WhatsGNU-related and other dependency errors during execution.\033[0m")
+    elif args.command == "genome_profiler":
+        # For genome_profiler, check OS and RAM
+        if not args.force:
+            # Check OS and abort early on failure
+            if (check_os_rc := check_os(term_width)):
+                return check_os_rc
+            # Check if RAM is enough (at least 40 GB for WhatsGNU database loading)
+            if (check_ram_rc := check_ram(term_width, 40)):
+                return check_ram_rc
+            print(f"RAM check passed for Function: {args.command}. Proceeding...")
+        elif args.force:
+            print()
+            print("=" * term_width)
+            print("Bypassing OS and RAM checks".center(term_width))
+            print("=" * term_width)
+            print(f"\033[93m--force flag set: skipping OS and RAM checks for function: {args.command}.\nProceeding may lead to dependency errors during execution.\033[0m")
+
     # Validate function arguments
     print()
     print("=" * term_width)

@@ -1,10 +1,12 @@
 """Parser for genome_profiler command"""
 import argparse
+import os
 
 # The parser for the overall genome_profiler command
 def add_genome_profiler_parser(subparsers):
     genome_profiler_parser = subparsers.add_parser(
         "genome_profiler",
+        formatter_class=argparse.RawTextHelpFormatter,
         help="Infer the probability of substitutions and mobile genetic elements."
     )
 
@@ -26,25 +28,26 @@ def add_genome_profiler_parser(subparsers):
         required=True,
         choices=["sau", "sepi", "cdiff", "kp"],
         help="""Bacteria species.
-        Available options: [sau, sepi, cdiff, kp]
-        sau: Staphylococcus aureus
-        sepi: Staphylococcus epidermidis
-        cdiff: Clostridium difficile
-        kp: Klebsiella pneumoniae"""
+Available options: [sau, sepi, cdiff, kp]
+sau: Staphylococcus aureus
+sepi: Staphylococcus epidermidis
+cdiff: Clostridium difficile
+kp: Klebsiella pneumoniae"""
     )
 
     genome_profiler_parser.add_argument(
         "--top_genomes",
         type=int,
         default=1000,
-        help="Number of top genomes to use for profiling (default: 1000)"
+        help="Number of initial top genomes for profiling before applying the ANI exclusion threshold (default: 1000)."
     )
 
     genome_profiler_parser.add_argument(
         "--ani_threshold",
         type=float,
-        default=99.9,
-        help="ANI threshold for profiling (default: 99.9)"
+        default=99.5,
+        help="""Average Nucleotide Identity (ANI) exclusion threshold (default: 99.5).
+Genomes with ANI below this value will be removed from the profiling analysis."""
     )
 
     genome_profiler_parser.add_argument(
@@ -52,8 +55,8 @@ def add_genome_profiler_parser(subparsers):
         required=False,
         default="full",
         help="""Bakta database.
-        Available options: [full, light]
-        Default is full"""
+Available options: [full, light]
+Default is full"""
     )
 
     genome_profiler_parser.add_argument(
@@ -61,8 +64,8 @@ def add_genome_profiler_parser(subparsers):
         required=False,
         type=str,
         help="""The path of the directory where the existing Bakta database locates.
-        If provided, the Bakta database will not be downloaded.
-        If not provided, defaults to <OUTPUT>/bakta/db""",
+If provided, the Bakta database will not be downloaded.
+If not provided, defaults to <OUTPUT>/bakta/db""",
     )
 
     genome_profiler_parser.add_argument(
@@ -70,14 +73,15 @@ def add_genome_profiler_parser(subparsers):
         type=str,
         required=False,
         help="""The path to the existing WhatsGNU database.
-        If provided, the WhatsGNU database will not be downloaded.
-        If not provided, defaults to <OUTPUT>/whatsgnu/db.""",
+If provided, the WhatsGNU database will not be downloaded.
+If not provided, defaults to <OUTPUT>/whatsgnu/db.""",
     )
     genome_profiler_parser.add_argument(
+        "-t",
         "--threads",
+        default= os.cpu_count(),
         type=int,
-        default=4,
-        help="Number of threads to use (default: 4)"
+        help = "Thread number. Default is the maximum available."
     )
 
     genome_profiler_parser.add_argument(
@@ -91,4 +95,12 @@ def add_genome_profiler_parser(subparsers):
         "--conda_prefix",
         default=None,
         help="Directory for conda environments needed for this analysis. If not provided, defaults to OUTPUT/conda_envs_<YYYY_MM_DD_HHMMSS>"
+    )
+
+    # Override system compatibility checks (OS and minimum RAM) and run pipeline regardless
+    genome_profiler_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="""Bypass system compatibility checks (operating system and available RAM) and force execution of the pipeline.
+This may cause instability or failures."""
     )
