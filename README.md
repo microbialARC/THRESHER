@@ -3,7 +3,7 @@ THRESHER is a bacterial genomics toolkit with three core functionalities:
 - Strain Identifier: 
 Identifies strains/transmission clusters using phylothresholds (phylogenetically-corrected SNP thresholds). 
 
-- Genome Profiler (*Coming soon*): 
+- Genome Profiler:
 Infer substitution probabilities and mobile genetic element (MGE) dynamics leveraging publicly available genomes.
 
 - Evolution Simulator (*Coming soon*):
