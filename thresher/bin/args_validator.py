@@ -33,8 +33,12 @@ def validate_strain_identifier_full(args):
         raise ValidationError("At least 4 genomes required for analysis")
     if input_df["accession"].isnull().any():
         raise ValidationError("Accession column contains missing values. If you don't have GenBank accession, please use 'new'(all lower case)")
-
-
+    
+    # Recursively check if genome files exist otherwise snakemake will fail right away
+    for genome_path in input_df["genome_path"]:
+        if not os.path.exists(genome_path):
+            raise ValidationError(f"Genome file not found: {genome_path}")
+        
     # Print info about number of genomes and patient IDs if applicable
     print(f"Input file read successfully. Number of genomes: {input_df.shape[0]}")
     print(f"Number of unique patient IDs: {input_df['patient_id'].unique().shape[0]}")
@@ -221,6 +225,12 @@ def validate_strain_identifier_new_snps(args):
     new_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
     if new_metadata_df["accession"].isnull().any():
         raise ValidationError("Accession column contains missing values. If you don't have GenBank accession, please use 'new'(all lower case)")
+    
+    # Recursively check if genome files exist otherwise snakemake will fail right away
+    for genome_path in new_metadata_df["genome_path"]:
+        if not os.path.exists(genome_path):
+            raise ValidationError(f"Genome file not found: {genome_path}")
+    
     # Print info about number of genomes in the new metadata file
     print(f"New metadata file read successfully. Number of genomes: {new_metadata_df.shape[0]}")
     print(f"Number of unique patient IDs in new metadata file: {new_metadata_df['patient_id'].unique().shape[0]}")
@@ -329,6 +339,12 @@ def validate_strain_identifier_new_full(args):
     new_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
     if new_metadata_df["accession"].isnull().any():
         raise ValidationError("Accession column contains missing values. If you don't have GenBank accession, please use 'new'(all lower case)")
+    
+    # Recursively check if genome files exist otherwise snakemake will fail right away
+    for genome_path in new_metadata_df["genome_path"]:
+        if not os.path.exists(genome_path):
+            raise ValidationError(f"Genome file not found: {genome_path}")
+    
     # Print info about number of genomes in the new metadata file
     print(f"New metadata file read successfully. Number of genomes: {new_metadata_df.shape[0]}")
     print(f"Number of unique patient IDs in new metadata file: {new_metadata_df['patient_id'].unique().shape[0]}")
