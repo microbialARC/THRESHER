@@ -1,5 +1,5 @@
 # Genome Profiler
-Infer substitution probabilities and mobile genetic element (MGE) dynamics leveraging publicly available genomes.
+Infers substitution probabilities and mobile genetic element (MGE) dynamics leveraging publicly available genomes.
 ```
 thresher genome_profiler -h
 options:
@@ -107,15 +107,58 @@ options:
  - Bin summary of concatenated input genome:
 
     `genome_profiler/{genome_name}_bin_summary.csv`
+    - Columns included in the bin summary csv file:
+      - bin_index: Index of the bin
+      - start: The starting position of the bin in the concatenated genome
+      - end: The ending position of the bin in the concatenated genome
+      - length: The length of the bin in base pairs
+      - gene: The annotation of the bin by Bakta
+      - locus_tag: The locus tag of the bin by Bakta
+      - original_contig: The original contig name where the bin is located
+      - coverage_max: The maximum coverage of the bin across all query genomes
+      - coverage_min: The minimum coverage of the bin across all query genomes
+      - coverage_mean: The mean coverage of the bin across all query genomes
+      - coverage_sd: The standard deviation of the coverage of the bin across all query genomes
+      - coverage_median: The median coverage of the bin across all query genomes
+      - coverage_q1: The first quartile (25th percentile) of the coverage of the bin across all query genomes
+      - coverage_q3: The third quartile (75th percentile) of the coverage of the bin across all query genomes
+      - entropy_max: The maximum substitution probability of the bin across all query genomes
+      - entropy_min: The minimum substitution probability of the bin across all query genomes
+      - entropy_mean: The mean substitution probability of the bin across all query genomes
+      - entropy_sd: The standard deviation of the substitution probability of the bin across all query genomes
+      - entropy_median: The median substitution probability of the bin across all query genomes
+      - entropy_q1: The first quartile (25th percentile) of the substitution probability
+      - entropy_q3: The third quartile (75th percentile) of the substitution probability
+      - total_snp_count: The total number of SNPs in the bin across all query genomes
+      - mge_id: Whether the bin is identified as a mobile genetic element (MGE) or not. MGE ID is provided if identified as MGE.
+
  - Summary of MGEs identified in the input genome:
 
     `genome_profiler/{genome_name}_mges.csv`
+    - Columns included in the MGE summary csv file:
+      - mge_index: Unique identifier for each MGE
+      - start: The starting position of the MGE in the concatenated genome
+      - end: The ending position of the MGE in the concatenated genome
+      - length: The length of the MGE in base pairs
+      - bin: The bin indexes that the MGE spans
+      - bin_gene: The genes annotated in the bins that the MGE spans
+
  - Plots indicating the MGEs and substitution probabilities across the genome:
 
     `genome_profiler/{genome_name}_profiler_plot.pdf`
 
     `genome_profiler/{genome_name}_profiler_plot.RDS` (R object)
-
+    - Figure description:
+        - Shared X-axis: Position in the concatenated genome (in base pairs)
+        - Upper panel: Coverage across the genome based on the query genomes after applying the ANI exclusion threshold.
+            - Y-axis: Coverage Percentage (Percentage of query genomes covering the position in the concatenated genome)
+            - Blue blocks: Identified MGEs in the concatenated genome
+        - Lower panel: Substitution probabilities across the genome based on the query genomes after applying the ANI exclusion threshold.
+            - Y-axis: Substitution Probability (Entropy)
+            - Colored line: Substitution probabilities at each position across the genome
+                - Red: Intergenic regions
+                - Green: Coding sequences (CDS)
+                
 - Substitution probability table across each site within the genome:
 
     `genome_profiler/{genome_name}_entropy.csv`
