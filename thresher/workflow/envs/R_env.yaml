@@ -33,3 +33,5 @@ dependencies:
  - bioconda::bioconductor-complexheatmap>=2.22.0
  - conda-forge::r-circlize>=0.4.16
  - conda-forge::r-ggstar>=1.0.4
+ - conda-forge::r-treesim>=2.4
+ 

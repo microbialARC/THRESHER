@@ -5,10 +5,19 @@ import glob as glob
 #Import from snakemake
 species = snakemake.params.species
 mlst_raw = pd.read_csv(snakemake.input.mlst_output, sep=',', header=None)
+metadata = pd.read_csv(snakemake.params.metadata, sep='\t', header=None)
+metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+
 #Create output dataframe
 mlst_results = pd.DataFrame()
-mlst_results['genome'] = mlst_raw.iloc[:, 0].apply(lambda x: os.path.splitext(os.path.basename(x))[0])
-mlst_results['ST'] = mlst_raw.iloc[:, 2]
+mlst_results['genome'] = metadata['genome_name']
+
+# Create a mapping from genome_path to ST
+# column 0 is path, column 2 is ST
+path_to_st = dict(zip(mlst_raw[0], mlst_raw[2])) 
+# Map ST values using genome_path from metadata
+mlst_results['ST'] = metadata['genome_path'].map(path_to_st)
+
 #Define functions to get clonal complex or clade
 def get_sau_cc(st, db):
     if st == "-":

@@ -27,8 +27,7 @@ from thresher.bin.args_validator import (
     validate_strain_identifier_new_snps,
     validate_strain_identifier_new_full,
     validate_genome_profiler,
-    validate_evo_simulator_preset,
-    validate_evo_simulator_custom,
+    validate_evo_simulator,
     ValidationError
 )
 
@@ -39,8 +38,7 @@ from thresher.bin.config_creator import (
     strain_identifier_new_snps_config,
     strain_identifier_new_full_config,
     genome_profiler_config,
-    evo_simulator_preset_config,
-    evo_simulator_custom_config
+    evo_simulator_config
 )
 
 def build_parser():
@@ -339,17 +337,12 @@ def main():
             snakefile = "Snakefile_genome_profiler"
 
         elif args.command == "evo_simulator":
-            if args.mode == "preset":
-                # if preset mode, validate preset-specific args
-                validate_evo_simulator_preset(args)
-                config_path = evo_simulator_preset_config(args)
-                snakefile = "Snakefile_evo_simulator_preset"
-            elif args.mode == "custom":
-                validate_evo_simulator_custom(args)
-                config_path = evo_simulator_custom_config(args)
-                snakefile = "Snakefile_evo_simulator_custom"
-            else:
-                raise ValidationError(f"Unknown simulation mode: {args.mode}")
+            # if preset mode, validate preset-specific args
+            validate_evo_simulator(args)
+            config_path = evo_simulator_config(args)
+            snakefile = "Snakefile_evo_simulator"
+        else:
+            raise ValidationError(f"Unknown function: {args.command}")
             
         # Ensure config path and snakefile are set
         if config_path is None or snakefile is None:

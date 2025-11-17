@@ -1,4 +1,4 @@
-rule mlst_output_new_snps:
+rule mlst_output_new:
     conda:
         os.path.join(BASE_PATH,"envs/mlst.yaml")
     input:
@@ -16,13 +16,14 @@ rule mlst_output_new_snps:
         cat {params.output_dir}/*_mlst.csv > {output.mlst_output}
         """
 
-rule mlst_results_new_snps: 
+rule mlst_results_new: 
     input:
         mlst_output = os.path.join(config["output"], "mlst","raw","mlst_raw.csv")
     output:
         mlst_results = os.path.join(config["output"], "mlst","summary","mlst_results.csv")
     params:
         species = config["species"],
+        metadata = config["new_metadata"],
         mlst_sau_db = os.path.join(BASE_PATH,"db/mlst/Sau_mlst.txt"),
         mlst_cdiff_db = os.path.join(BASE_PATH,"db/mlst/Cdiff_mlst.txt"),
         mlst_kp_db = os.path.join(BASE_PATH,"db/mlst/Kp_mlst.txt")

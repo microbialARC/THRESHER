@@ -1,0 +1,14 @@
+import os
+import sys
+
+BASE_PATH = os.path.dirname(os.path.abspath(workflow.snakefile))
+
+# Get the genome name from the input genome path
+ancestor_path = config["ancestor"]
+ancestor_name = os.path.splitext(os.path.basename(ancestor_path))[0]
+
+rule all:
+    input:
+        # Phylogeny Simulation
+        os.path.join(config["output"], "treesim", "simu_tree.nwk"),
+        # 
