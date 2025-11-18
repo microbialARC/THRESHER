@@ -109,9 +109,9 @@ def genome_profiler_config(args):
         'output': args.output,
         'top_genomes': args.top_genomes,
         'ani_threshold': args.ani_threshold,
-        'bakta_db_type': args.bakta_db_type if args.bakta_db_type else "full",
-        'bakta_db_path': args.bakta_db_path if args.bakta_db_path else os.path.join(args.output, "bakta", "db"),
-        'whatsgnu_db_path': args.whatsgnu_db_path if args.whatsgnu_db_path else "",
+        'bakta_db_type': args.bakta_db_type,
+        'bakta_db_path': args.bakta_db_path,
+        'whatsgnu_db_path': args.whatsgnu_db_path,
         'species': args.species,
         'threads': args.threads
     }

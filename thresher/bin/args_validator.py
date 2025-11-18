@@ -597,6 +597,7 @@ def validate_genome_profiler(args):
     # Check whatsgnu_db_path
     if not args.whatsgnu_db_path:
         print(f"WhatsGNU database path not provided. WhatsGNU database will be downloaded to {args.output}/whatsgnu/db")
+        args.whatsgnu_db_path = "None"
     else:
         # Check if the file exists in the provided whatsgnu_db_path)
         if not os.path.exists(args.whatsgnu_db_path):
@@ -609,9 +610,7 @@ def validate_genome_profiler(args):
     # Check bakta_db_path and bakta_db_type
     if not args.bakta_db_path:
         print(f"Bakta database path not provided. Bakta database will be downloaded to {args.output}/bakta/db")
-        if not args.bakta_db_type:
-            print("Bakta database type not provided, using default 'full'")
-            args.bakta_db_type = "full"
+        args.bakta_db_path = "None"
     elif args.bakta_db_path:
         # Check if bakta.db exists in the provided bakta_db_path
         bakta_db_file = os.path.join(args.bakta_db_path, "bakta.db")
@@ -622,7 +621,10 @@ def validate_genome_profiler(args):
         else:
             print(f"Bakta database file found at: {bakta_db_file}")
 
-    if args.bakta_db_type not in {"full", "light"}:
+    if not args.bakta_db_type:
+        print("Bakta database type not provided, using default 'full'")
+        args.bakta_db_type = "full"
+    elif args.bakta_db_type not in {"full", "light"}:
         print("Unsupported Bakta database type, using default 'full'")
         args.bakta_db_type = "full"
 # Validate the shared arguments for evo_simulator function
