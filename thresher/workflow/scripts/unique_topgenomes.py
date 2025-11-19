@@ -14,9 +14,25 @@ for file in whatsgnu_output:
     topgenomes = pd.read_csv(file, sep='\t', header=None, skiprows=1, names=['genome','score'])
     topgenomes = topgenomes.genome.unique()
     unique_topgenomes.update(topgenomes)
-# Exclude study genomes and non-Genbank genomes
-unique_topgenomes = [genome for genome in unique_topgenomes if genome.startswith("GCA")]
 
+# Exclude study genomes and non-Genbank genomes
+# Because for some whatsgnu database, the genome name may contain different naming styles
+# First split by "_", then find the position of "GCA".
+# Only take the "GCA" and the next part (9-digit accession)
+# Normalize genome names: extract the GCA accession and its following part if present
+extracted = set()
+
+for genome_entry in unique_topgenomes:
+    genome_name_parts = genome_entry.split("_")
+    # find first part starting with GCA
+    gca_index = [i for i, part in enumerate(genome_name_parts) if part.startswith("GCA")]
+    gca_index_value = gca_index[0]
+    extracted.add("_".join(genome_name_parts[gca_index_value:gca_index_value+2]))
+# Replace unique_topgenomes with the extracted set
+unique_topgenomes = extracted
+# Make unique_topgenomes unique
+unique_topgenomes = set(unique_topgenomes)
+# Remove the study genomes when they are present in the global genome database
 study_accession.discard("new")
 if study_accession:
     unique_topgenomes = unique_topgenomes - study_accession

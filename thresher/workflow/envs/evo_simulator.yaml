@@ -1,0 +1,12 @@
+name: evo_simulator
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.12
+  - numpy=2.1.3
+  - pandas=2.2.3
+  - biopython=1.86
+  - snp-dists>=0.7.0
+  

@@ -11,4 +11,30 @@ rule all:
     input:
         # Phylogeny Simulation
         os.path.join(config["output"], "treesim", "simu_tree.nwk"),
-        # 
+        # Intermediate files of Evolution Simulator
+        os.path.join(config["output"], "evo_simulator", "intermediate", "chromosome_bins.csv"),
+        os.path.join(config["output"], "evo_simulator", "intermediate", "dichotomies.txt"),
+        os.path.join(config["output"], "evo_simulator", "intermediate", "names.txt"),
+        os.path.join(config["output"], "evo_simulator", "intermediate", "nu.txt"),
+        os.path.join(config["output"], "evo_simulator", "intermediate", "renamed.tree"),
+        os.path.join(config["output"], "evo_simulator", "intermediate", "renamed.txt"),
+        os.path.join(config["output"], "evo_simulator", "intermediate", "rm.txt"),
+        os.path.join(config["output"], "evo_simulator", "intermediate", "roots.txt"),
+        os.path.join(config["output"], "evo_simulator", "intermediate", "weight_mutation.csv"),
+        # Final output files of Evolution Simulator
+        os.path.join(config["output"], "evo_simulator", "output", "stats.txt"),
+        os.path.join(config["output"], "evo_simulator", "output", "mutations.csv"),
+        os.path.join(config["output"], "evo_simulator", "output", "gain.csv"),
+        os.path.join(config["output"], "evo_simulator", "output", "loss.csv"),
+        os.path.join(config["output"], "evo_simulator", "output", "recombination.csv"),
+        os.path.join(config["output"], "evo_simulator", "output", "simulated_genomes.fasta"),
+        os.path.join(config["output"], "evo_simulator", "output", "snp_matrix.txt"),
+        # Visualization files
+        os.path.join(config["output"], "evo_simulator", "output", "snp_matrix_visualization.pdf"),
+        os.path.join(config["output"], "evo_simulator", "output", "snp_matrix_visualization.RDS"),
+        os.path.join(config["output"], "evo_simulator", "output", "simulation_visualization.png")
+
+include: os.path.join(BASE_PATH, "rules", "treesim.smk")
+include: os.path.join(BASE_PATH, "rules", "simulator_input.smk")
+include: os.path.join(BASE_PATH, "rules", "simulator_simulation.smk")
+include: os.path.join(BASE_PATH, "rules", "simulator_visualization.smk")

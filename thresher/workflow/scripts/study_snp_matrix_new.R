@@ -34,15 +34,20 @@ update_study_snp_matrix <- function(output_list,
                                    
                                    for(n in 1:(nrow(ori_output_df)/4)){
                                      #reference
-                                     sorted_output_df$reference[n] <- tools::file_path_sans_ext(
-                                       basename(strsplit(ori_output_df$V1[4*n-3],
-                                                         split = " ")[[1]][1])
-                                     )
+                                     reference_genome_path <- strsplit(ori_output_df$V1[4*n-3],
+                                                                       split = " ")[[1]][1]
+                                     reference_genome_name <- metadata$V1[metadata$V3 == reference_genome_path]
+                                       
+                                     
+                                     sorted_output_df$reference[n] <- reference_genome_name
                                      #query
-                                     sorted_output_df$query[n] <- tools::file_path_sans_ext(
-                                       basename(strsplit(ori_output_df$V1[4*n-3],
-                                                         split = " ")[[1]][2])
-                                     )
+                                     query_genome_path <- strsplit(ori_output_df$V1[4*n-3],
+                                                                   split = " ")[[1]][2]
+                                     
+                                     query_genome_name <- metadata$V1[metadata$V3 == query_genome_path]
+                                       
+                                     sorted_output_df$query[n] <- query_genome_name
+                                     
                                      #snp
                                      sorted_output_df$snp[n] <- as.numeric(unique(unlist(strsplit(ori_output_df$V1[4*n-1],
                                                                                                   split = " ")[[1]][strsplit(ori_output_df$V1[4*n-1],
@@ -142,7 +147,19 @@ output_list <- list.files(path = snakemake@params[["report_dir"]],
                           all.files = TRUE,
                           full.names = TRUE,
                           recursive = TRUE)
+
 original_snp_matrix_path <- snakemake@params[["original_snp_matrix"]]
+
+new_metadata_path <- snakemake@params[["new_metadata"]]
+original_metadata_path <- snakemake@params[["original_metadata"]]
+
+metadata <- rbind(read.table(new_metadata_path,
+                             sep = "\t",
+                             header = FALSE),
+                  read.table(original_metadata_path,
+                             sep = "\t",
+                             header = FALSE))
+
 ncores <- snakemake@threads
 
 # Execute the function to get updated study_snp_matrix

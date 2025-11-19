@@ -6,6 +6,8 @@ rule study_snp_matrix_new_snps:
     output:
         study_snp_matrix_new = os.path.join(config["output"],"mummer4","study_snp_matrix_new.RDS")
     params:
+        original_metadata = config["original_metadata"],
+        new_metadata = config["new_metadata"],
         report_dir = os.path.join(config["output"],"mummer4"),
         original_snp_matrix = os.path.join(config["thresher_output"], "mummer4_study", "study_snp_matrix.RDS")
     threads:

@@ -12,6 +12,12 @@ whatsgnu_list <- list.files(path = snakemake@params[["whatsgnu_dir"]],
                             full.names = TRUE,
                             recursive = TRUE)
 
+metadata_path <- snakemake@params[["metadata"]]
+
+metadata <- read.table(metadata_path,
+                       sep = "\t",
+                       header = FALSE)
+
 cl <- makeCluster(detectCores())
 #export the dplyr library to the cluster object
 clusterEvalQ(cl, {
@@ -19,7 +25,8 @@ clusterEvalQ(cl, {
 })
 #export the data needed for the parallel process
 clusterExport(cl,
-              c("output_list"),
+              c("output_list",
+                "metadata"),
               envir = environment())
 #export the data needed for the parallel process
 concatenate_output <- function(i){
@@ -39,22 +46,36 @@ concatenate_output <- function(i){
   
   for(n in 1:(nrow(ori_output_df)/4)){
     #reference
-    sorted_output_df$subject[n] <- gsub(".fna|.fasta|.fa",
-                                          "",
-                                          strsplit(strsplit(ori_output_df$V1[4*n-3],
-                                                            split = " ")[[1]][1],
-                                                   split = "/")[[1]][length(strsplit(strsplit(ori_output_df$V1[4*n-3],
-                                                                                              split = " ")[[1]][1],
-                                                                                     split = "/")[[1]])])
+    reference_genome_path <- strsplit(ori_output_df$V1[4*n-3],
+                                      split = " ")[[1]][1]
+    
+    
+    reference_genome_name <- if(grepl("GCA_",reference_genome_path)){
+      # If reference is global genome, use the base name without extension
+      tools::file_path_sans_ext(basename(reference_genome_path))
+      
+    }else{
+      # If reference is study genome, match the metadata to find the real name
+      metadata$V1[metadata$V3 == reference_genome_path]
+    }
+      
+    sorted_output_df$subject[n] <- reference_genome_name
     
     #query
-    sorted_output_df$query[n] <- gsub(".fna|.fasta|.fa",
-                                      "",
-                                      strsplit(strsplit(ori_output_df$V1[4*n-3],
-                                                        split = " ")[[1]][2],
-                                               split = "/")[[1]][length(strsplit(strsplit(ori_output_df$V1[4*n-3],
-                                                                                          split = " ")[[1]][2],
-                                                                                 split = "/")[[1]])])
+    query_genome_path <- strsplit(ori_output_df$V1[4*n-3],
+                                  split = " ")[[1]][2]
+    
+    query_genome_name <- if(grepl("GCA_",query_genome_path)){
+      # If reference is global genome, use the base name without extension
+      tools::file_path_sans_ext(basename(query_genome_path))
+      
+    }else{
+      # If reference is study genome, match the metadata to find the real name
+      metadata$V1[metadata$V3 == query_genome_path]
+    }
+    
+    sorted_output_df$query[n] <- query_genome_name
+    
     #snp
     sorted_output_df$snp[n] <- as.numeric(unique(unlist(strsplit(ori_output_df$V1[4*n-1],
                                                                  split = " ")[[1]][strsplit(ori_output_df$V1[4*n-1],

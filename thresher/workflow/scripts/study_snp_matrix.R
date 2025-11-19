@@ -10,6 +10,12 @@ output_list <- list.files(path = snakemake@params[["report_dir"]],
                           full.names = TRUE,
                           recursive = TRUE)
 
+metadata_path <- snakemake@params[["metadata"]]
+
+metadata <- read.table(metadata_path,
+                       sep = "\t",
+                       header = FALSE)
+
 cl <- makeCluster(detectCores())
 #export the dplyr library to the cluster object
 clusterEvalQ(cl, {
@@ -17,15 +23,14 @@ clusterEvalQ(cl, {
 })
 #export the data needed for the parallel process
 clusterExport(cl,
-              c("output_list"),
+              c("output_list",
+                "metadata"),
               envir = environment())
 #export the data needed for the parallel process
 concatenate_output <- function(i){
   
   ori_output_df <- read.delim(output_list[i],
                               header = FALSE)
-  
-  ori_output_df$V1 <- tools::file_path_sans_ext(basename(ori_output_df$V1))
   
   reference_genome <- gsub("_concatenated.report",
                            "",
@@ -45,7 +50,13 @@ concatenate_output <- function(i){
   
   for(n in 1:(nrow(ori_output_df)/4)){
     #query
-    sorted_output_df$query[n] <- ori_output_df$V1[4*n-3]
+    query_genome_path <- strsplit(ori_output_df$V1[4*n-3],
+                                   split = "\\ ")[[1]][2]
+    
+    # Use the query genome to match in the metadata
+    query_genome_name <- metadata$V1[metadata$V3 == query_genome_path]
+                                   
+    sorted_output_df$query[n] <- query_genome_name
     #snp
     sorted_output_df$snp[n] <- as.numeric(unique(unlist(strsplit(ori_output_df$V1[4*n-1],
                                                                  split = " ")[[1]][strsplit(ori_output_df$V1[4*n-1],
@@ -64,6 +75,8 @@ concatenate_output <- function(i){
                                                            split = " ")[[1]][strsplit(ori_output_df$V1[4*n-2],
                                                                                       split = " ")[[1]] != ""][2]
     #AlignedBases_query
+    # For the query, use the file path to match the real name in the metadata 
+    
     sorted_output_df$AlignedBases_query[n] <- strsplit(ori_output_df$V1[4*n-2],
                                                        split = " ")[[1]][strsplit(ori_output_df$V1[4*n-2],
                                                                                   split = " ")[[1]] != ""][3]

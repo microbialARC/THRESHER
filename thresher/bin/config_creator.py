@@ -127,25 +127,30 @@ def genome_profiler_config(args):
 def evo_simulator_config(args):
     """Create config file in yaml format for evo_simulator function"""
     config = {
+        'prefix': args.prefix,
+        'preset': args.preset,
         'ancestor': args.ancestor,
-        "years": args.years,
+        'years': args.years,
         'taxa': args.taxa,
+        'substitution_model': args.substitution_model,
+        'model_parameters': args.model_parameters,
         'mutation_rate': args.mutation_rate,
-        'recombination_rate': args.recombination_rate,
-        'mean_recombination_size': args.mean_recombination_size,
+        'use_weighted_mutation': args.use_weighted_mutation,
+        'weighted_mutation_file': args.weighted_mutation_file,
+        'use_gain_loss': args.use_gain_loss,
         'gain_rate': args.gain_rate,
         'loss_rate': args.loss_rate,
         'bin': args.bin,
         'mge_fasta': args.mge_fasta,
         'mge_entropy': args.mge_entropy,
-        'weighted_mutation': args.weighted_mutation,
-        'weighted_mutation_file': args.weighted_mutation_file,
-        'recombination': args.recombination,
-        'gain_loss': args.gain_loss,
+        'use_recombination': args.use_recombination,
+        'recombination_rate': args.recombination_rate,
+        'min_recombination_size': args.min_recombination_size,
+        'mean_recombination_size': args.mean_recombination_size,
+        'nu': args.nu,
         'output': args.output,
         'threads': args.threads,
-        'seed': args.seed,
-        'prefix': args.prefix
+        'seed': args.seed    
    }
     
     if not os.path.exists(os.path.join(args.output, "config")):
