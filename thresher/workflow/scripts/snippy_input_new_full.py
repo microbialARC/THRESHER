@@ -53,56 +53,73 @@ snippy_groups = sorted(hc_group['group'].value_counts().index.tolist())
 # This iteration will find the genome with largest N50 as reference 
 # Create the tab files for each group
 # Used for creating the snippy-multi command
-# Only groups with total genome count (study + global) >=4 will have tab files created and be included in reference_dict
+# Only groups with total genome count (study + global) >=4 or more than 1 study genome will have tab files created and be included in reference_dict
 reference_dict = {}
 
 for group in snippy_groups:
     # Exclude the overlimit genomes from snippy and later IQtree
     group_genomes = hc_group[(hc_group['group'] == group) & (hc_group['overlimit'] != True)]['genome'].tolist()
-    group_n50_dict = {}
-    group_global_genomes = set()
-    for genome in group_genomes:
-        # N50 for each group genome
-        assembly_scan = pd.read_csv(assembly_scan_path_dict[genome], sep='\t', header=None)
-        group_n50_dict[genome] = int(assembly_scan[assembly_scan[1] == 'n50_contig_length'].iloc[0, 2])
-        # Introduce top3 global genomes from whatsgnu results for each group genome
-        whatsgnu = pd.read_csv(whatsgnu_path_dict[genome], sep='\t', skiprows=1, header=None)
-        # Only keep the global genomes with GCA
-        whatsgnu = whatsgnu[whatsgnu[0].str.contains('GCA_')]
-        top3_genomes = [whatsgnu.iloc[i, 0] for i in range(3)]
-        group_global_genomes.update(top3_genomes)
-        if study_accession: 
-            group_global_genomes = group_global_genomes - study_accession
-    # If the count of global genomes and study genomes together is less than 4, skip
-    # Normally this should not happen
-    # Because by default each study genome brings in 3 global genomes from whatsgnu results
-    group_total_genomes_count = len(group_genomes) + len(group_global_genomes)
-    if group_total_genomes_count < 4:
+    if len(group_genomes) <= 1:
         continue
     else:
-        reference = max(group_n50_dict, key=group_n50_dict.get)
-        reference_dict[group] = reference
-        # Create the tab file
-        with open(f'{tab_dir}/Group{group}.tab', 'w') as f:
-            for genome in group_genomes:
-                if genome != reference:
-                    f.write(f"{genome}\t{genome_path[genome]}\n")
-            for global_genome in group_global_genomes:
-                # Search the global genomes in both new and original whatsgnu paths
-                # new first, then original
-                # If not found in either, raise error
+        group_n50_dict = {}
+        group_global_genomes = set()
+        for genome in group_genomes:
+            # N50 for each group genome
+            assembly_scan = pd.read_csv(assembly_scan_path_dict[genome], sep='\t', header=None)
+            group_n50_dict[genome] = int(assembly_scan[assembly_scan[1] == 'n50_contig_length'].iloc[0, 2])
+            # Introduce top3 global genomes from whatsgnu results for each group genome
+            whatsgnu = pd.read_csv(whatsgnu_path_dict[genome], sep='\t', skiprows=1, header=None)
+            # Only keep the global genomes with GCA
+            whatsgnu = whatsgnu[whatsgnu[0].str.contains('GCA_')]
+            whatsgnu_genomes = set(whatsgnu[0].unique())
+            # Because for some whatsgnu database, the genome name may contain different naming styles
+            # First split by "_", then find the position of "GCA".
+            # Only take the "GCA" and the next part (9-digit accession)
+            # Normalize genome names: extract the GCA accession and its following part if present
+            extracted = set()
 
-                # I guess there must be a more elegant way to do this, which I will implement in the future if I think of one
-                # but for now I am trying to get stuff working asap, and this works
-                # so...
-                putative_new_path = f"{new_global_genome_path}/{global_genome}.fna"
-                putative_original_path = f"{original_global_genome_path}/{global_genome}.fna"
-                if os.path.exists(putative_new_path):
-                    f.write(f"{global_genome}\t{new_global_genome_path}/{global_genome}.fna\n")
-                elif os.path.exists(putative_original_path):
-                    f.write(f"{global_genome}\t{original_global_genome_path}/{global_genome}.fna\n")
-                else:
-                    raise FileNotFoundError(f"Global genome {global_genome} not found in either {new_global_genome_path} or {original_global_genome_path}")
+            for genome_entry in whatsgnu_genomes:
+                genome_name_parts = genome_entry.split("_")
+                # find first part starting with GCA
+                gca_index = [i for i, part in enumerate(genome_name_parts) if part.startswith("GCA")]
+                gca_index_value = gca_index[0]
+                extracted.add("_".join(genome_name_parts[gca_index_value:gca_index_value+2]))
+
+            top3_genomes = [list(extracted)[i] for i in range(3)]
+
+            group_global_genomes.update(top3_genomes)
+            if study_accession: 
+                group_global_genomes = group_global_genomes - study_accession
+        # If the count of global genomes and study genomes together is less than 4, skip
+        # Or if there is only 1 study genome in the group, skip
+        group_total_genomes_count = len(group_genomes) + len(group_global_genomes)
+        if group_total_genomes_count < 4:
+            continue
+        else:
+            reference = max(group_n50_dict, key=group_n50_dict.get)
+            reference_dict[group] = reference
+            # Create the tab file
+            with open(f'{tab_dir}/Group{group}.tab', 'w') as f:
+                for genome in group_genomes:
+                    if genome != reference:
+                        f.write(f"{genome}\t{genome_path[genome]}\n")
+                for global_genome in group_global_genomes:
+                    # Search the global genomes in both new and original whatsgnu paths
+                    # new first, then original
+                    # If not found in either, raise error
+
+                    # I guess there must be a more elegant way to do this, which I will implement in the future if I think of one
+                    # but for now I am trying to get stuff working asap, and this works
+                    # so...
+                    putative_new_path = f"{new_global_genome_path}/{global_genome}.fna"
+                    putative_original_path = f"{original_global_genome_path}/{global_genome}.fna"
+                    if os.path.exists(putative_new_path):
+                        f.write(f"{global_genome}\t{new_global_genome_path}/{global_genome}.fna\n")
+                    elif os.path.exists(putative_original_path):
+                        f.write(f"{global_genome}\t{original_global_genome_path}/{global_genome}.fna\n")
+                    else:
+                        raise FileNotFoundError(f"Global genome {global_genome} not found in either {new_global_genome_path} or {original_global_genome_path}")
                 
 # Create the reference.txt file summarizing the reference genome for each group in analysis_groups
 with open(f'{tab_dir}/snippy_reference.txt', 'w') as f:

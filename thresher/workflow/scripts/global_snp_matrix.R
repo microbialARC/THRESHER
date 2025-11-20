@@ -113,13 +113,29 @@ rm(cl)
 unique_comparisons <- do.call(rbind,
                               lapply(whatsgnu_list,
                                      function(list_entry){
+                                       
                                        study_genome <- gsub("_WhatsGNU_topgenomes.txt",
                                                             "",
                                                             basename(list_entry))
+                                       
                                        list_df <- read.table(list_entry, skip=1)
+                                       
+                                       query_name <- sapply(list_df$V1[1:10],
+                                                            function(name_entry){
+                                                              
+                                                              name_split <- strsplit(name_entry,
+                                                                                     split = "\\_")[[1]]
+                                                              
+                                                              gca_idx <- which(grepl("GCA",name_split))
+                                                              
+                                                              accession_entry <- paste0("GCA_",name_split[gca_idx+1])
+                                                              
+                                                              return(accession_entry)
+                                                            })
+                                       
                                        return(data.frame(
                                          subject = study_genome,
-                                         query = list_df$V1[grepl("GCA_", list_df$V1)][1:10]
+                                         query = query_name
                                        ))
                                      }))
 

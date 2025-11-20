@@ -16,8 +16,22 @@ os.makedirs(script_path, exist_ok=True)
 for file in whatsgnu_output_file:
     study_genome = os.path.basename(file).replace("_WhatsGNU_topgenomes.txt", "")
     global_genomes = pd.read_csv(file, sep='\t', header=None, skiprows=1).iloc[:, 0]
-    # Only keep the top 10 global genomes with GCA
+     # Only keep the top 10 global genomes with GCA
     global_genomes = [genome for genome in global_genomes if 'GCA_' in genome][:10]
+
+    # Because for some whatsgnu database, the genome name may contain different naming styles
+    # First split by "_", then find the position of "GCA".
+    # Only take the "GCA" and the next part (9-digit accession)
+    # Normalize genome names: extract the GCA accession and its following part if present
+    extracted = set()
+    for genome_entry in global_genomes:
+        genome_name_parts = genome_entry.split("_")
+        # find first part starting with GCA
+        gca_index = [i for i, part in enumerate(genome_name_parts) if part.startswith("GCA")]
+        gca_index_value = gca_index[0]
+        extracted.add("_".join(genome_name_parts[gca_index_value:gca_index_value+2]))
+        
+    global_genomes = list(extracted)
     # Only keep the genome 
     with open(os.path.join(script_path, f'dnadiff_{study_genome}.sh'), 'w') as f:
         f.write(f"mkdir -p {output_path}/{study_genome}\n")
