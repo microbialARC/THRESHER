@@ -16,8 +16,13 @@ thresher genome_profiler --input_genome /path/to/genome.fasta --species <species
 ```
 
 ## Evolution Simulator
-*Coming soon.*
+The evolution simulator uses genome profiler outputs to simulate bacterial evolution:
+
+1. Run genome profiler on your reference genome
+2. Configure simulation parameters (mutation rates, recombination, gene gain/loss)
+3. Run the evolution simulator with the output from genome profiler
+
 
 ---
 
-For detailed usage, configuration options, and advanced features, see the [Strain Identifier](usage_strain_identifier.md), [Genome Profiler](usage_genome_profiler.md), and [Evolution Simulator (*Coming Soon.*)](usage_evolution_simulator.md) documentation pages.
+For detailed usage, configuration options, and advanced features, see the [Strain Identifier](usage_strain_identifier.md), [Genome Profiler](usage_genome_profiler.md), and [Evolution Simulator](usage_evolution_simulator.md) documentation pages.
