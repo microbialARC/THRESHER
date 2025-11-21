@@ -141,6 +141,8 @@ def evo_simulator_config(args):
         'gain_rate': args.gain_rate,
         'loss_rate': args.loss_rate,
         'bin': args.bin,
+        'position_coverage': args.position_coverage,
+        'mge_data': args.mge_data,
         'mge_fasta': args.mge_fasta,
         'mge_entropy': args.mge_entropy,
         'use_recombination': args.use_recombination,
@@ -149,7 +151,6 @@ def evo_simulator_config(args):
         'mean_recombination_size': args.mean_recombination_size,
         'nu': args.nu,
         'output': args.output,
-        'threads': args.threads,
         'seed': args.seed    
    }
     

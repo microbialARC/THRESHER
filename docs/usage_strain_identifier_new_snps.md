@@ -32,36 +32,36 @@ options:
                         Directory for conda environments needed for this analysis. If not provided, defaults to <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>
 ```
 ## Required Input
-1. **Original Metadata File:** 
+1. **Original Metadata File(--original_metadata):** 
 
     A tab-delimited file containing information about the original genomes used in the previous THRESHER analysis.
     - Example metadata file for full mode: 
       
       [Example Input Metadata File](example/example_metadata.txt)
-2. **New Metadata File:** 
+2. **New Metadata File(--new_metadata):** 
 
     A tab-delimited file containing information about the new genomes to be added to the analysis.
     - Example metadata file for full mode: 
       
       [Example Input Metadata File](example/example_metadata.txt)
-3. **Existing THRESHER Output Directory:** 
+3. **Existing THRESHER Output Directory(--thresher_output):** 
 
     The path to the existing THRESHER Strain Identifier full-pipeline or new-full output directory containing the previous analysis results.
-4. **Species:** 
+4. **Species(--species):** 
 
     The bacterial species being analyzed (e.g., sau, sepi, cdiff, kp).
 
 ## Optional Input
-1. **Output Directory:** 
+1. **Output Directory(--output):** 
 
     Path to the output directory for the new-snps analysis. If not provided, defaults to `thresher_strain_identifier_new_snps_<YYYY_MM_DD_HHMMSS>` under the current working directory.
-2. **Thread Number:**
+2. **Thread Number(--threads / -t):**
 
     Number of threads to use for the analysis. Default is the maximum available.
-3. **Prefix:**
+3. **Prefix(--prefix):**
 
     Prefix for config file. If not provided, defaults to timestamp: `YYYY_MM_DD_HHMMSS`.
-4. **Conda Environment Directory:**
+4. **Conda Environment Directory(--conda_prefix):**
     Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.  You can reuse the conda environments from previous THRESHER runs to save time and disk space.
 
 ## Output

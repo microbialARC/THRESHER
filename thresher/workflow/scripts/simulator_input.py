@@ -8,7 +8,6 @@
 import os
 import sys
 
-
 # Codes from extract_names.py
 intermediate_dir = snakemake.params.intermediate_dir
 simu_tree = snakemake.input.simu_tree
@@ -51,32 +50,26 @@ print(bag)
 memo=l
 
 
-h=open(path + "names.txt","w")
-nb=0
-for stuff in bag:
-	if 1==1:
-		if 2==2:
-			taxa = stuff
-			#print(taxa)
-			nb+=1
-			if nb < 10:
-				new = "BOZO000" + str(nb) + ":"
-			elif nb < 100:
-				new = "BOZO00" + str(nb)  + ":"
-			elif nb < 1000:
-				new = "BOZO0" + str(nb)  + ":"
-			elif nb < 10000:
-				new = "BOZO" + str(nb)  + ":"
-			h.write(new.strip(":") + "\t" + taxa + "\n")
-			taxa = taxa + ":"
-			new = link[taxa.strip(":")][0] + new 
-			thingy = link[taxa.strip(":")] + ":"
-			memo = memo.replace(thingy,new)
-
-h.close()
+with open(os.path.join(path, "names.txt"), "w", encoding="utf-8") as h:
+	nb=0
+	for stuff in bag:
+		taxa = stuff
+		nb+=1
+		if nb < 10:
+			new = "BOZO000" + str(nb) + ":"
+		elif nb < 100:
+			new = "BOZO00" + str(nb)  + ":"
+		elif nb < 1000:
+			new = "BOZO0" + str(nb)  + ":"
+		elif nb < 10000:
+			new = "BOZO" + str(nb)  + ":"
+		h.write(new.strip(":") + "\t" + taxa + "\n")
+		taxa = taxa + ":"
+		new = link[taxa.strip(":")][0] + new 
+		thingy = link[taxa.strip(":")] + ":"
+		memo = memo.replace(thingy,new)
 
 print("Found",nb,"taxa in the tree")
-
 
 new=""
 tmp=""
@@ -97,9 +90,9 @@ for L in memo:
 new += tmp 
 new+=";"
 
-h=open(path + "renamed.tree","w")
-h.write(new)
-h.close()
+out_file = os.path.join(path, "renamed.tree")
+with open(out_file, "w", encoding="utf-8") as f:
+	f.write(new)
 
 
 # Codes from branch_length.py
@@ -112,16 +105,14 @@ forest=[TREE]
 
 for file in forest:
 	unique=[]
-	#print(file)
 	new_file = file.split("/")[-1]
 	new_file = new_file.split(".tree")[0] + ".txt"
-	h=open(path + new_file,"w")
-	f=open(path + file ,"r")
-	l=f.readline()
-	l = l.strip("\n")
-	l = l.strip(";")
-	#print l
-	f.close()
+	h = open(os.path.join(path, new_file), "w", encoding="utf-8")
+	# Use 'with' for reading
+	with open(file, "r", encoding="utf-8") as f:
+		l = f.readline()
+		l = l.strip("\n")
+		l = l.strip(";")
 
 	numbers=["0","1","2","3","4","5","6","7","8","9"]
 	resu=""
@@ -157,13 +148,10 @@ for file in forest:
 		groupe=[]
 		memo=[]
 		resu=str(arbre[I])
-		#print arbre[I]
 		resu2 = resu
-		#node=0
 		i=0
 		mark=0
 		while i < len(resu):
-			#print(resu)
 			k = resu[i]
 			if k == "B" or k == "n":
 				name=k
@@ -292,20 +280,14 @@ for file in forest:
 	
 	h.close()
 
-
-	#print "ROOTS= ",ROOTS
-
-
 	out_name = file.split(".tree")[0]
-	h=open(path + "dichotomies.txt","w")
-	for st in dico:
-		#print st," ",dico[st]
-		resu1,resu2,resu3=st,dico[st][0],dico[st][1]
-		resu1,resu2,resu3=resu1.split("_")[0],resu2.split("_")[0],resu3.split("_")[0]
-		h.write(resu1 + "\t" + resu2 + "\t" + resu3 + "\n")
-	h.close()
+	with open(os.path.join(path, "dichotomies.txt"), "w", encoding="utf-8") as h:
+		for st in dico:
+			#print st," ",dico[st]
+			resu1,resu2,resu3=st,dico[st][0],dico[st][1]
+			resu1,resu2,resu3=resu1.split("_")[0],resu2.split("_")[0],resu3.split("_")[0]
+			h.write(resu1 + "\t" + resu2 + "\t" + resu3 + "\n")
 	
-	h=open(path + "/roots.txt","w")
-	for root in ROOTS:
-		h.write(root.split("_")[0] + "\n")
-	h.close()
+	with open(os.path.join(path, "roots.txt"), "w", encoding="utf-8") as h:
+		for root in ROOTS:
+			h.write(root.split("_")[0] + "\n")

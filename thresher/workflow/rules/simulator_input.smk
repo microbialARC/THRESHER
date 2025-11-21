@@ -5,7 +5,7 @@ rule simulator_input:
         simu_tree = os.path.join(config["output"], "treesim", "simu_tree.nwk")
     output:
         names = os.path.join(config["output"], "evo_simulator", "intermediate", "names.txt"),
-        renamed_tree = os.path.join(config["output"], "evo_simulator", "intermediate", "renamed.tree"),
+        renamed_txt = os.path.join(config["output"], "evo_simulator", "intermediate", "renamed.txt"),
         dichotomies = os.path.join(config["output"], "evo_simulator", "intermediate", "dichotomies.txt"),
         roots = os.path.join(config["output"], "evo_simulator", "intermediate", "roots.txt")
     params:

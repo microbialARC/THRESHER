@@ -41,11 +41,11 @@ options:
 ```
 
 ## Required Input
-1. **Input Genome:**
+1. **Input Genome(--input_genome):**
     
     Path to the genome assembly in FASTA format for profiling.
 
-2. **Species:**
+2. **Species(--species):**
 
     Indicate the species being analyzed. Currently supported species include:
       - `sau` (*Staphylococcus aureus*)
@@ -54,29 +54,29 @@ options:
       - `kp` (*Klebsiella pneumoniae*)
 
 ## Optional Input
-1. **Output Directory:**
+1. **Output Directory(--output):**
     - Path to the output directory. If not provided, defaults to `thresher_genome_profiler_output_<YYYY_MM_DD_HHMMSS>` under the current working directory.
-2. **Top Genomes:**
+2. **Top Genomes(--top_genomes):**
     - Number of initial top genomes for profiling before applying the ANI exclusion threshold (default: 1000).
-3. **ANI Exclusion Threshold:**
+3. **ANI Exclusion Threshold(--ani_threshold):**
     - Average Nucleotide Identity (ANI) exclusion threshold (default: 99.5).
     - Genomes with ANI below this value will be removed from the profiling analysis.
-4. **Bakta Database Type and Path:**
+4. **Bakta Database Type(--bakta_db_type) and Path(--bakta_db_path):**
     - Specify the type of Bakta database (`full` or `light`, default is `full`).
     - Path to an existing Bakta database. If not provided, the database will be downloaded to `<OUTPUT>/bakta/db`.
-5. **WhatsGNU Database Path:**
+5. **WhatsGNU Database Path(--whatsgnu_db_path):**
 
     Path to an existing WhatsGNU database. If not provided, the database will be downloaded to `<OUTPUT>/whatsgnu/db`.
-6. **Threads:**
+6. **Threads(--threads / -t):**
 
     Number of threads to use (default is the maximum available).
-7. **Prefix:**
+7. **Prefix(--prefix):**
 
     Prefix for config file, output files, and analysis naming. If not provided, defaults to a timestamp in the format `YYYY_MM_DD_HHMMSS`.
-8. **Conda Prefix:**
+8. **Conda Prefix(--conda_prefix):**
 
     Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.
-9. **Force Execution:**
+9. **Force Execution(--force):**
 
     Bypass system compatibility checks (operating system and available RAM) and force execution of the pipeline. This may cause instability or failures.  
 

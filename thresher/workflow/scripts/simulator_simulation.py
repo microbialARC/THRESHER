@@ -77,10 +77,19 @@ class SequenceMutator:
 		print(f"Simulating weighted mutation for {node}.")
 		# Convert to list for in-place mutation
 		out = list(seq)
+		seq_length = len(out)
 		# Weighted random selection using normalized_entropy_value
 		if self.use_weight_mutate and self.weight_mutate_data is not None:
-			# Select a random alignment position using normalized entropy values as weights
-			pos = numpy.random.choice(self.weight_mutation_df['alignment_position'], p=self.weight_mutation_df['normalized_entropy'])
+			# Filter positions that are within sequence bounds
+			valid_positions = self.weight_mutation_df[self.weight_mutation_df['alignment_position'] < seq_length].copy()
+			if len(valid_positions) == 0:
+				print(f"WARNING: No valid alignment positions for sequence length {seq_length}. Falling back to uniform mutation.")
+				return self.uniform_mutate(seq, node)
+			
+			# Renormalize weights for valid positions only
+			valid_positions['normalized_entropy'] = valid_positions['normalized_entropy'] / valid_positions['normalized_entropy'].sum()
+			# Select a random alignment position from the valid positions using normalized entropy values as weights
+			pos = numpy.random.choice(valid_positions['alignment_position'], p=valid_positions['normalized_entropy'])
 			original_base = out[pos]
 			# If the original base is '-', meaning that this location is lost in the genome
 			# Keep selecting new positions until the original base is not '-'
@@ -186,6 +195,9 @@ class SequenceMGEser:
 		if self.mge_fasta and self.mge_entropy is not None:
 			try:
 				self.mge_fasta_dict = SeqIO.to_dict(SeqIO.parse(self.mge_fasta, "fasta"))
+				# Filter the sequences to exclude any sequences with bases other than A, T, C, G
+				# Since is no rate for bases in the substitution models for other bases
+				self.mge_fasta_dict = {dict_key: dict_seq for dict_key, dict_seq in self.mge_fasta_dict.items() if all(base in {"A", "T", "C", "G"} for base in str(dict_seq.seq).upper())}
 				self.mge_fasta_dict_idx = list(self.mge_fasta_dict.keys())
 				# search for all entropy files in self.mge_entropy and get a dict with keys as mge ids and values as entropy values
 				self.mge_entropy_dict = {
@@ -447,8 +459,15 @@ mge_entropy = str(snakemake.params.mge_entropy)       				# The directory contai
 # Reproducibility
 rseed = int(snakemake.params.seed)             						# Seed
 
-################# Perform Analysis #################
 
+################# 	Reference 	##################
+print()
+print("This tool is adapted from CoreSimul")
+print("https://github.com/lbobay/CoreSimul")
+print("DOI: 10.1186/s12859-020-03619-x")
+print("Please cite the original publication when using this tool.")
+print()
+################# Perform Analysis #################
 # Set the seed
 random.seed(rseed)
 
@@ -463,7 +482,6 @@ other1["A"],other2["A"]="C","T"
 other1["T"],other2["T"]="G","A"
 other1["C"],other2["C"]="G","A"
 other1["G"],other2["G"]="C","T"
-
 
 # Creates the substitution model with Kappa or sub_param
 probability={}
@@ -594,7 +612,9 @@ with open(path_to_seq, "r") as seq_file:
 				output_file.write(concatenated_contig[i:i+80] + "\n")
 			print("Cleaned sequence exported to output directory as cleaned_sequence.fasta")
 	else:
-		print("The provided genome is a single-contig genome.\nNo cleaned_sequence.fasta will be generated.")
+		# Comment out the print statement because when this script is integrated into Evolution Simulator
+		# it is expected that the starting genome is a single-contig genome
+		# print("The provided genome is a single-contig genome.\nNo cleaned_sequence.fasta will be generated.")
 		lines = file_content.strip().split('\n')
 		for line in lines:
 			line = line.strip()
@@ -629,7 +649,7 @@ mgeser = SequenceMGEser(
 
 branch_type = {}
 branch_length = {}
-with open(intermediate_path +"renamed.txt","r") as f:
+with open(os.path.join(intermediate_path ,"renamed.txt"),"r") as f:
 	for l in f:
 		a=l.strip("\n").split("\t")
 		node = a[0]
@@ -640,7 +660,7 @@ with open(intermediate_path +"renamed.txt","r") as f:
 
 parent={}
 dichotomies={}
-with open(intermediate_path + "dichotomies.txt","r") as f:
+with open(os.path.join(intermediate_path ,"dichotomies.txt"),"r") as f:
 	for l in f:
 		a=l.strip("\n").split("\t")
 		dichotomies[a[0]] = [a[1],a[2]]
@@ -648,7 +668,7 @@ with open(intermediate_path + "dichotomies.txt","r") as f:
 		parent[a[2]] = a[0]
 
 roots=[]
-with open(intermediate_path + "roots.txt","r") as f:
+with open(os.path.join(intermediate_path ,"roots.txt"),"r") as f:
 	for l in f:
 		roots.append(l.strip("\n"))
 
@@ -1031,16 +1051,16 @@ loss_log.to_csv(os.path.join(output_path, "loss.csv"), index=False)
 
 # Export other logs
 # Export recombination size distribution
-with open(output_path + "nu.txt", "w") as h:
+with open(os.path.join(intermediate_path, "nu.txt"), "w") as h:
     h.write(f"{sum(nu_sum) / len(nu_sum)}\n")
 
 # Read names mapping file
-with open(intermediate_path + "names.txt", "r") as f:
+with open(os.path.join(intermediate_path, "names.txt"), "r") as f:
     rename = dict(line.strip().split("\t") for line in f)
 
 # Export the simulated genomes
 # both tips and nodes
-with open(output_path + "simulated_genomes.fasta", "w") as h:
+with open(os.path.join(output_path, "simulated_genomes.fasta"), "w") as h:
 	for node in sequence:
 		if node != "root":
 			if branch_type[node] == "tip":
@@ -1063,11 +1083,11 @@ else:
 	mutator.position_df.to_csv(os.path.join(intermediate_path, "position_info.csv"), index=False)
 
 # Export rm.txt
-with open(intermediate_path + "rm.txt", "w") as h:
+with open(os.path.join(intermediate_path, "rm.txt"), "w") as h:
    h.write(f"r/m= {rm_value}\n")
 
 # Export stats.txt
-with open(output_path + "stats.txt", "w") as h:
+with open(os.path.join(output_path, "stats.txt"), "w") as h:
    h.write(f"rm= {rm_value}\nNu= {nu_value}\nTotal Mutations= {total_mutation}\nTotal Recombination Events= {total_recomb}\nTotal Gain Events= {total_gain}\nTotal Loss Events= {total_loss}\n")
 
 print(f"rm: {rm_value}\nNu: {nu_value}\nTotal Mutations: {total_mutation}\nTotal Recombination Events: {total_recomb}\nTotal Gain Events: {total_gain}\nTotal Loss Events: {total_loss}\n")
@@ -1076,11 +1096,11 @@ print(f"rm: {rm_value}\nNu: {nu_value}\nTotal Mutations: {total_mutation}\nTotal
 print("\n" + "="*50)
 print("Calculating SNP distance matrix using snp-dists")
 print("="*50)
-snp_fasta = f"{output_path}simulated_genomes.fasta"
-snp_matrix = f"{output_path}snp_matrix.txt"
+snp_fasta = os.path.join(output_path, "simulated_genomes.fasta")
+snp_matrix = os.path.join(output_path, "snp_matrix.txt")
 snp_dists_cmd = ["snp-dists", "-b", snp_fasta]
-with open(snp_matrix, "wb") as out_log:
-	proc = subprocess.run(snp_dists_cmd, stdout=out_log, stderr=subprocess.PIPE)
+with open(snp_matrix, "w") as snp_dists_output:
+	proc = subprocess.run(snp_dists_cmd, stdout=snp_dists_output, stderr=subprocess.PIPE, text=True)
 if proc.returncode != 0:
 	print(f"Error running snp-dists (exit {proc.returncode}): {proc.stderr.decode().strip()}")
 else:

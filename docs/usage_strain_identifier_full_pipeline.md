@@ -78,7 +78,7 @@ options:
 **Note:** At least 4 genomes are required to perform the analysis. 
 1. **Genome Assemblies:**
    - Genome assemblies for all samples to be analyzed.
-2. **Input Metadata**
+2. **Input Metadata(--metadata):**
    - Path to a tab-delimited text file containing at least three columns (for lite mode) with no header. For full mode, additional columns are required.
    - Columns:
      - **Column 1:** Genome name (required for both lite and full modes).
@@ -90,7 +90,7 @@ options:
       
       [Example Input Metadata File](example/example_metadata.txt)
 
-3. **Species**
+3. **Species(--species):**
 
    - Indicate the species being analyzed. Currently supported species include:
     - `sau` (*Staphylococcus aureus*)
@@ -99,39 +99,39 @@ options:
     - `kp` (*Klebsiella pneumoniae*)
 
 ## Optional Input
-1. **Output Directory:**
+1. **Output Directory(--output):**
    - Path to the output directory. If not provided, defaults to `thresher_strain_identifier_output_<YYYY_MM_DD_HHMMSS>` under the current working directory.
-2. **Analysis Mode:**
+2. **Analysis Mode(--analysis_mode):**
    - Choose between `full` (default) and `lite` modes.
    - `full`: Determines strains, clusters, and generates plots.
    - `lite`: Determines strains without determining clusters or generating plots.
-3. **WhatsGNU Database Path:**
+3. **WhatsGNU Database Path(--whatsgnu_db_path):**
     - Path to an existing WhatsGNU database. If not provided, the database will be downloaded
       to `<OUTPUT>/whatsgnu/db`.
 
-4. **Bakta Database Type and Path:**
+4. **Bakta Database Type(--bakta_db_type) and Path(--bakta_db_path):**
     - Specify the type of Bakta database (`full` or `light`, default is `full`).
     - Path to an existing Bakta database. If not provided, the database will be downloaded to `<OUTPUT>/bakta/db`.
 
-5. **Bootstrap Methods and Numbers:**
+5. **Bootstrap Methods and Numbers(--core/group_bootstrap_method, --core/group_bootstrap_number):**
     - Specify bootstrap methods (`ultrafast` or `nonparametric`) and the number of replicates for both core genome phylogeny and group phylogeny.
     - Default methods are `ultrafast`, with default replicate numbers of 1000 for ultrafast and 100 for nonparametric.
 
-6. **Endpoint Method:**
+6. **Endpoint Method(--endpoint):**
     - Choose the endpoint method for determining clusters and generating plots. Options include `plateau` (default), `peak`, `discrepancy`, and `global`.
     - `plateau`: Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group.
     - `peak`: Phylothreshold set at the peak number of clones defined within the group.
     - `discrepancy`: Phylothreshold set at the point where the discrepancy is minimized within the group.
     - `global`: Phylothreshold set at the first time a global genome is included in any strain within the group.
-7. **Plateau Length:**
+7. **Plateau Length(--plateau_length):**
     - Specify the plateau length for the plateau endpoint method (default is 15). Only used when the endpoint method is `plateau`.
-8. **Threads:**
+8. **Threads(--threads / -t):**
     - Number of threads to use (default is the maximum available).
-9. **Prefix:**
+9. **Prefix(--prefix):**
     - Prefix for config file, output files, and analysis naming. If not provided, defaults to a timestamp in the format `YYYY_MM_DD_HHMMSS`.
-10. **Conda Prefix:**
+10. **Conda Prefix(--conda_prefix):**
     - Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.
-11. **Force Execution:**
+11. **Force Execution(--force):**
     - Bypass system compatibility checks (operating system and available RAM) and force execution of the pipeline. This may cause instability or failures.
     
 ## Output

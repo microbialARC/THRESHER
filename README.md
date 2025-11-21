@@ -6,7 +6,7 @@ Identifies strains/transmission clusters using phylothresholds (phylogenetically
 - Genome Profiler:
 Infers substitution probabilities and mobile genetic element (MGE) dynamics leveraging publicly available genomes.
 
-- Evolution Simulator (*Coming soon*):
+- Evolution Simulator:
 Models bacterial evolution through substitution, gene gain/loss, and recombination events.
 
 ## **Workflow**  
@@ -26,7 +26,8 @@ Models bacterial evolution through substitution, gene gain/loss, and recombinati
 ### Genome Profiler
 ![Genome Profiler Workflow](data/workflow/Thresher_genome_profiler_workflow.png)
 
-### Evolution Simulator (*Coming soon.*)
+### Evolution Simulator
+![Evolution Simulator Workflow](data/workflow/Thresher_evolution_simulator_workflow.png)
 
 ## Documentation
 ### Getting Started
@@ -40,7 +41,7 @@ Models bacterial evolution through substitution, gene gain/loss, and recombinati
   - [New SNPs Mode](docs/usage_strain_identifier_new_snps.md)
   - [New Full Mode](docs/usage_strain_identifier_new_full.md)
 - [Genome Profiler](docs/usage_genome_profiler.md)
-- [Evolution Simulator](docs/usage_evolution_simulator.md) (*Coming soon.*)
+- [Evolution Simulator](docs/usage_evolution_simulator.md)
 ### Advanced Usage
 - [Conda Environment Management](docs/conda_environment_management.md)
 - [Resuming Interrupted Runs](docs/resuming_interrupted_runs.md)
@@ -49,8 +50,20 @@ Models bacterial evolution through substitution, gene gain/loss, and recombinati
 ## **Development Status**
 Please be advised that this pipeline is still in its early development stage. It is subject to significant changes in terms of options, outputs, and other functionalities. Users should be prepared for potential modifications and updates in future releases.
 
-## **Author**
-Qianxuan (Sean) She
+## Authors
 
+**Qianxuan (Sean) She**
 
+## Acknowledgments
+Developed under the mentorship of:
+
+**Dr. Paul J. Planet**  
+Email: planetp@chop.edu
+
+**Dr. Ahmed M. Moustafa**  
+Email: moustafaam@chop.edu
+
+**Dr. Joseph P. Zackular**  
+Email: joseph.zackular@pennmedicine.upenn.edu
+##
 [![PennMedicine](data/logo/PennMedicine.png)](https://www.pennmedicine.org/) [![CHOP_Research](data/logo/CHOP_Research.png)](https://www.research.chop.edu/) [![PennCHOP](data/logo/PennCHOP.png)](https://www.research.chop.edu/pennchop-microbiome-program)

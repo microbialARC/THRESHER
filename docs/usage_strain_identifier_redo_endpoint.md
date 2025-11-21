@@ -25,14 +25,14 @@ options:
                         Directory for conda environments needed for this analysis. If not provided, defaults to OUTPUT/conda_envs
 ```
 ## Required Input
-1. **Original Metadata File:**
+1. **Original Metadata File(--original_metadata):**
 
    Path to the original input file used for the THRESHER full-pipeline.
-2. **Existing THRESHER Output Directory:**
+2. **Existing THRESHER Output Directory(--thresher_output):**
    
    Path to the existing THRESHER directory containing previous analysis results.
 
-3. **Endpoint Method:**
+3. **Endpoint Method(--endpoint):**
    
    The endpoint method to use for determining clusters and making plots. Available options are:
    - plateau
@@ -41,15 +41,16 @@ options:
    - global
 
 ## Optional Input
-1. **Output Directory:**
+1. **Output Directory(--output):**
    
    Path to the output directory. If not provided, defaults to `thresher_strain_identifier_redo_endpoint_<YYYY_MM_DD_HHMMSS>` under the current working directory.
 
-2. **Prefix:**
+2. **Prefix(--prefix):**
 
     Prefix for config files. If not provided, defaults to timestamp: `YYYY_MM_DD_HHMMSS`.
 
-3. **Conda Environment Directory:**
+3. **Conda Environment Directory(--conda_prefix):**
+
     Directory for conda environments needed for this analysis. If not provided, defaults to `OUTPUT/conda_envs`. You can reuse the conda environments from previous THRESHER runs to save time and disk space.
 
 ## Output

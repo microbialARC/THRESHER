@@ -6,6 +6,7 @@ rule blastx_mrsa:
     threads:
         config["threads"]
     params:
+        genome_names = list(genome_path_dict.keys()),
         output_dir = os.path.join(config["output"],"blastx","mrsa","output","raw"),
         script_dir = os.path.join(config["output"],"blastx","mrsa","scripts"),
         db = os.path.join(BASE_PATH,"db/MRSA/sequences.fasta")
@@ -18,12 +19,17 @@ rule blastx_mrsa:
         mkdir -p {params.script_dir}
         # Create the database
         makeblastdb -in {params.db} -parse_seqids -blastdb_version 5 -title "MRSA_db" -dbtype prot
+        
         # Iterate over the genomes and make blastx commands
         genome_paths=({input.genome_paths})
+        genome_names=({params.genome_names})
 
-        for genome_path in ${{genome_paths[@]}}; do
-            genome_name=$(basename "$genome_path" | sed 's#\\.[^.]*$##')
-            echo "blastx -outfmt 6 -query ${{genome_path}} -db {params.db} -out {params.output_dir}/${{genome_name}}_blastx_mrsa.tsv" > {params.script_dir}/${{genome_name}}_blastx_mrsa.sh
+        for ((i=0; i<${{#genome_names[@]}}; i++)); do
+            echo "blastx \
+            -outfmt 6 \
+            -query ${{genome_paths[$i]}} \
+            -db {params.db} \
+            -out {params.output_dir}/${{genome_names[$i]}}_blastx_mrsa.tsv" > {params.script_dir}/${{genome_names[$i]}}_blastx_mrsa.sh
         done
 
         # Parallel

@@ -86,11 +86,11 @@ rule all:
         os.path.join(config["output"], "thresher", "output", "QC", "global_qc_table.csv"),
         os.path.join(config["output"], "thresher", "output", "QC", "discrepancy_qc_table.csv"),
         # Full Mode
-        [os.path.join(config["output"], "plots", "ClusterPlots","ClusterPlots.RDS")] if config["mode"] == "full-pipeline" else [],
-        [os.path.join(config["output"], "plots", "PersistencePlot.pdf")] if config["mode"] == "full-pipeline" else [],
-        [os.path.join(config["output"], "plots", "PersistencePlot.RDS")] if config["mode"] == "full-pipeline" else [],
-        [os.path.join(config["output"], "thresher", "output", "clusters_summary.RDS")] if config["mode"] == "full-pipeline" else [],
-        [os.path.join(config["output"], "thresher", "output", "clusters_summary.csv")] if config["mode"] == "full-pipeline" else []
+        [os.path.join(config["output"], "plots", "ClusterPlots","ClusterPlots.RDS")] if config["mode"] == "full" else [],
+        [os.path.join(config["output"], "plots", "PersistencePlot.pdf")] if config["mode"] == "full" else [],
+        [os.path.join(config["output"], "plots", "PersistencePlot.RDS")] if config["mode"] == "full" else [],
+        [os.path.join(config["output"], "thresher", "output", "clusters_summary.RDS")] if config["mode"] == "full" else [],
+        [os.path.join(config["output"], "thresher", "output", "clusters_summary.csv")] if config["mode"] == "full" else []
         
         
         

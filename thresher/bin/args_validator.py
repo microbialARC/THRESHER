@@ -40,11 +40,20 @@ def validate_strain_identifier_full(args):
     for genome_path in input_df["genome_path"]:
         if not os.path.exists(genome_path):
             raise ValidationError(f"Genome file not found: {genome_path}")
-        
+
     # Print info about number of genomes and patient IDs if applicable
     print(f"Input file read successfully. Number of genomes: {input_df.shape[0]}")
-    print(f"Number of unique patient IDs: {input_df['patient_id'].unique().shape[0]}")
-    print("Patient ID provided. The cluster plots will be generated based on patient IDs.")
+    # Check if patient_id column is provided
+    if args.analysis_mode == "lite":
+        print("Lite mode selected. Clusters will not be determined.")
+    elif args.analysis_mode == "full":
+        if input_df["patient_id"].isnull().all():
+            print("No patient ID provided. Switch to Lite mode and no clusters will be determined.")
+            args.analysis_mode = "lite"
+        else:
+            unique_patient_count = input_df['patient_id'].nunique(dropna=True)
+            print(f"Number of unique patient IDs: {unique_patient_count}")
+            print("Patient ID provided. The cluster will be determined based on strain compositions and patient IDs.")
     # Check prefix
     if not args.prefix:
         args.prefix = time.strftime("%Y_%m_%d_%H%M%S")
@@ -237,9 +246,10 @@ def validate_strain_identifier_new_snps(args):
     for genome_path in new_metadata_df["genome_path"]:
         if not os.path.exists(genome_path):
             raise ValidationError(f"Genome file not found: {genome_path}")
-    
     # Print info about number of genomes in the new metadata file
     print(f"New metadata file read successfully. Number of genomes: {new_metadata_df.shape[0]}")
+    unique_new_patient_count = new_metadata_df['patient_id'].nunique(dropna=True)
+    print(f"Number of unique patient IDs in new metadata file: {unique_new_patient_count}")
     print(f"Number of unique patient IDs in new metadata file: {new_metadata_df['patient_id'].unique().shape[0]}")
 
     # Check original metadata file (Origninal input file used in full-pipeline mode)
@@ -776,41 +786,43 @@ def validate_evo_simulator(args):
         if not args.recombination_rate or not isinstance(args.recombination_rate, (int, float)) or args.recombination_rate <= 0:
             raise ValidationError("Recombination rate must be a positive float value. If no recombination simulation is desired, set --use_recombination to False")
         # Check mean recombination size
-        if not args.mean_recombination_size or not isinstance(args.mean_recombination_size, int) or args.mean_recombination_size <= 0:
-            raise ValidationError("Mean recombination size must be a positive integer")
+        if not args.mean_recombination_size or not isinstance(args.mean_recombination_size, float) or args.mean_recombination_size <= 0:
+            raise ValidationError("Mean recombination size must be a positive float value")
         # Check minimal recombination size
-        if not args.minimal_recombination_size or not isinstance(args.minimal_recombination_size, int) or args.minimal_recombination_size <= 0:
-            raise ValidationError("Minimal recombination size must be a positive integer")
-        elif args.minimal_recombination_size >= args.mean_recombination_size:
+        if not args.min_recombination_size or not isinstance(args.min_recombination_size, float) or args.min_recombination_size <= 0:
+            raise ValidationError("Minimal recombination size must be a positive float value")
+        elif args.min_recombination_size >= args.mean_recombination_size:
             raise ValidationError("Minimal recombination size must be smaller than mean recombination size")
         # Check nu
         if not args.nu or not isinstance(args.nu, (int, float)) or args.nu <= 0 or args.nu >=1:
             raise ValidationError("Nu must be a positive float value between 0 and 1")
         else: 
-            print(f"Recombination parameters set to: recombination_rate={args.recombination_rate}, mean_recombination_size={args.mean_recombination_size}, minimal_recombination_size={args.minimal_recombination_size}, nu={args.nu}")
+            print(f"Recombination parameters set to: recombination_rate={args.recombination_rate}, mean_recombination_size={args.mean_recombination_size}, minimal_recombination_size={args.min_recombination_size}, nu={args.nu}")
     elif args.use_recombination == False:
         print("Recombination simulation disabled.")
         args.recombination_rate = "None"
         args.mean_recombination_size = "None"
-        args.minimal_recombination_size = "None"
+        args.min_recombination_size = "None"
         args.nu = "None"
     
     # Check if gene gain/loss simulation is on
-    if not args.use_gene_gain_loss:
+    if not args.use_gain_loss:
         print("Whether using gene gain/loss not provided, using default True")
-        args.use_gene_gain_loss = True
-    elif args.use_gene_gain_loss not in {True, False}:
-        print("use_gene_gain_loss must be either True or False. Using default True")
-        args.use_gene_gain_loss = True
-    elif args.use_gene_gain_loss == False:
+        args.use_gain_loss = True
+    elif args.use_gain_loss not in {True, False}:
+        print("use_gain_loss must be either True or False. Using default True")
+        args.use_gain_loss = True
+    elif args.use_gain_loss == False:
         print("Gene gain/loss simulation disabled.")
         args.gain_rate = "None"
         args.loss_rate = "None"
         args.bin = "None"
+        args.mge_data = "None"
+        args.position_coverage = "None"
         args.mge_fasta = "None"
         args.mge_entropy = "None"
 
-    if args.use_gene_gain_loss:
+    if args.use_gain_loss:
         print("Gene gain/loss simulation enabled, validating gene gain/loss input...")
         # Check gain rate
         if not args.gain_rate or not isinstance(args.gain_rate, (int, float)) or args.gain_rate < 0:
@@ -821,29 +833,26 @@ def validate_evo_simulator(args):
         # Check chromosome bin file
         if not os.path.exists(args.bin):
             raise ValidationError(f"Chromosome bin file not found: {args.bin}")
+        # Check MGE data file
+        if not os.path.exists(args.mge_data):
+            raise ValidationError(f"MGE data file not found: {args.mge_data}")
         # Check MGE fasta file
         if not os.path.exists(args.mge_fasta):
             raise ValidationError(f"MGE fasta file not found: {args.mge_fasta}")
         # Check MGE entropy file
         if not os.path.exists(args.mge_entropy):
             raise ValidationError(f"The directory of MGE entropy file not found: {args.mge_entropy}")
+        # Check position coverage file
+        if not os.path.exists(args.position_coverage):
+            raise ValidationError(f"Position coverage file not found: {args.position_coverage}")
         else:
-            print(f"Gene gain/loss parameters set to: gain_rate={args.gain_rate}, loss_rate={args.loss_rate}, bin={args.bin}, mge_fasta={args.mge_fasta}, mge_entropy={args.mge_entropy}")
-    elif args.use_gene_gain_loss == False:
+            print(f"Gene gain/loss parameters set to: gain_rate={args.gain_rate}, loss_rate={args.loss_rate}, bin={args.bin}, mge_data={args.mge_data}, mge_fasta={args.mge_fasta}, mge_entropy={args.mge_entropy}, position_coverage={args.position_coverage}")
+        
+    elif args.use_gain_loss == False:
         print("Gene gain/loss simulation disabled.")
         args.gain_rate = "None"
         args.loss_rate = "None"
         args.bin = "None"
         args.mge_fasta = "None"
         args.mge_entropy = "None"
-    
-    # Check threads, if not provided, use all available threads
-    if not args.threads:
-        print("Thread number not provided or invalid, using all available threads")
-        args.threads = os.cpu_count()
-    elif args.threads < 1:
-        print("Thread number must be a positive integer, using all available threads")
-        args.threads = os.cpu_count()
-    elif args.threads > os.cpu_count():
-        print(f"Thread number exceeds available threads ({os.cpu_count()}), using all available threads")
-        args.threads = os.cpu_count()
+        args.position_coverage = "None"

@@ -16,7 +16,6 @@ rule all:
         os.path.join(config["output"], "evo_simulator", "intermediate", "dichotomies.txt"),
         os.path.join(config["output"], "evo_simulator", "intermediate", "names.txt"),
         os.path.join(config["output"], "evo_simulator", "intermediate", "nu.txt"),
-        os.path.join(config["output"], "evo_simulator", "intermediate", "renamed.tree"),
         os.path.join(config["output"], "evo_simulator", "intermediate", "renamed.txt"),
         os.path.join(config["output"], "evo_simulator", "intermediate", "rm.txt"),
         os.path.join(config["output"], "evo_simulator", "intermediate", "roots.txt"),
@@ -30,11 +29,12 @@ rule all:
         os.path.join(config["output"], "evo_simulator", "output", "simulated_genomes.fasta"),
         os.path.join(config["output"], "evo_simulator", "output", "snp_matrix.txt"),
         # Visualization files
-        os.path.join(config["output"], "evo_simulator", "output", "snp_matrix_visualization.pdf"),
-        os.path.join(config["output"], "evo_simulator", "output", "snp_matrix_visualization.RDS"),
-        os.path.join(config["output"], "evo_simulator", "output", "simulation_visualization.png")
+        # The visualization is generated only when --use_weighted_mutation and --use_gain_loss are both set to True
+        os.path.join(config["output"], "evo_simulator", "output", "snp_matrix_visualization.pdf") if config["use_weighted_mutation"] and config["use_gain_loss"] else [],
+        os.path.join(config["output"], "evo_simulator", "output", "simulation_visualization.png") if config["use_weighted_mutation"] and config["use_gain_loss"] else [],
 
 include: os.path.join(BASE_PATH, "rules", "treesim.smk")
 include: os.path.join(BASE_PATH, "rules", "simulator_input.smk")
 include: os.path.join(BASE_PATH, "rules", "simulator_simulation.smk")
-include: os.path.join(BASE_PATH, "rules", "simulator_visualization.smk")
+if config["use_weighted_mutation"] and config["use_gain_loss"]:
+    include: os.path.join(BASE_PATH, "rules", "simulator_visualization.smk")

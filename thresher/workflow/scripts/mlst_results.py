@@ -6,9 +6,17 @@ import glob as glob
 species = snakemake.params.species
 mlst_raw = pd.read_csv(snakemake.input.mlst_output, sep=',', header=None)
 metadata = pd.read_csv(snakemake.params.metadata, sep='\t', header=None)
-metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
-
+analysis_mode = snakemake.params.analysis_mode
 #Create output dataframe
+# Actually we just need genome_name and genome_path from metadata
+# But I leave the other columns in for now in case we need them later
+
+if analysis_mode == "lite":
+    metadata = metadata[[0,1,2]]
+    metadata.columns = ["genome_name", "accession", "genome_path"]
+elif analysis_mode == "full":
+    metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+
 mlst_results = pd.DataFrame()
 mlst_results['genome'] = metadata['genome_name']
 

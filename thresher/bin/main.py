@@ -2,7 +2,7 @@
 """THRESHER Main Entry
 This script creates the configuration files and executes the Snakemake workflow.
 """
-VERSION = "0.1.1-beta"
+VERSION = "0.2.0-beta"
 # Import standard libraries and custom modules
 import argparse
 import os
@@ -240,20 +240,10 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    # For now, put a temporary hold for using functions other than strain_identifier and genome_profiler
-    # Will remove the hold for evolution simulator in future releases before Q1 2026
-    if args.command not in ["strain_identifier", "genome_profiler"]:
-        print()
-        print("=" * term_width)
-        print(f"The function '{args.command}' is not yet available in this version of THRESHER.".center(term_width))
-        print("Please check back in future releases for updates. ETA Q1 2026".center(term_width))
-        print("Thresher quitting...".center(term_width))
-        print("=" * term_width)
-        return 1
     # Print the mode and function being executed
-    if args.command in ["strain_identifier", "evo_simulator"]:
+    if args.command == "strain_identifier":
         print(f"Function: {args.command} Mode: {args.mode}".center(term_width))
-    elif args.command == "genome_profiler":
+    elif args.command in ["genome_profiler","evo_simulator"]:
         print(f"Function: {args.command}".center(term_width))
 
     # Check the OS and RAM for strain_identifier function and full-pipeline and new-full modes
@@ -296,7 +286,16 @@ def main():
             print("Bypassing OS and RAM checks".center(term_width))
             print("=" * term_width)
             print(f"\033[93m--force flag set: skipping OS and RAM checks for function: {args.command}.\nProceeding may lead to dependency errors during execution.\033[0m")
-
+    elif args.command == "evo_simulator":
+        # For evo_simulator, only check OS
+        if not args.force:
+            if (check_os_rc := check_os(term_width)):
+                return check_os_rc
+        elif args.force:
+            print()
+            print("=" * term_width)
+            print("Bypassing OS check. Proceeding...".center(term_width))
+            print("=" * term_width)
     # Validate function arguments
     print()
     print("=" * term_width)
@@ -341,6 +340,8 @@ def main():
             validate_evo_simulator(args)
             config_path = evo_simulator_config(args)
             snakefile = "Snakefile_evo_simulator"
+            # evo_simulator only uses 1 thread
+            args.threads = 1  
         else:
             raise ValidationError(f"Unknown function: {args.command}")
             
@@ -370,11 +371,18 @@ def main():
 
         # Print completion message based on return code
         if returncode == 0:
-            print()
-            print("=" * term_width)
-            print(f"THRESHER function: {args.command} mode:{args.mode} completed successfully!".center(term_width))
-            print("=" * term_width)
-            print()
+            if args.command == "strain_identifier":
+                print()
+                print("=" * term_width)
+                print(f"THRESHER function: {args.command} mode:{args.mode} completed successfully!".center(term_width))
+                print("=" * term_width)
+                print()
+            else:
+                print()
+                print("=" * term_width)
+                print(f"THRESHER function: {args.command} completed successfully!".center(term_width))
+                print("=" * term_width)
+                print()
         else:
             print()
             print("=" * term_width)
