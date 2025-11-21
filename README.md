@@ -66,4 +66,4 @@ Email: moustafaam@chop.edu
 **Dr. Joseph P. Zackular**  
 Email: joseph.zackular@pennmedicine.upenn.edu
 ##
-[![PennMedicine](data/logo/PennMedicine.png)](https://www.pennmedicine.org/) [![CHOP_Research](data/logo/CHOP_Research.png)](https://www.research.chop.edu/) [![PennCHOP](data/logo/PennCHOP.png)](https://www.research.chop.edu/pennchop-microbiome-program)
+[![CMM](data/logo/CMM.png)](https://www.research.chop.edu/center-for-microbial-medicine)[![PennMedicine](data/logo/PennMedicine.png)](https://www.pennmedicine.org/)
