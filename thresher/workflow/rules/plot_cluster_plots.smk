@@ -13,7 +13,7 @@ rule plot_cluster_plots:
         clusters_summary_rds = os.path.join(config["output"],"thresher","output","clusters_summary.RDS"),
         clusters_summary_csv = os.path.join(config["output"],"thresher","output","clusters_summary.csv")
     params:
-        metadata = config["input"],
+        metadata = config["metadata"],
         species = config["species"],
         endpoint = config["endpoint"],
         output_dir = os.path.join(config["output"],"plots","ClusterPlots")

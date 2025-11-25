@@ -8,6 +8,6 @@ rule plot_persistence_plot:
         persistence_plot_rds = os.path.join(config["output"], "plots","PersistencePlot.RDS")
     params:
         output_dir = os.path.join(config["output"],"plots"),
-        metadata = config["input"]
+        metadata = config["metadata"]
     script:
         os.path.join(BASE_PATH,"scripts","plot_persistence_plot.R")

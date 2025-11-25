@@ -125,6 +125,6 @@ include: os.path.join(BASE_PATH,"rules","thresher_global.smk")
 include: os.path.join(BASE_PATH,"rules","thresher_MSTP.smk")
 include: os.path.join(BASE_PATH,"rules","thresher_QC.smk")
 # Full Mode
-if config["mode"] == "full-pipeline":
+if config["mode"] == "full":
     include: os.path.join(BASE_PATH,"rules","plot_cluster_plots.smk")
     include: os.path.join(BASE_PATH,"rules","plot_persistence_plot.smk")
