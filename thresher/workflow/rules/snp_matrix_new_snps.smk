@@ -2,7 +2,7 @@ rule study_snp_matrix_new_snps:
     conda:
         os.path.join(BASE_PATH,"envs/R_env.yaml")
     input:
-        expand(os.path.join(config["output"], "mummer4", "{genome_name}_concatenated.report"),genome_name=new_genome_path_dict.keys())
+        study_concatenated_reports = expand(os.path.join(config["output"], "mummer4", "{genome_name}_concatenated.report"),genome_name=new_genome_path_dict.keys())
     output:
         study_snp_matrix_new = os.path.join(config["output"],"mummer4","study_snp_matrix_new.RDS")
     params:

@@ -8,7 +8,9 @@ library(parallel)
 
 # Function to summarize concatenated report and update the global snps matrix
 update_global_snp_matrix <- function(output_list,
+                                     metadata,
                                      original_snp_matrix_path,
+                                     actual_download_topgenomes_path,
                                      whatsgnu_list,
                                      ncores){
   
@@ -37,8 +39,8 @@ update_global_snp_matrix <- function(output_list,
                                      reference_genome_path <- strsplit(ori_output_df$V1[4*n-3],
                                                                        split = " ")[[1]][1]
                                      
-                                     
-                                     reference_genome_name <- if(grepl("GCA_",reference_genome_path)){
+                                     # If the genome was downloaded to datasets_topgenomes, it is a global genome
+                                     reference_genome_name <- if(grepl("GCA_",reference_genome_path) && grepl("datasets_topgenomes",reference_genome_path)){
                                        # If reference is global genome, use the base name without extension
                                        tools::file_path_sans_ext(basename(reference_genome_path))
                                        
@@ -52,8 +54,9 @@ update_global_snp_matrix <- function(output_list,
                                      #query
                                      query_genome_path <- strsplit(ori_output_df$V1[4*n-3],
                                                                    split = " ")[[1]][2]
-                                     
-                                     query_genome_name <- if(grepl("GCA_",query_genome_path)){
+                                     # If the genome was downloaded to datasets_topgenomes, it is a global genome
+
+                                     query_genome_name <- if(grepl("GCA_",query_genome_path) && grepl("datasets_topgenomes",query_genome_path)){
                                        # If reference is global genome, use the base name without extension
                                        tools::file_path_sans_ext(basename(query_genome_path))
                                        
@@ -108,24 +111,37 @@ update_global_snp_matrix <- function(output_list,
                                          
                                          list_df <- read.table(list_entry, skip=1)
                                          
-                                         query_name <- sapply(list_df$V1[1:10],
-                                                              function(name_entry){
-                                                                
-                                                                name_split <- strsplit(name_entry,
-                                                                                       split = "\\_")[[1]]
-                                                                
-                                                                gca_idx <- which(grepl("GCA",name_split))
-                                                                
-                                                                accession_entry <- paste0("GCA_",name_split[gca_idx+1])
-                                                                
-                                                                return(accession_entry)
-                                                              })
+                                         # exclude the study genomes themselves
+                                         list_df <- list_df[!(list_df$V1 %in% metadata$V2),]
+                                         if(nrow(list_df)>0){
+                                           query_name <- sapply(list_df$V1[1:nrow(list_df)],
+                                                                function(name_entry){
+                                                                  
+                                                                  name_split <- strsplit(name_entry,
+                                                                                         split = "\\_")[[1]]
+                                                                  
+                                                                  gca_idx <- which(grepl("GCA",name_split))
+                                                                  
+                                                                  accession_entry <- paste0("GCA_",name_split[gca_idx+1])
+                                                                  
+                                                                  return(accession_entry)
+                                                                })
+                                           genome_comparison_df <- data.frame(
+                                             subject = study_genome,
+                                             query = query_name
+                                           )
+                                         }else{
+                                           genome_comparison_df <- NULL
+                                         }
                                          
-                                         return(data.frame(
-                                           subject = study_genome,
-                                           query = query_name
-                                         ))
+                                         return(genome_comparison_df)
+                                         
                                        }))
+  
+  # Only keep those global genomes that are actually downloaded
+  actual_download_topgenomes <- unique(readLines(actual_download_topgenomes_path))
+  unique_comparisons <- unique_comparisons[unique_comparisons$query %in% actual_download_topgenomes,]
+  
   
   sum_snp_df_unique <- do.call(rbind,
                                mclapply(seq_len(nrow(unique_comparisons)),
@@ -180,11 +196,15 @@ metadata <- rbind(read.table(new_metadata_path,
                              sep = "\t",
                              header = FALSE))
 
+actual_download_topgenomes_path <- snakemake@input[["actual_download_topgenomes"]]
+
 ncores <- snakemake@threads
 
 # Execute the function to get updated global_snp_matrix
 global_snp_martix_new <- update_global_snp_matrix(output_list = output_list,
+                                                  metadata = metadata,
                                                   original_snp_matrix_path = original_snp_matrix_path,
+                                                  actual_download_topgenomes_path = actual_download_topgenomes_path,
                                                   whatsgnu_list = whatsgnu_list,
                                                   ncores = ncores)
 

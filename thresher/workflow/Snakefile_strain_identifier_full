@@ -35,9 +35,12 @@ rule all:
         os.path.join(config["output"], "mummer4_study", "study_snp_matrix.RDS"),
         # WhatsGNU
         expand(os.path.join(config["output"], "whatsgnu","{genome_name}","{genome_name}_WhatsGNU_topgenomes.txt"),genome_name=genome_path_dict.keys()),
-        # datasets
-        os.path.join(config["output"], "datasets_topgenomes","topgenomes.txt"),
-        os.path.join(config["output"], "datasets_topgenomes","result_check.txt"),
+        # Datasets
+        # Because the avaiablity of the GenBank genomes at NCBI may change over time
+        # the expected download genomes and the actual download genomes are recorded separately
+        # Only the actual download genomes are used for downstream analysis
+        os.path.join(config["output"], "datasets_topgenomes","expected_download_topgenomes.txt"),
+        os.path.join(config["output"], "datasets_topgenomes","actual_download_topgenomes.txt"),
         # Panaroo 
         os.path.join(config["output"],"panaroo","core_gene_alignment_filtered.aln"),
         # IQTree

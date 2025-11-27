@@ -88,6 +88,8 @@ options:
     - Example metadata file for full mode: 
       
       [Example Input Metadata File](example/example_metadata.txt)
+   - Ensure the new genome assemblies have undergone quality control prior to use as input.
+   - All new genome assemblies must belong to the same species; otherwise, Panaroo will fail to generate a core genome alignment due to insufficient shared core genes, and the pipeline will terminate at this step.
 3. **Existing THRESHER Strain Identifier Directory(--thresher_output):**
 
     - Path to the existing THRESHER strain_identifier directory.

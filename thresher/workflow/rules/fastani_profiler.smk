@@ -4,7 +4,7 @@ rule fastani_profiler_raw:
     input:
         genome_path = input_genome_path,
         topgenomes_result = os.path.join(config["output"], "whatsgnu", genome_name, f"{genome_name}_WhatsGNU_topgenomes.txt"),
-        result_check = os.path.join(config["output"],"datasets_topgenomes","result_check.txt")
+        actual_download_topgenomes = os.path.join(config["output"],"datasets_topgenomes","actual_download_topgenomes.txt")
     threads:
         config["threads"]
     output:
@@ -24,6 +24,7 @@ rule fastani_profiler_raw:
         topgenomes_dir="{params.topgenomes_dir}"
         topgenomes_result_path="{input.topgenomes_result}"
         ani_threshold={params.ani_threshold}
+        actual_download_topgenomes="{input.actual_download_topgenomes}"
 
         # Output
         topgenomes_all_path="{output.topgenomes_all}"
@@ -34,19 +35,18 @@ rule fastani_profiler_raw:
         # Create output directory if it doesn't exist
         mkdir -p "$output_dir"
 
-        # Read the input.result_check to confirm all global genomes have been downloaded
-        # If the file content is "All global genomes downloaded", proceed
-        check_message=$(cat "{input.result_check}")
-        if [ "$check_message" != "All global genomes downloaded" ]; then
-            echo "Error: Global genomes not downloaded properly."
-            exit 1
-        fi
+        # Read the input.actual_download_topgenomes to get the list of actually downloaded genomes
+
+        actual_download_genomes=$(cat "{input.actual_download_topgenomes}")
         
         # Parse WhatsGNU output to obtain top genome accession and prepend the genomes directory,
-        # yielding absolute file paths for use in fastANI
+        # yielding absolute file paths for use in fastANIx
+        # Also, only keep the genomes in actual_download_genomes to avoid using genomes that failed to download
 
         tail -n +2 "$topgenomes_result_path" | while read -r genome_entry _; do
-            echo "$topgenomes_dir/${{genome_entry}}.fna"
+            if echo "$actual_download_genomes" | grep -q "^${genome_entry}$"; then
+                echo "$topgenomes_dir/${genome_entry}.fna"
+            fi
         done > $topgenomes_all_path
 
         # Run FastANI

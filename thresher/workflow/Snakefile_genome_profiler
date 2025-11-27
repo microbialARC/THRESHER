@@ -18,7 +18,10 @@ rule all:
         # WhatsGNU topgenomes dataset
         os.path.join(config["output"], "whatsgnu", genome_name, f"{genome_name}_WhatsGNU_topgenomes.txt"),
         # Datasets topgenomes
-        os.path.join(config["output"],"datasets_topgenomes","result_check.txt"),
+        # Because the avaiablity of the GenBank genomes at NCBI may change over time
+        # the expected download genomes and the actual download genomes are recorded separately
+        # Only the actual download genomes are used for downstream analysis
+        os.path.join(config["output"],"datasets_topgenomes","actual_download_topgenomes.txt"),
         # FastANI
         os.path.join(config["output"], "fastani",f"{genome_name}_topgenomes_all.txt"),
         os.path.join(config["output"], "fastani",f"{genome_name}_fastani.csv"),

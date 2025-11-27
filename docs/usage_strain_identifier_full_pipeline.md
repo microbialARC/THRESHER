@@ -77,7 +77,9 @@ options:
 ## Required Input
 **Note:** At least 4 genomes are required to perform the analysis. 
 1. **Genome Assemblies:**
-   - Genome assemblies for all samples to be analyzed.
+   - Ensure genome assemblies have undergone quality control prior to use as input.
+   - All genome assemblies must belong to the same species; otherwise, Panaroo will fail to generate a core genome alignment due to insufficient shared core genes, and the pipeline will terminate at this step.
+
 2. **Input Metadata(--metadata):**
    - Path to a tab-delimited text file containing at least three columns (for lite mode) with no header. For full mode, additional columns are required.
    - Columns:

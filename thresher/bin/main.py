@@ -2,7 +2,7 @@
 """THRESHER Main Entry
 This script creates the configuration files and executes the Snakemake workflow.
 """
-VERSION = "0.2.0-beta"
+VERSION = "0.2.1-beta"
 # Import standard libraries and custom modules
 import argparse
 import os

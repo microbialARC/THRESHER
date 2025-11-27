@@ -203,10 +203,15 @@ clusterplot <- function(output_dir,
   # Initialize an empty list to store results
   cluster_plots_rds <- list()
   
-  for(i in seq_along(clusters_summary)){
+  for(i in seq_along(clusters_summary$clusters)){
     
-    plot_members <- sort(as.integer(clusters_summary[[i]]$patients),
-                         decreasing = TRUE)
+    cluster_patients <- clusters_summary$clusters[[i]]$patients
+    
+    plot_members <- if (is.numeric(cluster_patients)) {
+      sort(as.integer(cluster_patients), decreasing = TRUE)
+    } else {
+      sort(cluster_patients)
+    }
     
     plot_members_num <- length(plot_members)
     
@@ -340,8 +345,8 @@ clusterplot <- function(output_dir,
   
     ### generate the plot ----
     #MLST of the cluster 
-    cluster_mlst <- clusters_summary[[i]]$MLST[1][clusters_summary[[i]]$MLST[1] != "Unassigned"]
-    cluster_amr <- clusters_summary[[i]]$AMR
+    cluster_mlst <- clusters_summary$clusters[[i]]$MLST[1][clusters_summary$clusters[[i]]$MLST[1] != "Unassigned"]
+    cluster_amr <- clusters_summary$clusters[[i]]$AMR
     
     cluster_plot <- ggplot() +
       geom_rrect(aes(xmin = 0,
@@ -382,14 +387,14 @@ clusterplot <- function(output_dir,
       geom_text(aes(x = L/2,
                     y = H+10,
                     label = paste0("Cluster",
-                                   clusters_summary[[i]]$cluster)),
+                                   clusters_summary$clusters[[i]]$cluster)),
                 size = 10.5,
                 color = "black",
                 fontface = "bold") +
       #MLST
       geom_text(aes(x = L/2,
                     y = H+2.5+3,
-                    label = clusters_summary[[i]]$MLST[1]),
+                    label = clusters_summary$clusters[[i]]$MLST[1]),
                 size = 7.5,
                 color = "black") +
       ggplot2::coord_fixed(ratio = 1,
@@ -399,10 +404,10 @@ clusterplot <- function(output_dir,
       {if(species == "sau") {
         geom_shadowtext(aes(x = 0.925*L-2.5,
                             y = H+(15/2),
-                            label = ifelse(clusters_summary[[i]]$AMR[1] == "MRSA",
+                            label = ifelse(clusters_summary$clusters[[i]]$AMR[1] == "MRSA",
                                            "R",
                                            "S")),
-                        color = ifelse(clusters_summary[[i]]$AMR[1] == "MRSA",
+                        color = ifelse(clusters_summary$clusters[[i]]$AMR[1] == "MRSA",
                                        "#FF69B4",
                                        "#FFD700"),
                         size = 21.5,
@@ -412,7 +417,7 @@ clusterplot <- function(output_dir,
       theme_void()
     
     
-    pdf(file = file.path(output_dir,paste0("Cluster",clusters_summary[[i]]$cluster,".pdf")),
+    pdf(file = file.path(output_dir,paste0("Cluster",clusters_summary$clusters[[i]]$cluster,".pdf")),
         width = as.numeric(pdf_export_size$width[pdf_export_size$num_circle == plot_members_num]),
         height = as.numeric(pdf_export_size$height[pdf_export_size$num_circle == plot_members_num]))
     print(cluster_plot)
@@ -420,7 +425,7 @@ clusterplot <- function(output_dir,
     
     # Store the plot and cluster ID in the results list
     cluster_plots_rds[[i]] <- list(
-      cluster_id = clusters_summary[[i]]$cluster,
+      cluster_id = clusters_summary$clusters[[i]]$cluster,
       plot = cluster_plot
     )
   }

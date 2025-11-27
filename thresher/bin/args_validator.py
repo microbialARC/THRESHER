@@ -43,17 +43,24 @@ def validate_strain_identifier_full(args):
 
     # Print info about number of genomes and patient IDs if applicable
     print(f"Input file read successfully. Number of genomes: {input_df.shape[0]}")
-    # Check if patient_id column is provided
     if args.analysis_mode == "lite":
         print("Lite mode selected. Clusters will not be determined.")
     elif args.analysis_mode == "full":
-        if input_df["patient_id"].isnull().all():
-            print("No patient ID provided. Switch to Lite mode and no clusters will be determined.")
+        # Check if patient_id column is provided if full analysis mode is selected
+        # If any patient_id is missing, switch to lite mode
+        if input_df["patient_id"].isnull().any():
+            print("Patient ID is not complete. Switch to lite mode and no clusters will be determined.")
             args.analysis_mode = "lite"
         else:
             unique_patient_count = input_df['patient_id'].nunique(dropna=True)
             print(f"Number of unique patient IDs: {unique_patient_count}")
             print("Patient ID provided. The cluster will be determined based on strain compositions and patient IDs.")
+        
+        # Check collection_date column
+        if input_df["collection_date"].isnull().any():
+            print("Collection date column contains missing values. Switch to lite mode and no clusters will be determined.")
+            args.analysis_mode = "lite"
+    
     # Check prefix
     if not args.prefix:
         args.prefix = time.strftime("%Y_%m_%d_%H%M%S")
@@ -232,8 +239,8 @@ def validate_strain_identifier_new_snps(args):
     new_metadata_df = pd.read_csv(args.new_metadata, header=None, sep="\t")
 
     if new_metadata_df.shape[1] not in [3, 5]:
-        raise ValidationError("New metadata file must have 3 or 5 columns")
-    if new_metadata_df.shape[1] == 3:
+        raise ValidationError("New metadata file must have 3 or 5 columns to use new-snps mode")
+    elif new_metadata_df.shape[1] == 3:
         new_metadata_df[4] = None
         new_metadata_df[5] = None
     new_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
@@ -248,9 +255,22 @@ def validate_strain_identifier_new_snps(args):
             raise ValidationError(f"Genome file not found: {genome_path}")
     # Print info about number of genomes in the new metadata file
     print(f"New metadata file read successfully. Number of genomes: {new_metadata_df.shape[0]}")
-    unique_new_patient_count = new_metadata_df['patient_id'].nunique(dropna=True)
-    print(f"Number of unique patient IDs in new metadata file: {unique_new_patient_count}")
-    print(f"Number of unique patient IDs in new metadata file: {new_metadata_df['patient_id'].unique().shape[0]}")
+
+    # Check if transmission clusters can be determined based on if previous THRESHER output contains cluster summary file
+    if os.path.exists(os.path.join(args.thresher_output,  "thresher", "output", "clusters_summary.RDS")):
+        print("Previous THRESHER output contains cluster summary file.")
+        # Check if patient_id is complete
+        if not new_metadata_df["patient_id"].isnull().any():
+            raise ValidationError("Patient ID column contains missing values.")
+        else:
+            unique_new_patient_count = new_metadata_df['patient_id'].nunique(dropna=True)
+            print(f"Number of unique patient IDs in new metadata file: {unique_new_patient_count}")
+        # Check if collection_date is complete
+        if not new_metadata_df["collection_date"].isnull().any():
+            raise ValidationError("Collection date column contains missing values.")
+    else:
+        print("Previous THRESHER output does not contain cluster summary file. Transmission clusters will not be determined.")
+
 
     # Check original metadata file (Origninal input file used in full-pipeline mode)
     if not os.path.exists(args.original_metadata):
@@ -349,8 +369,8 @@ def validate_strain_identifier_new_full(args):
     new_metadata_df = pd.read_csv(args.new_metadata, header=None, sep="\t")
 
     if new_metadata_df.shape[1] not in [3, 5]:
-        raise ValidationError("New metadata file must have 3 or 5 columns")
-    if new_metadata_df.shape[1] == 3:
+        raise ValidationError("New metadata file must have 3 or 5 columns to use new-full mode")
+    elif new_metadata_df.shape[1] == 3:
         new_metadata_df[4] = None
         new_metadata_df[5] = None
     new_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
@@ -363,10 +383,23 @@ def validate_strain_identifier_new_full(args):
     for genome_path in new_metadata_df["genome_path"]:
         if not os.path.exists(genome_path):
             raise ValidationError(f"Genome file not found: {genome_path}")
-    
     # Print info about number of genomes in the new metadata file
     print(f"New metadata file read successfully. Number of genomes: {new_metadata_df.shape[0]}")
-    print(f"Number of unique patient IDs in new metadata file: {new_metadata_df['patient_id'].unique().shape[0]}")
+    
+    # Check if transmission clusters can be determined based on if previous THRESHER output contains cluster summary file
+    if os.path.exists(os.path.join(args.thresher_output,  "thresher", "output", "clusters_summary.RDS")):
+        print("Previous THRESHER output contains cluster summary file.")
+        # Check if patient_id is complete
+        if not new_metadata_df["patient_id"].isnull().any():
+            raise ValidationError("Patient ID column contains missing values.")
+        else:
+            unique_new_patient_count = new_metadata_df['patient_id'].nunique(dropna=True)
+            print(f"Number of unique patient IDs in new metadata file: {unique_new_patient_count}")
+        # Check if collection_date is complete
+        if not new_metadata_df["collection_date"].isnull().any():
+            raise ValidationError("Collection date column contains missing values.")
+    else:
+        print("Previous THRESHER output does not contain cluster summary file. Transmission clusters will not be determined.")
 
     # Check original metadata file (Origninal input file used in full-pipeline mode)
     if not os.path.exists(args.original_metadata):

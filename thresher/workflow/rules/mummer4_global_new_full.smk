@@ -5,6 +5,7 @@ rule mummer4_global_new_full_cmd:
     output:
         [os.path.join(config["output"],"mummer4_global","scripts",f"dnadiff_{genome}.sh") for genome in list(new_genome_path_dict.keys())]
     params:
+        study_accession = new_genome_accession,
         whatsgnu_output_dir = os.path.join(config["output"],"whatsgnu"),
         global_genome_dir = os.path.join(config["output"],"datasets_topgenomes"),
         study_genome_dict = new_genome_path_dict,

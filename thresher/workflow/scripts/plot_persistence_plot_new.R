@@ -71,8 +71,7 @@ persistence_plot <- function(output_dir,
       geom_point(size = 15,
                  color = "#011F5B",
                  alpha = 0.75) +
-      scale_x_date(date_breaks = "6 month", 
-                   date_labels = "%b %Y") + 
+      scale_x_date(date_labels = "%b %Y") + 
       geom_label_repel(data = all_label_df,
                        aes(x = date,
                            y = cluster,

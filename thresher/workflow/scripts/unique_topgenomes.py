@@ -39,7 +39,7 @@ if study_accession:
 
 
 # Write the filtered results
-with open(os.path.join(output_dir, 'topgenomes.txt'), 'w') as f:
+with open(os.path.join(output_dir, 'expected_download_topgenomes.txt'), 'w') as f:
     f.write('\n'.join(unique_topgenomes))
 
 os.makedirs(os.path.join(output_dir, "scripts"), exist_ok=True)
