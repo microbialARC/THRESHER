@@ -13,6 +13,9 @@ assembly_scan_path = snakemake.input.assembly_scan_results
 tab_dir = snakemake.params.tab_dir
 script_dir = snakemake.params.script_dir
 threads = snakemake.threads
+actual_download_topgenomes_path = snakemake.input.actual_download_topgenomes
+with open(actual_download_topgenomes_path, 'r') as f:
+    actual_download_topgenomes = set(line.strip() for line in f if line.strip())
 # Use the maximum memory in the system for snippy-multi in GB
 memory = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') // (1024 ** 3)
 
@@ -64,7 +67,9 @@ for group in snippy_groups:
                 gca_index = [i for i, part in enumerate(genome_name_parts) if part.startswith("GCA")]
                 gca_index_value = gca_index[0]
                 extracted.add("_".join(genome_name_parts[gca_index_value:gca_index_value+2]))
-
+                # Also ensure they are in the actual downloaded top genomes
+                extracted = {genome for genome in extracted if genome in actual_download_topgenomes}
+                # And then from the extracted filtered by actual downloaded top genomes, take the first 3 as top3_genomes
             top3_genomes = [list(extracted)[i] for i in range(3)]
             group_global_genomes.update(top3_genomes)
             if study_accession: 

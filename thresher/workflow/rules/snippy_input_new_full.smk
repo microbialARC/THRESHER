@@ -3,7 +3,7 @@ rule snippy_input_new_full:
         hc_groups_csv = os.path.join(config["output"], "thresher", "input", "hierarchical_clustering_groups_simplified.csv"),
         new_whatsgnu_results = expand(os.path.join(config["output"], "whatsgnu","{genome_name}","{genome_name}_WhatsGNU_topgenomes.txt"),genome_name=new_genome_path_dict.keys()),
         new_assembly_scan_results = expand(os.path.join(config["output"], "assembly_scan","{genome_name}_assembly_scan.txt"),genome_name=new_genome_path_dict.keys()),
-        result_check = os.path.join(config["output"],"datasets_topgenomes","result_check.txt")
+        actual_download_topgenomes = os.path.join(config["output"],"datasets_topgenomes","actual_download_topgenomes.txt")
     output:
         snippy_multi = os.path.join(config["output"], "snippy","scripts","snippy_multi.sh"),
         snippy_reference = os.path.join(config["output"], "snippy","tabs","snippy_reference.txt")

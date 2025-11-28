@@ -22,6 +22,9 @@ study_accession = new_study_accession | original_study_accession
 # so no need to merge the two paths here
 new_global_genome_path = snakemake.params.new_global_genome_path
 original_global_genome_path = snakemake.params.original_global_genome_path
+actual_download_topgenomes_path = snakemake.input.actual_download_topgenomes
+with open(actual_download_topgenomes_path, 'r') as f:
+    actual_download_topgenomes = set(line.strip() for line in f if line.strip())
 # Merge new and original whatsgnu results
 new_whatsgnu_path = snakemake.input.new_whatsgnu_results
 original_whatsgnu_path = snakemake.params.original_whatsgnu_results
@@ -85,7 +88,10 @@ for group in snippy_groups:
                 gca_index = [i for i, part in enumerate(genome_name_parts) if part.startswith("GCA")]
                 gca_index_value = gca_index[0]
                 extracted.add("_".join(genome_name_parts[gca_index_value:gca_index_value+2]))
-
+            
+            # Also ensure they are in the actual downloaded top genomes
+            extracted = {genome for genome in extracted if genome in actual_download_topgenomes}
+            # And then from the extracted filtered by actual downloaded top genomes, take the first 3 as top3_genomes
             top3_genomes = [list(extracted)[i] for i in range(3)]
 
             group_global_genomes.update(top3_genomes)

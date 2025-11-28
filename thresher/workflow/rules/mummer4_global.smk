@@ -1,7 +1,7 @@
 rule mummer4_global_cmd:
     input:
         whatsgnu_output = [os.path.join(config["output"],"whatsgnu",f"{genome}",f"{genome}_WhatsGNU_topgenomes.txt") for genome in list(genome_path_dict.keys())],
-        result_check = os.path.join(config["output"],"datasets_topgenomes","result_check.txt")
+        actual_download_topgenomes = os.path.join(config["output"],"datasets_topgenomes","actual_download_topgenomes.txt")
     output:
         [os.path.join(config["output"],"mummer4_global","scripts",f"dnadiff_{genome}.sh") for genome in list(genome_path_dict.keys())]
     params:
