@@ -91,10 +91,12 @@ for group in snippy_groups:
             
             # Also ensure they are in the actual downloaded top genomes
             extracted = {genome for genome in extracted if genome in actual_download_topgenomes}
-            # And then from the extracted filtered by actual downloaded top genomes, take the first 3 as top3_genomes
-            top3_genomes = [list(extracted)[i] for i in range(3)]
-
-            group_global_genomes.update(top3_genomes)
+            # And then from the extracted filtered by actual downloaded top genomes
+            # Take the first 3 as top_genomes if the count is more than 3
+            # If less than 3, take all
+            # if none, take none
+            top_genomes = list(extracted)[:3]
+            group_global_genomes.update(top_genomes)
             if study_accession: 
                 group_global_genomes = group_global_genomes - study_accession
         # If the count of global genomes and study genomes together is less than 4, skip
