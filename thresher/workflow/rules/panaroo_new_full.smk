@@ -5,7 +5,8 @@ rule panaroo_new_full:
         new_gff3 = [os.path.join(config["output"],"bakta_annotation",f"{genome}",f"{genome}.gff3") for genome in list(new_genome_path_dict.keys())]
     params:
         thresher_output = config["thresher_output"],
-        output_dir = config["output"]
+        output_dir = config["output"],
+        core_threshold = config["core_threshold"]
     output:
         panaroo_new_graph = os.path.join(config["output"],"panaroo_new","final_graph.gml"),
         core_aln = os.path.join(config["output"],"panaroo","core_gene_alignment_filtered.aln")
@@ -29,7 +30,7 @@ rule panaroo_new_full:
         -o {params.output_dir}/panaroo_new/ \
         --remove-invalid-genes \
         --clean-mode strict \
-        --core_threshold 0.95 \
+        --core_threshold {params.core_threshold} \
         --aligner none \
         --family_threshold 0.7 \
         --refind_prop_match 0.5 \
@@ -48,7 +49,7 @@ rule panaroo_new_full:
         panaroo-msa -o {params.output_dir}/panaroo/ \
         --verbose \
         --alignment core \
-        --core_threshold 0.95 \
+        --core_threshold {params.core_threshold} \
         --aligner mafft \
         --threads {threads} \
         

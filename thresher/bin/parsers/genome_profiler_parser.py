@@ -7,7 +7,7 @@ def add_genome_profiler_parser(subparsers):
     genome_profiler_parser = subparsers.add_parser(
         "genome_profiler",
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Infer the probability of substitutions and mobile genetic elements."
+        help="Infers the probability of substitutions and mobile genetic elements."
     )
 
     genome_profiler_parser.add_argument(
@@ -79,9 +79,9 @@ If not provided, defaults to <OUTPUT>/whatsgnu/db.""",
     genome_profiler_parser.add_argument(
         "-t",
         "--threads",
-        default= os.cpu_count(),
+        default=1,
         type=int,
-        help = "Thread number. Default is the maximum available."
+        help = "Thread number. Default is 1."
     )
 
     genome_profiler_parser.add_argument(

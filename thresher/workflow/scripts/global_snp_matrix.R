@@ -1,5 +1,15 @@
 library(dplyr)
 library(parallel)
+# Helper function ----
+# Replace any non-alphanumeric characters (except dash/underscore) with underscore in the first column
+parse_genome_name <- function(original_name) {
+  parsed_name <- gsub("[^a-zA-Z0-9._-]", "_", original_name)
+  parsed_name <- gsub("_+", "_", parsed_name)
+  if (parsed_name == "Reference") {
+    parsed_name <- "Reference_Genome"
+  }
+  trimws(parsed_name, whitespace = "_")
+} 
 # Import from snakemake
 output_list <- list.files(path = snakemake@params[["report_dir"]],
                           pattern = "*_concatenated.report",
@@ -20,6 +30,7 @@ actual_download_topgenomes_path <- snakemake@input[["actual_download_topgenomes"
 metadata <- read.table(metadata_path,
                        sep = "\t",
                        header = FALSE)
+metadata$V1 <- sapply(metadata$V1, parse_genome_name)
 
 actual_download_topgenomes <- unique(readLines(actual_download_topgenomes_path))
 

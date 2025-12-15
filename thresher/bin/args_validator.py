@@ -2,6 +2,8 @@
 import os
 import pandas as pd
 import time
+import re
+from thresher.bin.parse_genome_name import parse_genome_name
 
 class ValidationError(Exception):
     """Validation error"""
@@ -29,6 +31,14 @@ def validate_strain_identifier_full(args):
         input_df[4] = None
         input_df[5] = None
     input_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+    # Check if there is space in the genome_name column
+    # if so, parse the genome_name
+    # Parse genome names with invalid characters
+    for row_index, name_entry in enumerate(input_df["genome_name"]):
+        sanitized = parse_genome_name(name_entry)
+        if sanitized != name_entry:
+            print(f"Warning: Genome name '{name_entry}' contains invalid characters, renamed to '{sanitized}'")
+            input_df.at[row_index, "genome_name"] = sanitized
     # use the absolute path for genome_path
     input_df["genome_path"] = input_df["genome_path"].apply(lambda x: os.path.abspath(x))
     if input_df.shape[0] < 4:
@@ -46,21 +56,27 @@ def validate_strain_identifier_full(args):
     if args.analysis_mode == "lite":
         print("Lite mode selected. Clusters will not be determined.")
     elif args.analysis_mode == "full":
+        patient_missing = input_df["patient_id"].isnull().any()
+        date_missing = input_df["collection_date"].isnull().any()
         # Check if patient_id column is provided if full analysis mode is selected
         # If any patient_id is missing, switch to lite mode
-        if input_df["patient_id"].isnull().any():
+        if patient_missing:
             print("Patient ID is not complete. Switch to lite mode and no clusters will be determined.")
             args.analysis_mode = "lite"
         else:
             unique_patient_count = input_df['patient_id'].nunique(dropna=True)
             print(f"Number of unique patient IDs: {unique_patient_count}")
-            print("Patient ID provided. The cluster will be determined based on strain compositions and patient IDs.")
         
-        # Check collection_date column
-        if input_df["collection_date"].isnull().any():
+        # Check collection_date column, if any collection_date is missing, switch to lite mode
+        if date_missing:
             print("Collection date column contains missing values. Switch to lite mode and no clusters will be determined.")
             args.analysis_mode = "lite"
-    
+        else:
+            unique_collection_date_count = input_df['collection_date'].nunique(dropna=True)
+            print(f"Number of unique collection dates: {unique_collection_date_count}")
+        
+        if not patient_missing and not date_missing:
+            print("Both patient ID and collection date columns are complete. Transmission clusters will be determined.")
     # Check prefix
     if not args.prefix:
         args.prefix = time.strftime("%Y_%m_%d_%H%M%S")
@@ -126,6 +142,14 @@ def validate_strain_identifier_full(args):
         print("Unsupported Bakta database type, using default 'full'")
         args.bakta_db_type = "full"
 
+    # Check core gene threshold
+    if not args.core_threshold:
+        print("Core gene threshold not provided, using default threshold of 0.95")
+        args.core_threshold = 0.95
+    elif args.core_threshold <= 0.0 or args.core_threshold > 1.0:
+        print("Core gene threshold must be between 0.0 and 1.0, using default threshold of 0.95")
+        args.core_threshold = 0.95
+
     # Check core bootstrap method
     if not args.core_bootstrap_method or args.core_bootstrap_method not in {"ultrafast", "nonparametric"}:
         print("Unsupported core bootstrap method, using default method 'ultrafast'")
@@ -154,6 +178,14 @@ def validate_strain_identifier_full(args):
             print("Group bootstrap number not provided, using default 100 replicates for standard nonparametric method")
             args.group_bootstrap_number = 100
 
+    # Check the bool of use_cladebreaker
+    if not args.use_cladebreaker:
+        print("use_cladebreaker not provided, using default 'True'")
+        args.use_cladebreaker = True
+    elif args.use_cladebreaker not in {True, False}:
+        print("Unsupported option for use_cladebreaker, using default 'True'")
+        args.use_cladebreaker = True
+
     # Check endpoint method
     if args.endpoint not in {"plateau", "peak", "discrepancy", "global"}:
         print("Unsupported endpoint method, using default method 'plateau'")
@@ -163,16 +195,16 @@ def validate_strain_identifier_full(args):
         print("Plateau length not provided, using default length of 15")
         args.plateau_length = 15
 
-    # Check threads, if not provided, use all available threads
+    # Check threads, if not provided, use 1 thread
     if not args.threads:
-        print("Thread number not provided or invalid, using all available threads")
-        args.threads = os.cpu_count()
+        print("Thread number not provided or invalid, using 1 thread")
+        args.threads = 1
     elif args.threads < 1:
-        print("Thread number must be a positive integer, using all available threads")
-        args.threads = os.cpu_count()
+        print("Thread number must be a positive integer, using 1 thread")
+        args.threads = 1
     elif args.threads > os.cpu_count():
-        print(f"Thread number exceeds available threads ({os.cpu_count()}), using all available threads")
-        args.threads = os.cpu_count()
+        print(f"Thread number exceeds available threads ({os.cpu_count()}), using 1 thread")
+        args.threads = 1
 # Validate arguments for strain_identifier redo-endpoint mode
 def validate_strain_identifier_redo_endpoint(args):
     """Validate the arguments used in redo-endpoint of strain_identifier function"""
@@ -185,7 +217,14 @@ def validate_strain_identifier_redo_endpoint(args):
     original_metadata_df["genome_path"] = original_metadata_df["genome_path"].apply(lambda x: os.path.abspath(x))
     if original_metadata_df.shape[1] != 5:
         raise ValidationError("Input file must have 5 columns")
-
+    # Check if there is space in the genome_name column
+    # if so, parse the genome_name
+    # Parse genome names with invalid characters
+    for row_index, name_entry in enumerate(original_metadata_df["genome_name"]):
+        sanitized = parse_genome_name(name_entry)
+        if sanitized != name_entry:
+            print(f"Warning: Genome name '{name_entry}' contains invalid characters, renamed to '{sanitized}'")
+            original_metadata_df.at[row_index, "genome_name"] = sanitized
     # Check the exisiting THRESHER directory
     if not args.thresher_output or not os.path.exists(args.thresher_output):
         raise ValidationError("Existing THRESHER output directory not found")
@@ -244,6 +283,14 @@ def validate_strain_identifier_new_snps(args):
         new_metadata_df[4] = None
         new_metadata_df[5] = None
     new_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+    # Check if there is space in the genome_name column
+    # if so, parse the genome_name
+    # Parse genome names with invalid characters
+    for row_index, name_entry in enumerate(new_metadata_df["genome_name"]):
+        sanitized = parse_genome_name(name_entry)
+        if sanitized != name_entry:
+            print(f"Warning: Genome name '{name_entry}' contains invalid characters, renamed to '{sanitized}'")
+            new_metadata_df.at[row_index, "genome_name"] = sanitized
     # Use the absolute path for genome_path
     new_metadata_df["genome_path"] = new_metadata_df["genome_path"].apply(lambda x: os.path.abspath(x))
     if new_metadata_df["accession"].isnull().any():
@@ -329,16 +376,16 @@ def validate_strain_identifier_new_snps(args):
     elif args.species not in {"sau", "sepi", "cdiff", "kp"}:
         raise ValidationError(f"Species must be one of: sau, sepi, cdiff, kp")
     
-    # Check threads, if not provided, use all available threads
+    # Check threads, if not provided, use 1 thread
     if not args.threads:
-        print("Thread number not provided or invalid, using all available threads")
-        args.threads = os.cpu_count()
+        print("Thread number not provided or invalid, using 1 thread")
+        args.threads = 1
     elif args.threads < 1:
-        print("Thread number must be a positive integer, using all available threads")
-        args.threads = os.cpu_count()
+        print("Thread number must be a positive integer, using 1 thread")
+        args.threads = 1
     elif args.threads > os.cpu_count():
-        print(f"Thread number exceeds available threads ({os.cpu_count()}), using all available threads")
-        args.threads = os.cpu_count()
+        print(f"Thread number exceeds available threads ({os.cpu_count()}), using 1 thread")
+        args.threads = 1
         
     # Check prefix
     if not args.prefix:
@@ -374,6 +421,14 @@ def validate_strain_identifier_new_full(args):
         new_metadata_df[4] = None
         new_metadata_df[5] = None
     new_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+    # Check if there is space in the genome_name column
+    # if so, parse the genome_name
+    # Parse genome names with invalid characters
+    for row_index, name_entry in enumerate(new_metadata_df["genome_name"]):
+        sanitized = parse_genome_name(name_entry)
+        if sanitized != name_entry:
+            print(f"Warning: Genome name '{name_entry}' contains invalid characters, renamed to '{sanitized}'")
+            new_metadata_df.at[row_index, "genome_name"] = sanitized
     # Use the absolute path for genome_path
     new_metadata_df["genome_path"] = new_metadata_df["genome_path"].apply(lambda x: os.path.abspath(x))
     if new_metadata_df["accession"].isnull().any():
@@ -411,6 +466,14 @@ def validate_strain_identifier_new_full(args):
         original_metadata_df[4] = None
         original_metadata_df[5] = None
     original_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+    #  Check if there is space in the genome_name column
+    # if so, parse the genome_name
+    # Parse genome names with invalid characters
+    for row_index, name_entry in enumerate(original_metadata_df["genome_name"]):
+        sanitized = parse_genome_name(name_entry)
+        if sanitized != name_entry:
+            print(f"Warning: Genome name '{name_entry}' contains invalid characters, renamed to '{sanitized}'")
+            original_metadata_df.at[row_index, "genome_name"] = sanitized
     # Create another dataframe to keep those genomes without accession number, which are those not publicly available in GenBank
     filtered_original_metadata_df = original_metadata_df[original_metadata_df["accession"] == "new"]
     
@@ -545,17 +608,25 @@ def validate_strain_identifier_new_full(args):
         else:
             print(f"Existing THRESHER output directory found: {args.thresher_output}")
     
-    # Check threads, if not provided, use all available threads
+    # Check threads, if not provided, use 1 thread
     if not args.threads:
-        print("Thread number not provided or invalid, using all available threads")
-        args.threads = os.cpu_count()
+        print("Thread number not provided or invalid, using 1 thread")
+        args.threads = 1
     elif args.threads < 1:
-        print("Thread number must be a positive integer, using all available threads")
-        args.threads = os.cpu_count()
+        print("Thread number must be a positive integer, using 1 thread")
+        args.threads = 1
     elif args.threads > os.cpu_count():
-        print(f"Thread number exceeds available threads ({os.cpu_count()}), using all available threads")
-        args.threads = os.cpu_count()
+        print(f"Thread number exceeds available threads ({os.cpu_count()}), using 1 thread")
+        args.threads = 1
 
+    # Check core gene threshold
+    if not args.core_threshold:
+        print("Core gene threshold not provided, using default threshold of 0.95")
+        args.core_threshold = 0.95
+    elif args.core_threshold <= 0.0 or args.core_threshold > 1.0:
+        print("Core gene threshold must be between 0.0 and 1.0, using default threshold of 0.95")
+        args.core_threshold = 0.95
+    
     # Check core bootstrap method
     if not args.core_bootstrap_method or args.core_bootstrap_method not in {"ultrafast", "nonparametric"}:
         print("Unsupported core bootstrap method, using default method 'ultrafast'")
@@ -583,6 +654,14 @@ def validate_strain_identifier_new_full(args):
         elif args.group_bootstrap_method == "nonparametric":
             print("Group bootstrap number not provided, using default 100 replicates for standard nonparametric method")
             args.group_bootstrap_number = 100
+    
+    # Check the bool of use_cladebreaker
+    if not args.use_cladebreaker:
+        print("use_cladebreaker not provided, using default 'True'")
+        args.use_cladebreaker = True
+    elif args.use_cladebreaker not in {True, False}:
+        print("Unsupported option for use_cladebreaker, using default 'True'")
+        args.use_cladebreaker = True
 
     # check endpoint method
     # available options: {plateau, peak, discrepancy, global}

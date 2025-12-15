@@ -35,8 +35,7 @@ rule snippy_groups:
             # Clean the alignment
             snippy-clean_full_aln {params.output_dir}/"${{group_name}}"/core.full.aln > {params.cleaned_aln_dir}/"${{group_name}}"_cleaned.aln
             # Change "Reference" in the alignment to the actual reference genome name
-            sed -i "s#Reference#${{reference}}#g" {params.cleaned_aln_dir}/"${{group_name}}"_cleaned.aln
-
+            sed -i "s#>Reference\\$#>${{reference}}#g" {params.cleaned_aln_dir}/"${{group_name}}"_cleaned.aln
         done
 
         # Check the snippy output

@@ -16,7 +16,7 @@ thresher strain_identifier redo-endpoint -h
     - Plateau: Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group.
     - Peak: Phylothreshold set at the peak number of clones defined within the group.
     - Discrepancy:  Phylothreshold set at the point where the discrepancy is minimized within the group.
-      - Global:  Phylothreshold set at the first time a global genome is included in any strain within the group.
+    - Global:  Phylothreshold set at the first time a global genome is included in any strain within the group.
 
 ## **[New SNPs](usage_strain_identifier_new_snps.md):** Update existing strain/transmission compositions with new genomes using predefined phylothresholds.
 ```

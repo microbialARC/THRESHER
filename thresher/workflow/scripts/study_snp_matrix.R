@@ -4,6 +4,17 @@
 #snp = (a+b)/2
 library(dplyr)
 library(parallel)
+# Helper function ----
+# Replace any non-alphanumeric characters (except dash/underscore) with underscore in the first column
+parse_genome_name <- function(original_name) {
+  parsed_name <- gsub("[^a-zA-Z0-9._-]", "_", original_name)
+  parsed_name <- gsub("_+", "_", parsed_name)
+  if (parsed_name == "Reference") {
+    parsed_name <- "Reference_Genome"
+  }
+  trimws(parsed_name, whitespace = "_")
+} 
+# Input ----
 output_list <- list.files(path = snakemake@params[["report_dir"]],
                           pattern = "*_concatenated.report",
                           all.files = TRUE,
@@ -15,6 +26,8 @@ metadata_path <- snakemake@params[["metadata"]]
 metadata <- read.table(metadata_path,
                        sep = "\t",
                        header = FALSE)
+
+metadata$V1 <- sapply(metadata$V1, parse_genome_name)
 
 cl <- makeCluster(detectCores())
 #export the dplyr library to the cluster object

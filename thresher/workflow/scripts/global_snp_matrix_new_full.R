@@ -5,7 +5,16 @@
 library(dplyr)
 library(data.table)
 library(parallel)
-
+# Helper function ----
+# Replace any non-alphanumeric characters (except dash/underscore) with underscore in the first column
+parse_genome_name <- function(original_name) {
+  parsed_name <- gsub("[^a-zA-Z0-9._-]", "_", original_name)
+  parsed_name <- gsub("_+", "_", parsed_name)
+  if (parsed_name == "Reference") {
+    parsed_name <- "Reference_Genome"
+  }
+  trimws(parsed_name, whitespace = "_")
+} 
 # Function to summarize concatenated report and update the global snps matrix
 update_global_snp_matrix <- function(output_list,
                                      metadata,
@@ -195,7 +204,7 @@ metadata <- rbind(read.table(new_metadata_path,
                   read.table(original_metadata_path,
                              sep = "\t",
                              header = FALSE))
-
+metadata$V1 <- sapply(metadata$V1, parse_genome_name)
 actual_download_topgenomes_path <- snakemake@input[["actual_download_topgenomes"]]
 
 ncores <- snakemake@threads

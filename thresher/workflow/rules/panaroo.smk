@@ -4,7 +4,8 @@ rule panaroo:
     input:
         gff3 = [os.path.join(config["output"],"bakta_annotation",f"{genome}",f"{genome}.gff3") for genome in list(genome_path_dict.keys())]
     params:
-        output_dir = config["output"]
+        output_dir = config["output"],
+        core_threshold = config["core_threshold"]
     output:
         core_aln = os.path.join(config["output"],"panaroo","core_gene_alignment_filtered.aln")
     threads:
@@ -19,7 +20,7 @@ rule panaroo:
         --remove-invalid-genes \
         --clean-mode strict \
         --alignment core \
-        --core_threshold 0.95 \
+        --core_threshold {params.core_threshold} \
         --aligner mafft \
         --family_threshold 0.7 \
         --refind_prop_match 0.5 \

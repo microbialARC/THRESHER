@@ -260,58 +260,70 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                          ))
                                                                                                      )
                                                                                                    }else{
-                                                                                                     # 2nd situation: breaker genomes were introduced (with or without discrepancy genomes)
-                                                                                                     
-                                                                                                     strain_clade_newick <- Subtree(group_tree_newick,
-                                                                                                                                    strain_clade$node)
-                                                                                                     
-                                                                                                     strain_clade_newick_all_nodes <- (length(strain_clade_newick$tip.label) + 1):(length(strain_clade_newick$tip.label) + strain_clade_newick$Nnode)
-                                                                                                     # From strain_clade_newick_all_nodes
-                                                                                                     # We need to find the biggest clades in strain_clade_newick without being broken by breaker genomes
-                                                                                                     # And the genomes in those biggest pure-study-genomes clades are from the same strains
-                                                                                                     tmp_list <- lapply(seq_along(strain_clade_newick_all_nodes),
-                                                                                                                        function(node_entry){
-                                                                                                                          
-                                                                                                                          node <- strain_clade_newick_all_nodes[node_entry]
-                                                                                                                          sub_strain_clade_newick <- Subtree(strain_clade_newick,
-                                                                                                                                                             node)
-                                                                                                                          #Check if this clade has only study genomes
-                                                                                                                          if(!any(grepl("GCA_|GCF_",sub_strain_clade_newick$tip.label))){
-                                                                                                                            # If there are only study genomes
-                                                                                                                            # proceed to check if this is the biggest pure-study-genome clade (There are breaker genomes in the parent clade)
-                                                                                                                            # Parent node:
-                                                                                                                            parent_node <- strain_clade_newick$edge[which(strain_clade_newick$edge[,2] == node), 1]
-                                                                                                                            parent_sub_strain_clade_newick <- Subtree(strain_clade_newick,
-                                                                                                                                                                      parent_node)
-                                                                                                                            if(any(grepl("GCA_|GCF_",parent_sub_strain_clade_newick$tip.label))){
-                                                                                                                              
-                                                                                                                              return(
-                                                                                                                                list(
-                                                                                                                                  original_strain = strain_clade$strain_id,
-                                                                                                                                  corrected_genomes = sub_strain_clade_newick$tip.label,
-                                                                                                                                  category = "clone",
-                                                                                                                                  bootstrap_support = as.integer(strain_clade_newick$node.label[node_entry])
+                                                                                                     # 2nd situation: cladebreaker(global) genomes were introduced (with or without discrepancy genomes)
+                                                                                                     if(use_cladebreaker == "true"){
+                                                                                                       # If use_cladebreaker is true, then the function will perform cladebreaker
+                                                                                                       strain_clade_newick <- Subtree(group_tree_newick,
+                                                                                                                                      strain_clade$node)
+                                                                                                       
+                                                                                                       strain_clade_newick_all_nodes <- (length(strain_clade_newick$tip.label) + 1):(length(strain_clade_newick$tip.label) + strain_clade_newick$Nnode)
+                                                                                                       # From strain_clade_newick_all_nodes
+                                                                                                       # We need to find the biggest clades in strain_clade_newick without being broken by breaker genomes
+                                                                                                       # And the genomes in those biggest pure-study-genomes clades are from the same strains
+                                                                                                       tmp_list <- lapply(seq_along(strain_clade_newick_all_nodes),
+                                                                                                                          function(node_entry){
+                                                                                                                            
+                                                                                                                            node <- strain_clade_newick_all_nodes[node_entry]
+                                                                                                                            sub_strain_clade_newick <- Subtree(strain_clade_newick,
+                                                                                                                                                               node)
+                                                                                                                            #Check if this clade has only study genomes
+                                                                                                                            if(!any(grepl("GCA_|GCF_",sub_strain_clade_newick$tip.label))){
+                                                                                                                              # If there are only study genomes
+                                                                                                                              # proceed to check if this is the biggest pure-study-genome clade (There are breaker genomes in the parent clade)
+                                                                                                                              # Parent node:
+                                                                                                                              parent_node <- strain_clade_newick$edge[which(strain_clade_newick$edge[,2] == node), 1]
+                                                                                                                              parent_sub_strain_clade_newick <- Subtree(strain_clade_newick,
+                                                                                                                                                                        parent_node)
+                                                                                                                              if(any(grepl("GCA_|GCF_",parent_sub_strain_clade_newick$tip.label))){
+                                                                                                                                
+                                                                                                                                return(
+                                                                                                                                  list(
+                                                                                                                                    original_strain = strain_clade$strain_id,
+                                                                                                                                    corrected_genomes = sub_strain_clade_newick$tip.label,
+                                                                                                                                    category = "clone",
+                                                                                                                                    bootstrap_support = as.integer(strain_clade_newick$node.label[node_entry])
+                                                                                                                                  )
                                                                                                                                 )
-                                                                                                                              )
+                                                                                                                              }
                                                                                                                             }
-                                                                                                                          }
-                                                                                                                        }) %>% purrr::compact()
-                                                                                                     
-                                                                                                     #Add the singletons to the list
-                                                                                                     singletons <- setdiff(strain_clade$snp_tree_genomes[!grepl("GCA_|GCF_", strain_clade$snp_tree_genomes)],
-                                                                                                                           unlist(sapply(tmp_list, `[[`, "corrected_genomes")))
-                                                                                                     
-                                                                                                     #Add the singleton list to the tmp_list
-                                                                                                     if(length(singletons) > 0){
-                                                                                                       tmp_list <- c(tmp_list,lapply(singletons, function(singleton) list(
-                                                                                                         original_strain = strain_clade$strain_id,
-                                                                                                         corrected_genomes = singleton,
-                                                                                                         category = "singleton",
-                                                                                                         bootstrap_support = 0
-                                                                                                       )))
+                                                                                                                          }) %>% purrr::compact()
+                                                                                                       
+                                                                                                       #Add the singletons to the list
+                                                                                                       singletons <- setdiff(strain_clade$snp_tree_genomes[!grepl("GCA_|GCF_", strain_clade$snp_tree_genomes)],
+                                                                                                                             unlist(sapply(tmp_list, `[[`, "corrected_genomes")))
+                                                                                                       
+                                                                                                       #Add the singleton list to the tmp_list
+                                                                                                       if(length(singletons) > 0){
+                                                                                                         tmp_list <- c(tmp_list,lapply(singletons, function(singleton) list(
+                                                                                                           original_strain = strain_clade$strain_id,
+                                                                                                           corrected_genomes = singleton,
+                                                                                                           category = "singleton",
+                                                                                                           bootstrap_support = 0
+                                                                                                         )))
+                                                                                                       }
+                                                                                                       return(tmp_list)
+                                                                                                     }else if(use_cladebreaker == "False"){
+                                                                                                       # If use_cladebreaker is False, then the function will not perform cladebreaker
+                                                                                                       # The genomes in the strain will be the study genomes excluding GenBank(GCA) or RefSeq(GCF) genomes
+                                                                                                       return(
+                                                                                                         list(
+                                                                                                           list(original_strain = strain_clade$strain_id,
+                                                                                                                corrected_genomes =  strain_clade$snp_tree_genomes[!grepl("GCA_|GCF_", strain_clade$snp_tree_genomes)],
+                                                                                                                category = "clone",
+                                                                                                                bootstrap_support = as.integer(strain_clade$bootstrap_support)
+                                                                                                           ))
+                                                                                                       )
                                                                                                      }
-                                                                                                     return(tmp_list)
-                                                                                                     
                                                                                                    }
                                                                                                  })
                                                                 
@@ -438,7 +450,8 @@ group_tree_dir <- snakemake@params[["group_tree_dir"]]
 study_snp_matrix_path <- snakemake@input[["study_snp_matrix"]]
 study_global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
 output_dir <- snakemake@params[["thresher_input_dir"]]
-
+# Whether or not to perfrom cladebreaker
+use_cladebreaker <- snakemake@params[["use_cladebreaker"]]
 # Execute the function to get thresher input
 setwd(dir = output_dir)
 

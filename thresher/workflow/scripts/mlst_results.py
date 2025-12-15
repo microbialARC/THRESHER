@@ -7,6 +7,8 @@ species = snakemake.params.species
 mlst_raw = pd.read_csv(snakemake.input.mlst_output, sep=',', header=None)
 metadata = pd.read_csv(snakemake.params.metadata, sep='\t', header=None)
 analysis_mode = snakemake.params.analysis_mode
+from thresher.bin.parse_genome_name import parse_genome_name
+
 #Create output dataframe
 # Actually we just need genome_name and genome_path from metadata
 # But I leave the other columns in for now in case we need them later
@@ -19,6 +21,7 @@ elif analysis_mode == "full":
 
 mlst_results = pd.DataFrame()
 mlst_results['genome'] = metadata['genome_name']
+mlst_results['genome'] = mlst_results['genome'].apply(lambda x: parse_genome_name(x))
 
 # Create a mapping from genome_path to ST
 # column 0 is path, column 2 is ST

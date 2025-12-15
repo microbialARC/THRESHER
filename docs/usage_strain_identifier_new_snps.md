@@ -26,7 +26,7 @@ options:
                         cdiff: Clostridium difficile
                         kp: Klebsiella pneumoniae
   -t THREADS, --threads THREADS
-                        Thread number. Default is the maximum available.
+                        Thread number. Default is 1.
   --prefix PREFIX       Prefix for config file. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
   --conda_prefix CONDA_PREFIX
                         Directory for conda environments needed for this analysis. If not provided, defaults to <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>
@@ -44,6 +44,7 @@ options:
     - Example metadata file for full mode: 
       
       [Example Input Metadata File](example/example_metadata.txt)
+    - How do I know the Genbank accession for my genomes? See the [Genbank Accession](genbank_accession.md) page.
 3. **Existing THRESHER Output Directory(--thresher_output):** 
 
     The path to the existing THRESHER Strain Identifier full-pipeline or new-full output directory containing the previous analysis results.
@@ -57,7 +58,7 @@ options:
     Path to the output directory for the new-snps analysis. If not provided, defaults to `thresher_strain_identifier_new_snps_<YYYY_MM_DD_HHMMSS>` under the current working directory.
 2. **Thread Number(--threads / -t):**
 
-    Number of threads to use for the analysis. Default is the maximum available.
+    Number of threads to use for the analysis. Default is 1. It is highly recommended to increase the thread count using this option to improve performance, regardless of dataset size.
 3. **Prefix(--prefix):**
 
     Prefix for config file. If not provided, defaults to timestamp: `YYYY_MM_DD_HHMMSS`.

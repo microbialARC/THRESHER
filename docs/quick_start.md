@@ -10,6 +10,15 @@ thresher strain_identifier full-pipeline --metadata /path/to/metadata.txt --spec
 
 [Example metadata file](example/example_metadata.txt)
 
+How do I know the Genbank accession for my genomes?
+
+See the [Genbank Accession](genbank_accession.md) page.
+
+Note:
+- The default thread count is 1, which may result in lengthy runtimes. It is highly recommended to increase the thread count using the `-t/--threads` option to improve performance, regardless of dataset size.
+
+- Bakta genome annotation runs `{threads}` parallel jobs, each requiring approximately 10 GB of RAM. Ensure your system has sufficient memory to support the requested thread count.
+
 ## Genome Profiler
 ```
 thresher genome_profiler --input_genome /path/to/genome.fasta --species <species>

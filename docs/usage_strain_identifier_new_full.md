@@ -37,6 +37,9 @@ options:
                         The path of the directory where the existing Bakta database locates.
                         If provided, the Bakta database will not be downloaded.
                         If not provided, defaults to <OUTPUT>/bakta/db
+  --core_threshold CORE_THRESHOLD
+                        Panaroo Core-genome sample threshold. The frequency of a gene in your sample required to classify it as 'core'.
+                        Range is 0.0 to 1.0. Default is 0.95.
   --core_bootstrap_method {ultrafast,nonparametric}
                         The bootstrap method for core genome phylogeny used for hierarchical clustering.
                         Available options: [ultrafast, nonparametric]
@@ -57,6 +60,10 @@ options:
                         The number of bootstrap replicates for phylogeny of each hierarchical group.
                         If method is ultrafast, default is 1000.
                         If method is nonparametric, default is 100.
+  --use_cladebreaker USE_CLADEBREAKER
+                        Use CladeBreaker to restrain the strain composition.
+                        Options are [True, False].
+                        Default is True.
   --endpoint ENDPOINT   The endpoint method to use for determing clusters and making plots.
                         Available Options: [plateau, peak, discrepancy, global]
                         plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
@@ -68,7 +75,7 @@ options:
                         The plateau length for the plateau endpoint method.
                         Only used when endpoint method is 'plateau'. Default is 15
   -t THREADS, --threads THREADS
-                        Thread number. Default is the maximum available.
+                        Thread number. Default is 1.
   --prefix PREFIX       Prefix for config file. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
   --conda_prefix CONDA_PREFIX
                         Directory for conda environments needed for this analysis. If not provided, defaults to <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>
@@ -88,6 +95,8 @@ options:
     - Example metadata file for full mode: 
       
       [Example Input Metadata File](example/example_metadata.txt)
+
+    - How do I know the Genbank accession for my genomes? See the [Genbank Accession](genbank_accession.md) page.
    - Ensure the new genome assemblies have undergone quality control prior to use as input.
    - All new genome assemblies must belong to the same species; otherwise, Panaroo will fail to generate a core genome alignment due to insufficient shared core genes, and the pipeline will terminate at this step.
 3. **Existing THRESHER Strain Identifier Directory(--thresher_output):**
@@ -116,6 +125,9 @@ options:
     - The path of the directory where the existing Bakta database locates.
     - If provided, the Bakta database will not be downloaded.
     - If not provided, defaults to `<OUTPUT>/bakta/db`
+- **Core Threshold(--core_threshold):**
+    - Panaroo Core-genome sample threshold. The frequency of a gene in your sample required to classify it as 'core'.
+    - Range is 0.0 to 1.0. Default is 0.95. 
 - **Core Bootstrap Method(--core_bootstrap_method):**
     - The bootstrap method for core genome phylogeny used for hierarchical clustering.
     - Available options: `ultrafast`, `nonparametric`
@@ -136,6 +148,10 @@ options:
     - The number of bootstrap replicates for phylogeny of each hierarchical group.
     - If method is `ultrafast`, default is 1000.
     - If method is `nonparametric`, default is 100.
+- **CladeBreaker(--use_cladebreaker):**
+    - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
+    - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
+    - `True` or `False`, default is `True`.
 - **Endpoint Method(--endpoint):**
     - The endpoint method to use for determing clusters and making plots.
     - Available Options: `plateau`, `peak`, `discrepancy`, `global`
@@ -148,7 +164,8 @@ options:
     - The plateau length for the plateau endpoint method.
     - Only used when endpoint method is `plateau`. Default is 15
 - **Threads(--threads / -t):**
-    - Thread number. Default is the maximum available.
+    - Thread number. Default is 1. It is highly recommended to increase the thread count using this option to improve performance, regardless of dataset size.
+    - Bakta genome annotation runs `{threads}` parallel jobs, each requiring approximately 10 GB of RAM. Ensure your system has sufficient memory to support the requested thread count.
 - **Prefix(--prefix):**
     - Prefix for config file. If not provided, defaults to timestamp: `YYYY_MM_DD_HHMMSS`
 - **Conda Prefix(--conda_prefix):** 

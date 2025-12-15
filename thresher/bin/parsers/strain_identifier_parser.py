@@ -7,7 +7,7 @@ def add_strain_identifier_parser(subparsers):
     strain_identifier_parser = subparsers.add_parser(
         "strain_identifier",
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Determine strains/transmission clusters using phylothresholds.",
+        help="Determines strains/transmission clusters using phylothresholds.",
         usage="thresher strain_identifier {full-pipeline,redo-endpoint,new-snps,new-full}"
     )
     
@@ -15,7 +15,7 @@ def add_strain_identifier_parser(subparsers):
     strain_identifier_mode = strain_identifier_parser.add_subparsers(
         dest="mode",
         required=True,
-        help="Mode of Strain Identifier",
+        help="Modes of Strain Identifier",
         metavar=""
     )
 
@@ -71,6 +71,7 @@ kp: Klebsiella pneumoniae"""
         "--analysis_mode",
         required=False,
         default="full",
+        choices=["full", "lite"],
         help="""Whether to make cluster plots and persistence plot.
 Available Options: [full, lite]
 full: Determine strains, clusters and make plots.
@@ -103,6 +104,15 @@ Default is full"""
         help="""The path of the directory where the existing Bakta database locates.
 If provided, the Bakta database will not be downloaded.
 If not provided, defaults to <OUTPUT>/bakta/db""",
+    )
+
+    full_parser.add_argument(
+        "--core_threshold",
+        required=False,
+        type=float,
+        default=0.95,
+        help="""Panaroo Core-genome sample threshold.The frequency of a gene in your sample required to classify it as 'core'.
+Range is 0.0 to 1.0. Default is 0.95."""
     )
 
     full_parser.add_argument(
@@ -151,9 +161,20 @@ If method is nonparametric, default is 100."""
     )
 
     full_parser.add_argument(
+        "--use_cladebreaker",
+        required=False,
+        type=bool,
+        default=True,
+        choices=[True, False],
+        help="""Use CladeBreaker to restrain the strain composition.
+Options are [True, False].
+Default is True.""")
+
+    full_parser.add_argument(
         "--endpoint",
         required=False,
         default= "plateau",
+        choices=["plateau", "peak", "discrepancy", "global"],
         help="""The endpoint method to use for determing clusters and making plots.
 Available Options: [plateau, peak, discrepancy, global]
 plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
@@ -175,9 +196,9 @@ Only used when endpoint method is 'plateau'."""
     full_parser.add_argument(
         "-t",
         "--threads",
-        default= os.cpu_count(),
+        default=1,
         type=int,
-        help = "Thread number. Default is the maximum available."
+        help = "Thread number. Default is 1."
     )
 
     full_parser.add_argument(
@@ -237,6 +258,7 @@ If not provided, defaults to thresher_strain_identifier_redo_endpoint_<YYYY_MM_D
         "--endpoint",
         required=False,
         default= "plateau",
+        choices=["plateau", "peak", "discrepancy", "global"],
         help="""The endpoint method to use for determing clusters and making plots.
 Available Options: [plateau, peak, discrepancy, global]
 plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
@@ -321,9 +343,9 @@ kp: Klebsiella pneumoniae"""
     new_snps_parser.add_argument(
         "-t",
         "--threads",
-        default=os.cpu_count(),
+        default=1,
         type=int,
-        help = "Thread number. Default is the maximum available."
+        help = "Thread number. Default is 1."
     )
 
     new_snps_parser.add_argument(
@@ -424,6 +446,15 @@ If not provided, defaults to <OUTPUT>/bakta/db""",
     )
 
     new_full_parser.add_argument(
+        "--core_threshold",
+        required=False,
+        type=float,
+        default=0.95,
+        help="""Panaroo Core-genome sample threshold. The frequency of a gene in your sample required to classify it as 'core'.
+Range is 0.0 to 1.0. Default is 0.95."""
+    )
+
+    new_full_parser.add_argument(
         "--core_bootstrap_method",
         required=False,
         default="ultrafast",
@@ -468,9 +499,20 @@ If method is nonparametric, default is 100."""
     )
 
     new_full_parser.add_argument(
+        "--use_cladebreaker",
+        required=False,
+        type=bool,
+        default=True,
+        choices=[True, False],
+        help="""Use CladeBreaker to restrain the strain composition.
+Options are [True, False].
+Default is True.""")
+
+    new_full_parser.add_argument(
         "--endpoint",
         required=False,
         default= "plateau",
+        choices=["plateau", "peak", "discrepancy", "global"],
         help="""The endpoint method to use for determing clusters and making plots.
 Available Options: [plateau, peak, discrepancy, global]
 plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
@@ -493,9 +535,9 @@ Only used when endpoint method is 'plateau'. Default is 15"""
     new_full_parser.add_argument(
         "-t",
         "--threads",
-        default=os.cpu_count(),
+        default=1,
         type=int,
-        help = "Thread number. Default is the maximum available."
+        help = "Thread number. Default is 1."
     )
 
     new_full_parser.add_argument(

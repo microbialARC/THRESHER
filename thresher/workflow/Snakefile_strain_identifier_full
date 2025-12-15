@@ -1,6 +1,7 @@
 import os
 import sys
 import pandas as pd
+from thresher.bin.parse_genome_name import parse_genome_name
 
 BASE_PATH = os.path.dirname(os.path.abspath(workflow.snakefile))
 
@@ -11,6 +12,11 @@ if genomes_metadata.shape[1] == 3:
     genomes_metadata[5] = None
 
 genomes_metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+for row_index, name_entry in enumerate(genomes_metadata["genome_name"]):
+        sanitized = parse_genome_name(name_entry)
+        if sanitized != name_entry:
+            genomes_metadata.at[row_index, "genome_name"] = sanitized
+
 genome_path_dict = dict(zip(genomes_metadata["genome_name"], genomes_metadata["genome_path"]))
 
 genome_accession = set(genomes_metadata["accession"])

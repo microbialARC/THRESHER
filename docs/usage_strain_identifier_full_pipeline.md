@@ -36,6 +36,9 @@ options:
                         The path of the directory where the existing Bakta database locates.
                         If provided, the Bakta database will not be downloaded.
                         If not provided, defaults to <OUTPUT>/bakta/db
+  --core_threshold CORE_THRESHOLD
+                        Panaroo Core-genome sample threshold. The frequency of a gene in your sample required to classify it as 'core'.
+                        Range is 0.0 to 1.0. Default is 0.95.
   --core_bootstrap_method {ultrafast,nonparametric}
                         The bootstrap method for core genome phylogeny used for hierarchical clustering.
                         Available options: [ultrafast, nonparametric]
@@ -56,6 +59,10 @@ options:
                         The number of bootstrap replicates for phylogeny of each hierarchical group.
                         If method is ultrafast, default is 1000.
                         If method is nonparametric, default is 100.
+  --use_cladebreaker USE_CLADEBREAKER
+                        Use CladeBreaker to restrain the strain composition.
+                        Options are [True, False].
+                        Default is True.
   --endpoint ENDPOINT   The endpoint method to use for determing clusters and making plots.
                         Available Options: [plateau, peak, discrepancy, global]
                         plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
@@ -67,7 +74,7 @@ options:
                         The plateau length for the plateau endpoint method. Default is 15.
                         Only used when endpoint method is 'plateau'.
   -t THREADS, --threads THREADS
-                        Thread number. Default is the maximum available.
+                        Thread number. Default is 1.
   --prefix PREFIX       Prefix for config file, output files, and analysis naming. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
   --conda_prefix CONDA_PREFIX
                         Directory for conda environments needed for this analysis. If not provided, defaults to <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>
@@ -85,6 +92,9 @@ options:
    - Columns:
      - **Column 1:** Genome name (required for both lite and full modes).
      - **Column 2:** GenBank accession number (required for both lite and full modes). If unavailable, use "new" (all lowercase).
+      
+        How do I know the Genbank accession for my genomes? See the [Genbank Accession](genbank_accession.md) page.
+        
      - **Column 3:** Path to the genome (required for both lite and full modes).
      - **Column 4:** Patient ID (required for full mode).
      - **Column 5:** Collection date in the format `yyyy-mm-dd` (required for full mode).
@@ -114,26 +124,34 @@ options:
 4. **Bakta Database Type(--bakta_db_type) and Path(--bakta_db_path):**
     - Specify the type of Bakta database (`full` or `light`, default is `full`).
     - Path to an existing Bakta database. If not provided, the database will be downloaded to `<OUTPUT>/bakta/db`.
-
-5. **Bootstrap Methods and Numbers(--core/group_bootstrap_method, --core/group_bootstrap_number):**
+5. **Core Threshold(--core_threshold):**
+    - Panaroo Core-genome sample threshold. The frequency of a gene in your sample required to classify it as 'core'.
+    - Range is 0.0 to 1.0. Default is 0.95. 
+6. **Bootstrap Methods and Numbers(--core/group_bootstrap_method, --core/group_bootstrap_number):**
     - Specify bootstrap methods (`ultrafast` or `nonparametric`) and the number of replicates for both core genome phylogeny and group phylogeny.
     - Default methods are `ultrafast`, with default replicate numbers of 1000 for ultrafast and 100 for nonparametric.
+7. **CladeBreaker(--use_cladebreaker):**
+    - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
+    - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
+    - `True` or `False`, default is `True`.
 
-6. **Endpoint Method(--endpoint):**
+8. **Endpoint Method(--endpoint):**
     - Choose the endpoint method for determining clusters and generating plots. Options include `plateau` (default), `peak`, `discrepancy`, and `global`.
     - `plateau`: Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group.
     - `peak`: Phylothreshold set at the peak number of clones defined within the group.
     - `discrepancy`: Phylothreshold set at the point where the discrepancy is minimized within the group.
     - `global`: Phylothreshold set at the first time a global genome is included in any strain within the group.
-7. **Plateau Length(--plateau_length):**
+9. **Plateau Length(--plateau_length):**
     - Specify the plateau length for the plateau endpoint method (default is 15). Only used when the endpoint method is `plateau`.
-8. **Threads(--threads / -t):**
+10. **Threads(--threads / -t):**
     - Number of threads to use (default is the maximum available).
-9. **Prefix(--prefix):**
+    - The default thread count is 1, which may result in lengthy runtimes. It is highly recommended to increase the thread count to improve performance, regardless of dataset size.
+    - Bakta genome annotation runs `{threads}` parallel jobs, each requiring approximately 10 GB of RAM. Ensure your system has sufficient memory to support the requested thread count.
+11. **Prefix(--prefix):**
     - Prefix for config file, output files, and analysis naming. If not provided, defaults to a timestamp in the format `YYYY_MM_DD_HHMMSS`.
-10. **Conda Prefix(--conda_prefix):**
+12. **Conda Prefix(--conda_prefix):**
     - Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.
-11. **Force Execution(--force):**
+13. **Force Execution(--force):**
     - Bypass system compatibility checks (operating system and available RAM) and force execution of the pipeline. This may cause instability or failures.
     
 ## Output

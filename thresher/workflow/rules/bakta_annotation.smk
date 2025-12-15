@@ -41,7 +41,7 @@ rule bakta_annotation:
         for ((i=0; i<${{#genome_names[@]}}; i++)); do
             echo "bakta --force --db {params.db_path} \
             --output {params.output_dir}/bakta_annotation/${{genome_names[$i]}}/ \
-            --threads {threads} \
+            --threads 1 \
             --prefix ${{genome_names[$i]}} \
             --tmp-dir {params.output_dir}/bakta_annotation/tmpdir \
             --genus ${{annotation_genus}} \
@@ -49,12 +49,13 @@ rule bakta_annotation:
             --locus-tag ${{genome_names[$i]}} \
             ${{genome_paths[$i]}}" > {params.script_dir}/${{genome_names[$i]}}_bakta.sh
         done
-
+        
         ls {params.script_dir}/*_bakta.sh > {params.script_dir}/script_list.txt
         sed -i 's#//#/#g' {params.script_dir}/script_list.txt
         module load parallel
         # Run the scripts in parallel using GNU parallel
-        # The number of jobs is set to 5
-        parallel --jobs 5 bash :::: {params.script_dir}/script_list.txt
+        echo "Running {threads} parallel bakta jobs."
+        PARALLEL_JOBS={threads}
+        parallel --jobs ${{PARALLEL_JOBS}} bash :::: {params.script_dir}/script_list.txt
         rm -rf {params.output_dir}/bakta_annotation/tmpdir
         """

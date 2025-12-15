@@ -8,7 +8,8 @@ rule thresher_input:
         iqtree_group_path = os.path.join(config["output"], "iqtree","group_tree","iqtree_group.txt")
     params:
         group_tree_dir = os.path.join(config["output"], "iqtree","group_tree"),
-        thresher_input_dir = os.path.join(config["output"], "thresher", "input")
+        thresher_input_dir = os.path.join(config["output"], "thresher", "input"),
+        use_cladebreaker = config["use_cladebreaker"]
     threads:
         config["threads"]
     output:

@@ -2,7 +2,7 @@
 """THRESHER Main Entry
 This script creates the configuration files and executes the Snakemake workflow.
 """
-VERSION = "0.2.1-beta"
+VERSION = "0.2.2-beta"
 # Import standard libraries and custom modules
 import argparse
 import os
@@ -45,9 +45,9 @@ def build_parser():
     """Build the main argument parser with all subcommands"""
     description = f"""
 Main functions:
-1. Strain Identifier - Determine strains/transmission clusters using phylothresholds.
-2. Genome Profiler - Infer the probability of substitutions and mobile genetic elements.
-3. Evo Simulator - Simulate bacterial genome evolution with substitution, gene gain/loss, and recombination events.
+1. Strain Identifier
+2. Genome Profiler
+3. Evolution Simulator
 
 Usage:
     thresher <positional arguments>

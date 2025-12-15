@@ -32,7 +32,7 @@ options:
                         If provided, the WhatsGNU database will not be downloaded.
                         If not provided, defaults to <OUTPUT>/whatsgnu/db.
   -t THREADS, --threads THREADS
-                        Thread number. Default is the maximum available.
+                        Thread number. Default is 1.
   --prefix PREFIX       Prefix for config file, output files, and analysis naming. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
   --conda_prefix CONDA_PREFIX
                         Directory for conda environments needed for this analysis. If not provided, defaults to OUTPUT/conda_envs_<YYYY_MM_DD_HHMMSS>
@@ -69,7 +69,7 @@ options:
     Path to an existing WhatsGNU database. If not provided, the database will be downloaded to `<OUTPUT>/whatsgnu/db`.
 6. **Threads(--threads / -t):**
 
-    Number of threads to use (default is the maximum available).
+    Number of threads to use (default is 1). It is highly recommended to increase the thread count using this option to improve performance, regardless of dataset size.
 7. **Prefix(--prefix):**
 
     Prefix for config file, output files, and analysis naming. If not provided, defaults to a timestamp in the format `YYYY_MM_DD_HHMMSS`.

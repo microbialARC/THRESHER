@@ -17,15 +17,21 @@ def strain_identifier_full_config(args):
         'whatsgnu_db_path': args.whatsgnu_db_path,
         'bakta_db_type': args.bakta_db_type,
         'bakta_db_path': args.bakta_db_path,
+        'core_threshold': args.core_threshold,
         'core_bootstrap_method': args.core_bootstrap_method,
         'core_bootstrap_number': args.core_bootstrap_number,
         'group_bootstrap_method': args.group_bootstrap_method,
         'group_bootstrap_number': args.group_bootstrap_number,
+        'use_cladebreaker': args.use_cladebreaker,
         'endpoint': args.endpoint,
         'plateau_length': args.plateau_length,
         'threads': args.threads
     }
 
+    # If thread is 1, give warning about long runtime for large datasets
+    if args.threads == 1:
+        print("Warning: Using a single thread may result in long runtimes. Consider using multiple threads for better performance.")
+    
     if not os.path.exists(os.path.join(args.output, "config")):
         os.makedirs(os.path.join(args.output, "config"))
 
@@ -84,15 +90,20 @@ def strain_identifier_new_full_config(args):
         'bakta_db_type': args.bakta_db_type,
         'bakta_db_path': args.bakta_db_path,
         'thresher_output': args.thresher_output,
+        'core_threshold': args.core_threshold,
         'core_bootstrap_method': args.core_bootstrap_method,
         'core_bootstrap_number': args.core_bootstrap_number,
         'group_bootstrap_method': args.group_bootstrap_method,
         'group_bootstrap_number': args.group_bootstrap_number,
+        'use_cladebreaker': args.use_cladebreaker,
         'endpoint': args.endpoint,
         'plateau_length': args.plateau_length,
         'threads': args.threads
     }
-
+    # If thread is 1, give warning about long runtime for large datasets
+    if args.threads == 1:
+        print("Warning: Using a single thread may result in long runtimes. Consider using multiple threads for better performance.")
+    
     if not os.path.exists(os.path.join(args.output, "config")):
         os.makedirs(os.path.join(args.output, "config"))
 
@@ -115,6 +126,9 @@ def genome_profiler_config(args):
         'species': args.species,
         'threads': args.threads
     }
+    # If thread is 1, give warning about long runtime for large datasets
+    if args.threads == 1:
+        print("Warning: Using a single thread may result in long runtimes. Consider using multiple threads for better performance.")
 
     if not os.path.exists(os.path.join(args.output, "config")):
         os.makedirs(os.path.join(args.output, "config"))

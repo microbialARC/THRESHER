@@ -26,71 +26,73 @@ thresher_qc <- function(method_strain_path,
   #All strains identified with the method
   all_strain_id <- sort(unique(method_strain$strains$strain_id))
   #unique comparisons among clones in the group
-  strain_comparisons <- data.frame(t(combn(all_strain_id, 2))) %>%
-    setNames(c("subject", "query")) %>%
-    mutate(
-      # label if the comparison is in the same group
-      same_group = sapply(strsplit(subject, "_"), `[`, 1) == sapply(strsplit(query, "_"), `[`, 1)
-    ) 
-  
-  # Parallel 
-  # Setup parallel processing
-  cl <- makeCluster(detectCores())
-  clusterExport(cl,
-                c("strain_comparisons",
-                  "snp_matrix",
-                  "tree_distance_matrix",
-                  "method_strain"),
-                envir = environment())
-  
-  strain_comparison_results <- do.call(rbind,
-                                       parLapplyLB(cl,
-                                                   seq_len(nrow(strain_comparisons)),
-                                                   function(row_entry){
-                                                     subject_strain_genome <- method_strain$strains$genome[method_strain$strains$strain_id == strain_comparisons$subject[row_entry]]
-                                                     query_strain_genome <- method_strain$strains$genome[method_strain$strains$strain_id == strain_comparisons$query[row_entry]]
-                                                     
-                                                     strain_comparisons_tmp <- data.frame(subject = subject_strain_genome,
-                                                                                          query = rep(query_strain_genome,length(subject_strain_genome)))
-                                                     
-                                                     strain_comparisons_tmp$gsnp <- sapply(seq_len(nrow(strain_comparisons_tmp)),
-                                                                                           function(secondary_row){
-                                                                                             snp_matrix$gsnp[snp_matrix$subject %in% c(strain_comparisons_tmp$subject[secondary_row],
-                                                                                                                                       strain_comparisons_tmp$query[secondary_row]) &
-                                                                                                               snp_matrix$query %in% c(strain_comparisons_tmp$subject[secondary_row],
-                                                                                                                                       strain_comparisons_tmp$query[secondary_row])]
-                                                                                           })
-                                                     
-                                                     strain_comparisons_tmp$phylogeny_distance <- sapply(seq_len(nrow(strain_comparisons_tmp)),
-                                                                                           function(secondary_row){
-                                                                                             tree_distance_matrix[strain_comparisons_tmp$subject[secondary_row],
-                                                                                                                  strain_comparisons_tmp$query[secondary_row]]
-                                                                                           })
-                                                     
-                                                     
-                                                     
-                                                     return(data.frame(
-                                                       subject = strain_comparisons$subject[row_entry],
-                                                       query = strain_comparisons$query[row_entry],
-                                                       snp_average_distance = sum(strain_comparisons_tmp$gsnp) / (length(subject_strain_genome) * length(query_strain_genome)),
-                                                       phylogeny_average_distance = sum(strain_comparisons_tmp$phylogeny_distance) / (length(subject_strain_genome) * length(query_strain_genome)),
-                                                       same_group = strain_comparisons$same_group[row_entry]
-                                                     ))
-                                                     
-                                                   }))
-  stopCluster(cl)
-  rm(cl)
-  #export csv file
-  write.csv(strain_comparison_results,
-            file = paste0(method_name,"_qc_table.csv"),
-            quote = FALSE,
-            row.names = FALSE)
-  
+  if(length(all_strain_id) > 1){
+    # Only proceed if there are more than one strain identified
+    strain_comparisons <- data.frame(t(combn(all_strain_id, 2))) %>%
+      setNames(c("subject", "query")) %>%
+      mutate(
+        # label if the comparison is in the same group
+        same_group = sapply(strsplit(subject, "_"), `[`, 1) == sapply(strsplit(query, "_"), `[`, 1)
+      ) 
     
-  # Plot 
-  strain_comparison_results$same_group <- factor(strain_comparison_results$same_group,
-                                                 levels = c(TRUE,FALSE))
-  
+    # Parallel 
+    # Setup parallel processing
+    cl <- makeCluster(detectCores())
+    clusterExport(cl,
+                  c("strain_comparisons",
+                    "snp_matrix",
+                    "tree_distance_matrix",
+                    "method_strain"),
+                  envir = environment())
+    
+    strain_comparison_results <- do.call(rbind,
+                                         parLapplyLB(cl,
+                                                     seq_len(nrow(strain_comparisons)),
+                                                     function(row_entry){
+                                                       subject_strain_genome <- method_strain$strains$genome[method_strain$strains$strain_id == strain_comparisons$subject[row_entry]]
+                                                       query_strain_genome <- method_strain$strains$genome[method_strain$strains$strain_id == strain_comparisons$query[row_entry]]
+                                                       
+                                                       strain_comparisons_tmp <- data.frame(subject = subject_strain_genome,
+                                                                                            query = rep(query_strain_genome,length(subject_strain_genome)))
+                                                       
+                                                       strain_comparisons_tmp$gsnp <- sapply(seq_len(nrow(strain_comparisons_tmp)),
+                                                                                             function(secondary_row){
+                                                                                               snp_matrix$gsnp[snp_matrix$subject %in% c(strain_comparisons_tmp$subject[secondary_row],
+                                                                                                                                         strain_comparisons_tmp$query[secondary_row]) &
+                                                                                                                 snp_matrix$query %in% c(strain_comparisons_tmp$subject[secondary_row],
+                                                                                                                                         strain_comparisons_tmp$query[secondary_row])]
+                                                                                             })
+                                                       
+                                                       strain_comparisons_tmp$phylogeny_distance <- sapply(seq_len(nrow(strain_comparisons_tmp)),
+                                                                                                           function(secondary_row){
+                                                                                                             tree_distance_matrix[strain_comparisons_tmp$subject[secondary_row],
+                                                                                                                                  strain_comparisons_tmp$query[secondary_row]]
+                                                                                                           })
+                                                       
+                                                       
+                                                       
+                                                       return(data.frame(
+                                                         subject = strain_comparisons$subject[row_entry],
+                                                         query = strain_comparisons$query[row_entry],
+                                                         snp_average_distance = sum(strain_comparisons_tmp$gsnp) / (length(subject_strain_genome) * length(query_strain_genome)),
+                                                         phylogeny_average_distance = sum(strain_comparisons_tmp$phylogeny_distance) / (length(subject_strain_genome) * length(query_strain_genome)),
+                                                         same_group = strain_comparisons$same_group[row_entry]
+                                                       ))
+                                                       
+                                                     }))
+    stopCluster(cl)
+    rm(cl)
+    #export csv file
+    write.csv(strain_comparison_results,
+              file = paste0(method_name,"_qc_table.csv"),
+              quote = FALSE,
+              row.names = FALSE)
+    
+    
+    # Plot 
+    strain_comparison_results$same_group <- factor(strain_comparison_results$same_group,
+                                                   levels = c(TRUE,FALSE))
+    
     distance_plot <- ggplot(strain_comparison_results,
                             aes(x = phylogeny_average_distance,
                                 y = snp_average_distance)) + 
@@ -157,6 +159,23 @@ thresher_qc <- function(method_strain_path,
         height=10)
     print(distance_plot)
     dev.off()
+  }else{
+    # If there is only one strain identified, output a message in the output file
+    one_strain_message <- paste0("Only one strain identified by the method ",method_name,". QC plot and table are not generated.")
+    pdf(file=paste0(method_name,"_qc_plot.pdf"),
+        width=10,
+        height=1)
+    par(mar = c(0, 0, 0, 0))
+    plot.new()
+    text(0.5, 0.5, one_strain_message, cex = 1.2)
+    dev.off()
+
+    write.csv(data.frame(message = one_strain_message),
+              file = paste0(method_name,"_qc_table.csv"),
+              quote = FALSE,
+              row.names = FALSE)
+  }
+  
 }
 
 # Import from snakemake ----

@@ -8,7 +8,16 @@ library(cluster)
 #others 
 library(dplyr)
 library(purrr)
-
+# Helper function
+# Replace any non-alphanumeric characters (except dash/underscore) with underscore in the first column
+parse_genome_name <- function(original_name) {
+  parsed_name <- gsub("[^a-zA-Z0-9._-]", "_", original_name)
+  parsed_name <- gsub("_+", "_", parsed_name)
+  if (parsed_name == "Reference") {
+    parsed_name <- "Reference_Genome"
+  }
+  trimws(parsed_name, whitespace = "_")
+} 
 # Get the input from Snakemake
 comprehensive_tree_path <- snakemake@input[["comprehensive_tree_path"]]
 study_snp_matrix_path <- snakemake@input[["study_snp_matrix_path"]]
@@ -26,12 +35,17 @@ hierarchical_clustering <- function(comprehensive_tree_path,
   study_snp_matrix <- readRDS(study_snp_matrix_path)
   # read mlst results
   mlst_results <- read.csv(mlst_results_path,sep = "\t")
+  mlst_results$genome <- sapply(mlst_results$genome,
+                               parse_genome_name)
   # read the tree
   comprehensive_tree <- ape::read.tree(comprehensive_tree_path)
   # mid-point rooting of the tree
   comprehensive_tree <- phytools::midpoint_root(comprehensive_tree)
   # pre-order the tree
   comprehensive_tree <- Preorder(comprehensive_tree)
+  # replace any non-alphanumeric characters in tip.label
+  comprehensive_tree$tip.label <- sapply(comprehensive_tree$tip.label,
+                                               parse_genome_name)
   # summarize the tree by iterating through nodes in the tree
   all_nodes <- (length(comprehensive_tree$tip.label) + 1):(length(comprehensive_tree$tip.label) + comprehensive_tree$Nnode)
   
@@ -61,7 +75,7 @@ hierarchical_clustering <- function(comprehensive_tree_path,
                                   }
                                 })
   
-  # The typing groups(CC, Clade...) mapped to everything tree
+  # The typing groups(CC, Clade...) mapped to comprehensive tree
   # After excluding the "Unassigned" group:
   # Condition1: if there is only one typing group
   # and this only one typing group covers all genomes in the tree
@@ -69,7 +83,7 @@ hierarchical_clustering <- function(comprehensive_tree_path,
   condition1 <- if(sum(unique(unlist(mlst_results[[3]])) != "Unassigned", na.rm=TRUE) == 1){
     # the genomes of identified groups
     condition1_genomes <- mlst_results$genome[mlst_results[[3]] != "Unassigned"]
-    #iterate comprehensive_tree_sum to find the clades covering all genomes
+    #iterate comprehensive_tree_sum to find the clade covering all genomes
     condition1_clade <- comprehensive_tree_sum[sapply(comprehensive_tree_sum, function(clade) 
       all(condition1_genomes %in% clade$genomes))] %>%
       #the best final clade is the one with least number of genomes 
@@ -85,15 +99,39 @@ hierarchical_clustering <- function(comprehensive_tree_path,
     FALSE
   }
 
-  # Condition2: the pair-wise snp distances of genomes in the tree are all within 500 gsnp
-  # If condition1 and 2 are met, the Hierarchical Clustering will NOT be performed
-  # thus all genomes are in the same group proceeding to the subsequent fine-grained analysis
-  condition2 <- max(study_snp_matrix$gsnp) <= 500
-  
+  # Condition2: Check if there is multiple cluster of pair-wise snp distances within the genomes in the tree if Condition1 is met
+  # The hypothesis here is that:
+  # If there is just one cluster of pair-wise snp distances determined by local minima of the density estimation of pair-wise snp distances
+  # The genomes are closely related enough in terms of single-linkage clustering to not do hierarchical clustering
+  # If there are multiple groups
+  # This means that there is natural discontinuity among the genomes and hierarchical clustering should be performed to separate them
+
+  # 1000bp is a good balance between sensitivity and specificity for separating closely related genomes
+
+  condition2 <- if(condition1){
+    
+    # Use 1000 bp bandwidth to estimate the density
+    snp_density <- density(study_snp_matrix$gsnp,bw = 1000)
+    snp_local_min <- which(diff(sign(diff(snp_density$y))) == 2) + 1
+    snp_density_cluster <- length(snp_local_min) + 1
+    
+    if(snp_density_cluster == 1){
+      # If snp_density_cluster is 1, all genomes are clustered together in one group
+      # thus hierarchical clustering will NOT be performed
+      TRUE
+    }else{
+      # Otherwise, genomes in the tree are not closely related enough
+      # thus hierarchical clustering will be performed
+      FALSE
+    }
+  }else{
+    # If condition1 is not met, condition2 is automatically FALSE
+    FALSE
+  }
   
   if(condition1 & condition2){
-    
-    # Hierarchical Clustering will NOT be performed
+    # If condition1 and 2 are met, the Hierarchical Clustering will NOT be performed
+    # thus all genomes are in the same group proceeding to the subsequent fine-grained analysis
     final_group <- setNames(rep(1,length(comprehensive_tree$tip.label)),
                             comprehensive_tree$tip.label)
     
@@ -130,13 +168,13 @@ hierarchical_clustering <- function(comprehensive_tree_path,
                              
                              # Find the SHaLRT/bootstrap support of this HC group
                              sum_entry <- which(sapply(comprehensive_tree_sum,
-                                                       function(summary){identical(sort(summary$genomes),
+                                                       function(summary){identical(sort(as.character(summary$genomes)),
                                                                                    sort(group_genomes))}))
                              
                              group_SHaLRT_support <- comprehensive_tree_sum[[sum_entry]]$SHaLRT_support
                              group_bootstrap_support <- comprehensive_tree_sum[[sum_entry]]$bootstrap_support
                              
-                             # If all genomes over 1000gsnp limit? 
+                             # If all genomes over 1000 gsnp limit?
                              group_study_snp_matrix <- study_snp_matrix[(study_snp_matrix$subject %in% group_genomes) &
                                                                           (study_snp_matrix$query %in% group_genomes),]
                              
