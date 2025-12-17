@@ -50,7 +50,14 @@ def validate_strain_identifier_full(args):
     for genome_path in input_df["genome_path"]:
         if not os.path.exists(genome_path):
             raise ValidationError(f"Genome file not found: {genome_path}")
-
+        
+    # Ensure no duplicate genome names
+    if input_df["genome_name"].duplicated().any():
+        raise ValidationError("Duplicate genome names found in the input file. Please ensure all genome names are unique.")
+    # Ensure no duplicate genome paths
+    if input_df["genome_path"].duplicated().any():
+        raise ValidationError("Duplicate genome paths found in the input file. Please ensure all genome paths are unique.")
+    
     # Print info about number of genomes and patient IDs if applicable
     print(f"Input file read successfully. Number of genomes: {input_df.shape[0]}")
     if args.analysis_mode == "lite":
@@ -300,6 +307,13 @@ def validate_strain_identifier_new_snps(args):
     for genome_path in new_metadata_df["genome_path"]:
         if not os.path.exists(genome_path):
             raise ValidationError(f"Genome file not found: {genome_path}")
+        
+    # Ensure no duplicate genome names
+    if new_metadata_df["genome_name"].duplicated().any():
+        raise ValidationError("Duplicate genome names found in the new metadata file. Please ensure all genome names are unique.")
+    # Ensure no duplicate genome paths
+    if new_metadata_df["genome_path"].duplicated().any():
+        raise ValidationError("Duplicate genome paths found in the new metadata file. Please ensure all genome paths are unique.")
     # Print info about number of genomes in the new metadata file
     print(f"New metadata file read successfully. Number of genomes: {new_metadata_df.shape[0]}")
 
@@ -334,6 +348,13 @@ def validate_strain_identifier_new_snps(args):
     overlapping_genome = set(new_metadata_df["genome_name"]).intersection(set(original_metadata_df["genome_name"]))
     if overlapping_genome:
         raise ValidationError(f"Overlapping genome names found between new and original metadata files: {', '.join(overlapping_genome)}")
+    
+    # Ensure no duplicate genome names
+    if original_metadata_df["genome_name"].duplicated().any():
+        raise ValidationError("Duplicate genome names found in the original metadata file. Please ensure all genome names are unique.")
+    # Ensure no duplicate genome paths
+    if original_metadata_df["genome_path"].duplicated().any():
+        raise ValidationError("Duplicate genome paths found in the original metadata file. Please ensure all genome paths are unique.")
     
     # Check the existing THRESHER directory
     if not args.thresher_output or not os.path.exists(args.thresher_output):
@@ -441,6 +462,12 @@ def validate_strain_identifier_new_full(args):
     # Print info about number of genomes in the new metadata file
     print(f"New metadata file read successfully. Number of genomes: {new_metadata_df.shape[0]}")
     
+    # Ensure no duplicate genome names
+    if new_metadata_df["genome_name"].duplicated().any():
+        raise ValidationError("Duplicate genome names found in the new metadata file. Please ensure all genome names are unique.")
+    # Ensure no duplicate genome paths
+    if new_metadata_df["genome_path"].duplicated().any():
+        raise ValidationError("Duplicate genome paths found in the new metadata file. Please ensure all genome paths are unique.")
     # Check if transmission clusters can be determined based on if previous THRESHER output contains cluster summary file
     if os.path.exists(os.path.join(args.thresher_output,  "thresher", "output", "clusters_summary.RDS")):
         print("Previous THRESHER output contains cluster summary file.")
