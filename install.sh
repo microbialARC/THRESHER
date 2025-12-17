@@ -31,6 +31,20 @@ if ! command -v conda &> /dev/null; then
     exit 1
 fi
 
+# Check if GNU parallel is installed
+# Try loading module first
+module load parallel 2>/dev/null || true
+
+if ! command -v parallel &> /dev/null; then
+    echo "GNU parallel is not installed."
+    echo "Please install it before running thresher:"
+    echo ""
+    echo "  Ubuntu/Debian:  sudo apt install parallel"
+    echo "  Fedora/RHEL:    sudo dnf install parallel"
+    echo ""
+    exit 1
+fi
+
 # Initialize conda for bash shell
 if command -v conda >/dev/null 2>&1; then
         eval "$(conda shell.bash hook)" || . "$(conda info --base)/etc/profile.d/conda.sh"

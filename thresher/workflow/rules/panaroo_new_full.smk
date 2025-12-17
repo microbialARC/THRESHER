@@ -2,10 +2,11 @@ rule panaroo_new_full:
     conda:
         os.path.join(BASE_PATH,"envs/panaroo.yaml")
     input:
-        new_gff3 = [os.path.join(config["output"],"bakta_annotation",f"{genome}",f"{genome}.gff3") for genome in list(new_genome_path_dict.keys())]
+        bakta_complete = os.path.join(config["output"], "bakta_annotation", ".bakta_complete")
     params:
         thresher_output = config["thresher_output"],
         output_dir = config["output"],
+        new_gff3 = [os.path.join(config["output"],"bakta_annotation",f"{genome}",f"{genome}.gff3") for genome in list(new_genome_path_dict.keys())],
         core_threshold = config["core_threshold"]
     output:
         panaroo_new_graph = os.path.join(config["output"],"panaroo_new","final_graph.gml"),
@@ -25,7 +26,7 @@ rule panaroo_new_full:
 
         mkdir -p {params.output_dir}/panaroo_new/
         mkdir -p {params.output_dir}/panaroo_new/input/
-        cp {input.new_gff3} {params.output_dir}/panaroo_new/input/
+        cp {params.new_gff3} {params.output_dir}/panaroo_new/input/
         panaroo -i {params.output_dir}/panaroo_new/input/*.gff3 \
         -o {params.output_dir}/panaroo_new/ \
         --remove-invalid-genes \

@@ -82,7 +82,7 @@ rule mummer4_new_full:
         sed -i 's#//#/#g' {params.output_dir}/mummer4_study/scripts/script_list.txt
         # Run the scripts in parallel using GNU parallel
         module load parallel
-        parallel --jobs {threads} bash :::: {params.output_dir}/mummer4_study/scripts/script_list.txt
+        parallel --silent --jobs {threads} bash :::: {params.output_dir}/mummer4_study/scripts/script_list.txt
         rm {params.output_dir}/mummer4_study/scripts/script_list.txt
         """
     

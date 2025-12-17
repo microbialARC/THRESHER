@@ -30,8 +30,7 @@ rule all:
         # Bakta annotation
         # If the bakta database is not provided by users, the database will be downloaded
         [os.path.join(config["output"],"bakta_db","bakta.db")] if config["bakta_db_path"] == "None" else [],
-        expand(os.path.join(config["output"], "bakta_annotation","{genome_name}","{genome_name}.gff3"), genome_name=genome_path_dict.keys()),
-        expand(os.path.join(config["output"], "bakta_annotation","{genome_name}","{genome_name}.faa"), genome_name=genome_path_dict.keys()),
+        os.path.join(config["output"], "bakta_annotation", ".bakta_complete"),
         # Assembly scan
         expand(os.path.join(config["output"], "assembly_scan","{genome_name}_assembly_scan.txt"),genome_name=genome_path_dict.keys()),
         # Mummer4

@@ -36,7 +36,7 @@ rule dataset_topgenomes_profiler:
         sed -i 's#//#/#g' {params.output_dir}/scripts/script_list.txt
         # Run the scripts in parallel using GNU parallel
         module load parallel
-        parallel --jobs {threads} bash :::: {params.output_dir}/scripts/script_list.txt
+        parallel --silent --jobs {threads} bash :::: {params.output_dir}/scripts/script_list.txt
         rm -rf {params.output_dir}/scripts
         find {params.output_dir} -name "*.fna" | awk -F"/" '{{print $NF}}' | sed 's/\\.fna$//g' > {output.actual_download_topgenomes}
         """

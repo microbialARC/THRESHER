@@ -31,6 +31,6 @@ rule mummer4_global_new_full:
         ls {params.output_dir}/mummer4_global/scripts/dnadiff_*.sh > {params.output_dir}/mummer4_global/scripts/script_list.txt
         sed -i 's#//#/#g' {params.output_dir}/mummer4_global/scripts/script_list.txt
         module load parallel
-        parallel --jobs {threads} bash :::: {params.output_dir}/mummer4_global/scripts/script_list.txt
+        parallel --silent --jobs {threads} bash :::: {params.output_dir}/mummer4_global/scripts/script_list.txt
         rm {params.output_dir}/mummer4_global/scripts/script_list.txt
         """

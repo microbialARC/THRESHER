@@ -35,7 +35,7 @@ rule blastx_mrsa_new:
         ls {params.script_dir}/*_blastx_mrsa.sh > {params.script_dir}/script_list.txt
         sed -i 's#//#/#g' {params.script_dir}/script_list.txt
         module load parallel
-        parallel --jobs {threads} bash :::: {params.script_dir}/script_list.txt
+        parallel --silent --jobs {threads} bash :::: {params.script_dir}/script_list.txt
         """
 
 rule blastx_mrsa_results_new_snps:

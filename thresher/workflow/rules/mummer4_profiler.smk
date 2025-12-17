@@ -31,7 +31,7 @@ rule mummer4_profiler_exec:
         
         # Parallel execution of MUMmer4 commands from the script list 
         module load parallel    
-        parallel --jobs {threads} bash :::: {input.script_list}
+        parallel --silent --jobs {threads} bash :::: {input.script_list}
         
         # Generate the coords_list and snps_list files as snakemake output checkpoints
         ls $output_dir/*.coords > $coords_list_path
