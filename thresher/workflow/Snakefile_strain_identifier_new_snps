@@ -32,7 +32,9 @@ original_genome_path_dict = dict(zip(original_metadata["genome_name"], original_
 rule all:
     input:
         # Updated SNP matrix 
+        expand(os.path.join(config["output"], "mummer4","scripts","dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys()),
         expand(os.path.join(config["output"], "mummer4","{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys()),
+        os.path.join(config["output"],"mummer4",".mummer4_new_snps_complete"),
         os.path.join(config["output"],"mummer4","study_snp_matrix_new.RDS"),
         # Updated New Thresher output
         os.path.join(config["output"], "thresher", "output", "new_plateau.RDS"),
@@ -55,13 +57,16 @@ rule all:
         [os.path.join(config["output"], "thresher", "output", "clusters_summary_new_snps.csv")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
         [os.path.join(config["output"], "thresher", "output", "genomes_summary_new_snps.csv")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
         # Updated blastx MRSA results will be generated only when the species is S. aureus
+        [expand(os.path.join(config["output"],"blastx","mrsa","scripts","{genome_name}_blastx_mrsa.sh"), genome_name=new_genome_path_dict.keys())] if config["species"] == "sau" else [],
         [expand(os.path.join(config["output"],"blastx","mrsa","output","raw","{genome_name}_blastx_mrsa.tsv"), genome_name=new_genome_path_dict.keys())] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_genomes.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_plateau_strains.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_peak_strains.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_discrepancy_strains.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_global_strains.csv")] if config["species"] == "sau" else [],
-        # MLST 
+        # MLST
+        expand(os.path.join(config["output"], "mlst","raw","{genome_name}_mlst.csv"),genome_name=new_genome_path_dict.keys()),
+        os.path.join(config["output"], "mlst","raw","mlst_raw.txt"),
         os.path.join(config["output"], "mlst","summary","mlst_results.csv")
 
 # For the rules, if the suffix is "_new", it means the rule is designed for both new_snps and new_full workflows

@@ -42,6 +42,7 @@ rule all:
         [os.path.join(config["output"], "thresher", "output", "clusters_summary.csv")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
         [os.path.join(config["output"], "thresher", "output", "genomes_summary_new_full.csv")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
         # Updated blastx MRSA results will be generated only when the species is S. aureus
+        [expand(os.path.join(config["output"],"blastx","mrsa","scripts","{genome_name}_blastx_mrsa.sh"), genome_name=new_genome_path_dict.keys())] if config["species"] == "sau" else [],
         [expand(os.path.join(config["output"],"blastx","mrsa","output","raw","{genome_name}_blastx_mrsa.tsv"), genome_name=new_genome_path_dict.keys())] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_genomes.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_plateau_strains.csv")] if config["species"] == "sau" else [],
@@ -49,17 +50,26 @@ rule all:
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_discrepancy_strains.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_global_strains.csv")] if config["species"] == "sau" else [],
         # MLST
+        expand(os.path.join(config["output"], "mlst","raw","{genome_name}_mlst.csv"),genome_name=new_genome_path_dict.keys()),
+        os.path.join(config["output"], "mlst","raw","mlst_raw.csv"),
         os.path.join(config["output"], "mlst","summary","mlst_results.csv"),
         # Assembly scan
         expand(os.path.join(config["output"], "assembly_scan","{genome_name}_assembly_scan.txt"),genome_name=new_genome_path_dict.keys()),
+        os.path.join(config["output"], "assembly_scan",".assembly_scan_new_full_complete"),
         # Bakta annotation
         [os.path.join(config["output"],"bakta_db","bakta.db")] if config["bakta_db_path"] == "None" else [],
         bakta_complete = os.path.join(config["output"], "bakta_annotation", ".bakta_complete"),
         # Mummer4
+        expand(os.path.join(config["output"], "mummer4_study", "scripts", "dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys()),
         expand(os.path.join(config["output"], "mummer4_study","{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys()),
+        expand(os.path.join(config["output"], "mummer4_global", "scripts", "dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys()),
         expand(os.path.join(config["output"], "mummer4_global","{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys()),
+        os.path.join(config["output"], "mummer4_study", ".mummer4_study_complete"),
+        os.path.join(config["output"], "mummer4_global", ".mummer4_global_complete"),
         os.path.join(config["output"], "mummer4_global", "global_snp_matrix.RDS"),
         os.path.join(config["output"], "mummer4_study", "study_snp_matrix.RDS"),
+         # WhatsGNU
+        expand(os.path.join(config["output"], "whatsgnu","whatsgnu_results","{genome_name}_WhatsGNU_topgenomes.txt"),genome_name=new_genome_path_dict.keys()),
         # Datasets
         # Because the avaiablity of the GenBank genomes at NCBI may change over time
         # the expected download genomes and the actual download genomes are recorded separately

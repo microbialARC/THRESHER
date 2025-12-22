@@ -1,17 +1,15 @@
-rule blastx_mrsa_new:
+rule blastx_mrsa_new_full_cmd:
     conda:
         os.path.join(BASE_PATH,"envs/blast.yaml")
     input:
         genome_paths = list(new_genome_path_dict.values())
-    threads:
-        config["threads"]
     params:
         genome_names = list(new_genome_path_dict.keys()),
         output_dir = os.path.join(config["output"],"blastx","mrsa","output","raw"),
         script_dir = os.path.join(config["output"],"blastx","mrsa","scripts"),
         db = os.path.join(BASE_PATH,"db/MRSA/sequences.fasta")
     output:
-        blastx_mrsa = [os.path.join(config["output"],"blastx","mrsa","output","raw",f"{genome}_blastx_mrsa.tsv") for genome in list(new_genome_path_dict.keys())]
+        blastx_mrsa_new_cmd = expand(os.path.join(config["output"],"blastx","mrsa","scripts","{genome_name}_blastx_mrsa.sh"), genome_name=new_genome_path_dict.keys())
     shell:
         """
         # Create output directory
@@ -29,16 +27,23 @@ rule blastx_mrsa_new:
             -query ${{genome_paths[$i]}} \
             -db {params.db} \
             -out {params.output_dir}/${{genome_names[$i]}}_blastx_mrsa.tsv" > {params.script_dir}/${{genome_names[$i]}}_blastx_mrsa.sh
+            chmod +x {params.script_dir}/${{genome_names[$i]}}_blastx_mrsa.sh
         done
-
-        # Parallel
-        ls {params.script_dir}/*_blastx_mrsa.sh > {params.script_dir}/script_list.txt
-        sed -i 's#//#/#g' {params.script_dir}/script_list.txt
-        module load parallel
-        parallel --silent --jobs {threads} bash :::: {params.script_dir}/script_list.txt
         """
 
-rule blastx_mrsa_results_new_full:
+rule blastx_mrsa_new_full_single:
+    conda:
+        os.path.join(BASE_PATH,"envs/blast.yaml")
+    input:
+        blastx_mrsa_new_full_single_cmd = os.path.join(config["output"],"blastx","mrsa","scripts","{genome_name}_blastx_mrsa.sh")
+    output:
+        blastx_mrsa_new_full_single_result = os.path.join(config["output"],"blastx","mrsa","output","raw","{genome_name}_blastx_mrsa.tsv")
+    shell:
+        """
+        bash {input.blastx_mrsa_new_full_single_cmd}
+        """
+
+rule blastx_mrsa_new_full_results:
     conda:
         os.path.join(BASE_PATH,"envs/R_env.yaml")
     input:

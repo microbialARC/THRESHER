@@ -7,9 +7,10 @@ rule whatsgnu:
         species = config["species"],
         genome_names = list(genome_path_dict.keys()),
         db_path = config["whatsgnu_db_path"],
-        output_dir = config["output"]
+        output_dir = config["output"],
+        tmp_input_dir = os.path.join(config["output"],"whatsgnu","tmp_input_faa")
     output:
-        whatsgnu_output = [os.path.join(config["output"],"whatsgnu",f"{genome}",f"{genome}_WhatsGNU_topgenomes.txt") for genome in list(genome_path_dict.keys())]
+        whatsgnu_output = [os.path.join(config["output"],"whatsgnu","whatsgnu_results",f"{genome}_WhatsGNU_topgenomes.txt") for genome in list(genome_path_dict.keys())]
     shell:
         """
         genome_names=({params.genome_names})
@@ -49,16 +50,30 @@ rule whatsgnu:
             fi
         fi
         
+        # From Thresher v0.2.3, instead of running WhatsGNU for each genome in a loop
+        # Provide a folder with all the genomes to WhatsGNU_main.py as input
+        # This speeds up the process significantly by avoiding repeated loading of the WhatsGNU database
+        
+        # Create a temporary directory to hold the input genomes
+
+        mkdir -p {params.tmp_input_dir}
+        # Copy all input faa files to the temporary directory
+        for ((i=0; i<${{#genome_names[@]}}; i++)); do
+            cp "${{input_faa[$i]}}" "{params.tmp_input_dir}/${{genome_names[$i]}}.faa"
+        done
+
+        # Run WhatsGNU_main.py on the entire input directory
         cd {params.output_dir}/whatsgnu/
 
-        for ((i=0; i<${{#genome_names[@]}}; i++)); do
-            WhatsGNU_main.py \
-            -d "${{db_path}}" \
-            -dm "${{whatsgnu_mode}}" \
-            --force \
-            -t \
-            -tn 20 \
-            -o "${{genome_names[$i]}}" \
-            "${{input_faa[$i]}}"
-        done
+        WhatsGNU_main.py \
+        -d "${{db_path}}" \
+        -dm "${{whatsgnu_mode}}" \
+        --force \
+        -t \
+        -tn 20 \
+        -o "whatsgnu_results" \
+        "{params.tmp_input_dir}/"
+
+        # Remove temporary input directory
+        rm -rf {params.tmp_input_dir}
         """

@@ -1,6 +1,4 @@
-rule mummer4_new_snps:
-    conda:
-        os.path.join(BASE_PATH,"envs/mummer4.yaml")
+rule mummer4_new_snps_cmd:
     input:
         original_genome_paths = list(original_genome_path_dict.values()),
         new_genome_paths = list(new_genome_path_dict.values())
@@ -8,10 +6,8 @@ rule mummer4_new_snps:
         original_genome_names = list(original_genome_path_dict.keys()),
         new_genome_names = list(new_genome_path_dict.keys()),
         output_dir = config["output"]
-    threads:
-        config["threads"]
     output:
-        expand(os.path.join(config["output"], "mummer4", "{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys())
+        mummer4_new_snps_cmd = expand(os.path.join(config["output"], "mummer4_study", "scripts", "dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys())
     shell:
         """
         mkdir -p {params.output_dir}/mummer4/
@@ -74,15 +70,28 @@ rule mummer4_new_snps:
             # Make the script executable
             chmod +x {params.output_dir}/mummer4/scripts/dnadiff_${{ref_genome}}.sh
         done
-
-        # Create a list of all script files
-        ls {params.output_dir}/mummer4/scripts/dnadiff_*.sh > {params.output_dir}/mummer4/scripts/script_list.txt
-        # This is critical 
-        # No // in the file containing paths to the scripts otherwise there would be error!!!
-        sed -i 's#//#/#g' {params.output_dir}/mummer4/scripts/script_list.txt
-        # Run the scripts in parallel using GNU parallel
-        module load parallel
-        parallel --silent --jobs {threads} bash :::: {params.output_dir}/mummer4/scripts/script_list.txt
-        rm {params.output_dir}/mummer4/scripts/script_list.txt
         """
-    
+
+rule mummer4_new_snps_single:
+    conda:
+        os.path.join(BASE_PATH,"envs/mummer4.yaml")
+    input:
+        mummer4_new_snps_single_cmd = os.path.join(config["output"], "mummer4_study", "scripts", "dnadiff_{genome_name}.sh")
+    output:
+        mummer4_new_snps_single_result = os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report")
+    params:
+        output_dir = config["output"]
+    shell:
+        """
+        bash {input.mummer4_new_snps_single_cmd}
+        """
+
+rule mummer4_new_snps_all:
+    input:
+        mummer4_new_snps_results = expand(os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report"),genome_name=new_genome_path_dict.keys())
+    output:
+        mummer4_new_snps_done = os.path.join(config["output"], "mummer4_study", ".mummer4_new_snps_complete")
+    shell:
+        """
+        touch {output.mummer4_new_snps_done}
+        """

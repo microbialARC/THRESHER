@@ -1,6 +1,6 @@
 rule unique_topgenomes_new_full:
     input:
-        whatsgnu_output = [os.path.join(config["output"],"whatsgnu",f"{genome}",f"{genome}_WhatsGNU_topgenomes.txt") for genome in list(new_genome_path_dict.keys())]
+        whatsgnu_output = [os.path.join(config["output"],"whatsgnu","whatsgnu_results",f"{genome}_WhatsGNU_topgenomes.txt") for genome in list(new_genome_path_dict.keys())]
     output:
         expected_download_topgenomes = os.path.join(config["output"],"datasets_topgenomes","expected_download_topgenomes.txt")
     params:

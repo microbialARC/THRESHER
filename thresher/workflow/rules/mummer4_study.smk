@@ -1,15 +1,11 @@
-rule mummer4_study:
-    conda:
-        os.path.join(BASE_PATH,"envs/mummer4.yaml")
+rule mummer4_study_cmd:
     input:
         genome_paths = list(genome_path_dict.values())
     params:
         genome_names = list(genome_path_dict.keys()),
         output_dir = config["output"]
-    threads:
-        config["threads"]
     output:
-        reports = expand(os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report"), genome_name=genome_path_dict.keys())
+        mummer4_study_cmd = expand(os.path.join(config["output"], "mummer4_study", "scripts", "dnadiff_{genome_name}.sh"), genome_name=genome_path_dict.keys())
     shell:
         """
         mkdir -p {params.output_dir}/mummer4_study/
@@ -36,15 +32,30 @@ rule mummer4_study:
             # Make the script executable
             chmod +x {params.output_dir}/mummer4_study/scripts/dnadiff_${{ref_genome}}.sh
         done
-
-        # Create a list of all script files
-        ls {params.output_dir}/mummer4_study/scripts/dnadiff_*.sh > {params.output_dir}/mummer4_study/scripts/script_list.txt
-        # This is critical 
-        # No // in the file containing paths to the scripts otherwise there would be error!!!
-        sed -i 's#//#/#g' {params.output_dir}/mummer4_study/scripts/script_list.txt
-        # Run the scripts in parallel using GNU parallel
-        module load parallel
-        parallel --silent --jobs {threads} bash :::: {params.output_dir}/mummer4_study/scripts/script_list.txt
-        rm {params.output_dir}/mummer4_study/scripts/script_list.txt
         """
-    
+
+rule mummer4_study_single:
+    conda:
+        os.path.join(BASE_PATH,"envs/mummer4.yaml")
+    input:
+        mummer4_study_single_cmd = os.path.join(config["output"], "mummer4_study", "scripts", "dnadiff_{genome_name}.sh")
+    output:
+        mummer4_study_single_result = os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report")
+    params:
+        output_dir = config["output"]
+    threads:
+        config["threads"]
+    shell:
+        """
+        bash {input.mummer4_study_single_cmd}
+        """
+
+rule mummer4_study_all:
+    input:
+        mummer4_results = expand(os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report"),genome_name=genome_path_dict.keys())
+    output:
+        mummer4_study_done = os.path.join(config["output"], "mummer4_study", ".mummer4_study_complete")
+    shell:
+        """
+        touch {output.mummer4_study_done}
+        """

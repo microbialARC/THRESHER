@@ -20,9 +20,9 @@ rule iqtree_comprehensive:
         # put -redo to overwrite previous runs
         
         if [ "{params.bootstrap_method}" == "nonparametric" ]; then
-            iqtree -redo -T {threads} -s {input.core_aln} -m GTR+R --boot {params.bootstrap_number} --bnni -alrt {params.bootstrap_number} --prefix comprehensive_tree
+            iqtree -redo -T AUTO --threads-max {threads} -s {input.core_aln} -m GTR+R --boot {params.bootstrap_number} --bnni -alrt {params.bootstrap_number} --prefix comprehensive_tree
         elif [ "{params.bootstrap_method}" == "ultrafast" ]; then
-            iqtree -redo -T {threads} -s {input.core_aln} -m GTR+R --ufboot {params.bootstrap_number} --bnni -alrt {params.bootstrap_number} --prefix comprehensive_tree
+            iqtree -redo -T AUTO --threads-max {threads} -s {input.core_aln} -m GTR+R --ufboot {params.bootstrap_number} --bnni -alrt {params.bootstrap_number} --prefix comprehensive_tree
         fi
         """
  

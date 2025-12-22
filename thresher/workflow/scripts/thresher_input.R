@@ -352,14 +352,26 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                               
                                                               unique_strain_df$correction[is.na(unique_strain_df$correction)] <- FALSE
                                                               
-                                                              # Fill in the bootstrap support
-                                                              for(id in unique(unique_strain_df$strain_id[is.na(unique_strain_df$bootstrap_support)])){
+                                                              # Fill in bootstrap support for strains without a value
+                                                              for (strain_id in unique(unique_strain_df$strain_id[is.na(unique_strain_df$bootstrap_support)])) {
+                                                                idx <- which(sapply(unique_strain_tree, \(x) x$strain_id == strain_id))
                                                                 
-                                                                if(suppressWarnings((is.null(unique_strain_tree[[as.integer(id)]]$bootstrap_support)))){
-                                                                  unique_strain_df$bootstrap_support[unique_strain_df$strain_id == id] <- 0
-                                                                }else{
-                                                                  unique_strain_df$bootstrap_support[unique_strain_df$strain_id == id] <- unique_strain_tree[[as.integer(id)]]$bootstrap_support 
+                                                                if(length(idx) == 0){
+                                                                  # if length(idx) == 0, find the strain using genomes
+                                                                  strain_genomes <- unique_strain_df$genome[unique_strain_df$strain_id == strain_id]
+                                                                  idx <- which(sapply(unique_strain_tree, \(x) all(strain_genomes %in% x$snp_only_genomes)))  
                                                                 }
+                                                                # If still length(idx) == 0, then set bootstrap_support to 0
+                                                                if(length(idx) == 0){
+                                                                  unique_strain_df$bootstrap_support[unique_strain_df$strain_id == strain_id] <- 0
+                                                                  next
+                                                                }else{
+                                                                  bootstrap_val <- unique_strain_tree[[idx]]$bootstrap_support
+                                                                  if(is.na(bootstrap_val)){
+                                                                    bootstrap_val <- 0
+                                                                  }
+                                                                }
+                                                                unique_strain_df$bootstrap_support[unique_strain_df$strain_id == strain_id] <- bootstrap_val
                                                               }
                                                               
                                                               # Count before-correction singleton/clones

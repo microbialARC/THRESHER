@@ -4,7 +4,7 @@ import glob as glob
 
 #Import from snakemake
 species = snakemake.params.species
-mlst_raw = pd.read_csv(snakemake.input.mlst_output, sep=',', header=None)
+mlst_raw = pd.read_csv(snakemake.input.mlst_output, sep='\t', header=None)
 metadata = pd.read_csv(snakemake.params.metadata, sep='\t', header=None)
 analysis_mode = snakemake.params.analysis_mode
 from thresher.bin.parse_genome_name import parse_genome_name

@@ -1,22 +1,28 @@
-rule mlst_output_new:
+rule mlst_output_single:
     conda:
         os.path.join(BASE_PATH,"envs/mlst.yaml")
     input:
-        new_genome_paths = list(new_genome_path_dict.values())
+        genome_path = lambda wc: new_genome_path_dict[wc.genome_name]
     output:
-        mlst_output = os.path.join(config["output"], "mlst","raw","mlst_raw.csv")
+        mlst_output_single = os.path.join(config["output"], "mlst","raw","{genome_name}_mlst.csv")
     params:
         output_dir=os.path.join(config["output"], "mlst","raw")
     shell:
         """
-        mkdir -p {params.output_dir}
-        for genome in {input.new_genome_paths}; do
-            mlst --csv $genome > {params.output_dir}/$(basename $genome)_mlst.csv
-        done
-        cat {params.output_dir}/*_mlst.csv > {output.mlst_output}
+        mlst {input.genome_path} > {output.mlst_output_single}
         """
 
-rule mlst_results_new: 
+rule mlst_output_all:
+    input:
+        mlst_outputs = expand(os.path.join(config["output"], "mlst","raw","{genome_name}_mlst.csv"), genome_name=list(new_genome_path_dict.keys()))
+    output:
+        mlst_output = os.path.join(config["output"], "mlst","raw","mlst_raw.csv")
+    shell:
+        """
+        cat {input.mlst_outputs} > {output.mlst_output}
+        """
+
+rule mlst_results: 
     input:
         mlst_output = os.path.join(config["output"], "mlst","raw","mlst_raw.csv")
     output:

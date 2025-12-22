@@ -21,8 +21,19 @@ os.makedirs(script_path, exist_ok=True)
 
 for file in whatsgnu_output_file:
     study_genome = os.path.basename(file).replace("_WhatsGNU_topgenomes.txt", "")
-    global_genomes_df = pd.read_csv(file, sep='\t', header=None, skiprows=1).iloc[:, 0]
-    global_genomes = [genome for genome in global_genomes_df if 'GCA_' in genome]
+    try:
+        global_genomes_df = pd.read_csv(file, sep='\t', header=None, skiprows=1)
+        if global_genomes_df.empty:
+            print(f"No top genomes found for {study_genome}, skipping.")
+            continue
+        global_genomes_df = global_genomes_df.iloc[:, 0]
+        global_genomes = [genome for genome in global_genomes_df if 'GCA_' in genome]
+    except pd.errors.EmptyDataError:
+        print(f"No data in {file}, skipping.")
+        # Generate the script to create an empty concatenated report
+        with open(os.path.join(script_path, f'dnadiff_{study_genome}.sh'), 'w') as f:
+            f.write(f"echo '' > {output_path}/{study_genome}_concatenated.report\n")
+        continue
 
     # Because for some whatsgnu database, the genome name may contain different naming styles
     # First split by "_", then find the position of "GCA".

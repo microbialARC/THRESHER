@@ -25,9 +25,9 @@ rule iqtree_groups:
         for aln in $(cat {input.snippy_aln}); do
             group_name=$(basename "$aln" | sed 's#_cleaned.aln##')
             if [ "{params.bootstrap_method}" == "nonparametric" ]; then
-                iqtree -redo -s "${{aln}}" -m GTR+R --boot {params.bootstrap_number} -T {threads} --prefix "${{group_name}}"
+                iqtree -redo -s "${{aln}}" -m GTR+R --boot {params.bootstrap_number} -T AUTO --threads-max {threads} --prefix "${{group_name}}"
             elif [ "{params.bootstrap_method}" == "ultrafast" ]; then
-                iqtree -redo -s "${{aln}}" -m GTR+R --ufboot {params.bootstrap_number} -T {threads} --prefix "${{group_name}}"
+                iqtree -redo -s "${{aln}}" -m GTR+R --ufboot {params.bootstrap_number} -T AUTO --threads-max {threads} --prefix "${{group_name}}"
             fi
         done
 
