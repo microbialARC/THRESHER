@@ -43,8 +43,6 @@ rule mummer4_study_single:
         mummer4_study_single_result = os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report")
     params:
         output_dir = config["output"]
-    threads:
-        config["threads"]
     shell:
         """
         bash {input.mummer4_study_single_cmd}
