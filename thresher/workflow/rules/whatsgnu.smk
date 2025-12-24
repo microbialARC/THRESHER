@@ -31,7 +31,7 @@ rule whatsgnu:
                 whatsgnu_mode="ortholog"
             elif [ "{params.species}" == "kp" ]; then
                 wget -O {params.output_dir}/whatsgnu/db/whatsgnu_db.zip https://zenodo.org/record/7812697/files/Kp.zip?download=1
-                unzip {params.output_dir}/whatsgnu/db/whatsgnu_db.zip -d {params.output_dir}/whatsgnu/db
+                unzip -o {params.output_dir}/whatsgnu/db/whatsgnu_db.zip -d {params.output_dir}/whatsgnu/db
                 db_path="{params.output_dir}/whatsgnu/db/Kp_Ortholog_8752.pickle"
                 whatsgnu_mode="ortholog"
             elif [ "{params.species}" == "sepi" ]; then
