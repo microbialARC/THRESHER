@@ -113,38 +113,40 @@ update_global_snp_matrix <- function(output_list,
   unique_comparisons <- do.call(rbind,
                                 lapply(whatsgnu_list,
                                        function(list_entry){
-                                         
                                          study_genome <- gsub("_WhatsGNU_topgenomes.txt",
                                                               "",
                                                               basename(list_entry))
-                                         
-                                         list_df <- read.table(list_entry, skip=1)
-                                         
-                                         # exclude the study genomes themselves
-                                         list_df <- list_df[!(list_df$V1 %in% metadata$V2),]
-                                         if(nrow(list_df)>0){
-                                           query_name <- sapply(list_df$V1[1:nrow(list_df)],
-                                                                function(name_entry){
-                                                                  
-                                                                  name_split <- strsplit(name_entry,
-                                                                                         split = "\\_")[[1]]
-                                                                  
-                                                                  gca_idx <- which(grepl("GCA",name_split))
-                                                                  
-                                                                  accession_entry <- paste0("GCA_",name_split[gca_idx+1])
-                                                                  
-                                                                  return(accession_entry)
-                                                                })
-                                           genome_comparison_df <- data.frame(
-                                             subject = study_genome,
-                                             query = query_name
-                                           )
+                                         # suppressing incomplete line warning
+                                         file_lines <- suppressWarnings(readLines(list_entry))
+                                         if(length(file_lines) <= 1){
+                                           return(NULL)
                                          }else{
-                                           genome_comparison_df <- NULL
+                                           # Parse from the already-read lines (skip header)
+                                           list_df <- read.table(text = file_lines[-1])
+                                           # exclude the study genomes themselves
+                                           list_df <- list_df[!(list_df$V1 %in% metadata$V2),]
+                                           if(nrow(list_df)>0){
+                                             query_name <- sapply(list_df$V1[1:nrow(list_df)],
+                                                                  function(name_entry){
+                                                                    
+                                                                    name_split <- strsplit(name_entry,
+                                                                                           split = "\\_")[[1]]
+                                                                    
+                                                                    gca_idx <- which(grepl("GCA",name_split))
+                                                                    
+                                                                    accession_entry <- paste0("GCA_",name_split[gca_idx+1])
+                                                                    
+                                                                    return(accession_entry)
+                                                                  })
+                                             genome_comparison_df <- data.frame(
+                                               subject = study_genome,
+                                               query = query_name
+                                             )
+                                           }else{
+                                             genome_comparison_df <- NULL
+                                           }
+                                           return(genome_comparison_df) 
                                          }
-                                         
-                                         return(genome_comparison_df)
-                                         
                                        }))
   
   # Only keep those global genomes that are actually downloaded
