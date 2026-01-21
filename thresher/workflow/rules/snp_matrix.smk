@@ -7,6 +7,7 @@ rule study_snp_matrix:
         os.path.join(config["output"],"mummer4_study","study_snp_matrix.RDS")
     params:
         metadata = config["metadata"],
+        snp_coverage_threshold = config["snp_coverage_threshold"],
         report_dir = os.path.join(config["output"],"mummer4_study")
     script:
         os.path.join(BASE_PATH,"scripts","study_snp_matrix.R")
@@ -23,6 +24,7 @@ rule global_snp_matrix:
     params:
         metadata = config["metadata"],
         report_dir = os.path.join(config["output"],"mummer4_global"),
+        snp_coverage_threshold = config["snp_coverage_threshold"],
         whatsgnu_dir = os.path.join(config["output"],"whatsgnu")
     script:
         os.path.join(BASE_PATH,"scripts","global_snp_matrix.R")

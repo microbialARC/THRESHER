@@ -52,9 +52,20 @@ for group in snippy_groups:
             assembly_scan = pd.read_csv(assembly_scan_path_dict[genome], sep='\t', header=None)
             group_n50_dict[genome] = int(assembly_scan[assembly_scan[1] == 'n50_contig_length'].iloc[0, 2])
             # Introduce top3 global genomes from whatsgnu results for each group genome
-            whatsgnu = pd.read_csv(whatsgnu_path_dict[genome], sep='\t', skiprows=1, header=None)
+            try:
+                whatsgnu = pd.read_csv(whatsgnu_path_dict[genome], sep='\t', skiprows=1, header=None)
+            except pd.errors.EmptyDataError:
+                # Skip if whatsgnu result is empty
+                print(f"WhatsGNU result for genome {genome} is empty. Skipping for this genome.")
+                continue
+
             # Only keep the global genomes with GCA
             whatsgnu = whatsgnu[whatsgnu[0].str.contains('GCA_')]
+            if whatsgnu.empty:
+                # Skip if whatsgnu result is empty
+                print(f"WhatsGNU result for genome {genome} is empty. Skipping for this genome.")
+                continue
+            
             whatsgnu_genomes = set(whatsgnu[0].unique())
             # Because for some whatsgnu database, the genome name may contain different naming styles
             # First split by "_", then find the position of "GCA".

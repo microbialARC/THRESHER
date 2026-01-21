@@ -13,12 +13,15 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                study_global_snp_matrix_path,
                                ncores){
   ## Input for the function ----
-  ###  SNP-distance matrix
+  ###  Study SNP-distance matrix
   study_snp_matrix <- do.call(rbind,
                               lapply(study_snp_matrix_path,
                                      function(matrix_path){
                                        readRDS(matrix_path)
                                      }))
+  
+  ### Global SNP-distance matrix
+  global_snp_matrix <- readRDS(study_global_snp_matrix_path)
 
   ### Read HC groups RDS
   hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
@@ -267,24 +270,66 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                                                       strain_clade$node)
                                                                                                        
                                                                                                        strain_clade_newick_all_nodes <- (length(strain_clade_newick$tip.label) + 1):(length(strain_clade_newick$tip.label) + strain_clade_newick$Nnode)
+                                                                                                       
+                                                                                                       
                                                                                                        # From strain_clade_newick_all_nodes
                                                                                                        # We need to find the biggest clades in strain_clade_newick without being broken by breaker genomes
                                                                                                        # And the genomes in those biggest pure-study-genomes clades are from the same strains
+                                                                                                       
+                                                                                                       # First, get the Global SNP distance matrix of the study genomes in strain_clade_newick and their closest global genomes(cladebreaker genomes)
+                                                                                                       # Check the quality of the SNP distance
+                                                                                                       strain_clade_total_genomes <- strain_clade_newick$tip.label
+                                                                                                       
+                                                                                                       strain_clade_study_genomes <- strain_clade_newick$tip.label[!grepl("GCA_|GCF_", strain_clade_total_genomes)]
+                                                                                                       
+                                                                                                       strain_clade_global_genomes <- setdiff(strain_clade_total_genomes,
+                                                                                                                                              strain_clade_study_genomes)
+                                                                                                       
+                                                                                                       strain_clade_global_snp_matrix <- global_snp_matrix[global_snp_matrix$subject %in% strain_clade_study_genomes &
+                                                                                                                                                             global_snp_matrix$query %in% strain_clade_global_genomes,]
+                                                                                                       
+                                                                                                       # Only consider the cladebreaker genomes valid if the quality of the SNP distance is good (snp_coverage >= 80%)
+                                                                                                       # As long as there is one "poor" record for the alignment between a study genome and a cladebreaker genome
+                                                                                                       # The cladebreaker genome is considered "poor" and will be considered invalid for cladebreak
+                                                                                                       strain_clade_poor_global_genomes <- unique(strain_clade_global_snp_matrix$query[strain_clade_global_snp_matrix$snp_quality == "poor"])
+                                                                                                       # Normally this would not happen, where strain_clade_poor_global_genomes should be of length 0
+                                                                                                       # Because at the step where panaroo generates the core-gene alignment 
+                                                                                                       # Those study genomes with low coverage of core genes would have been excluded
+                                                                                                       # Thus the closest global genome of the rest should have good coverage
+                                                                                                       # But just in case, we still put this check here
+                                                                                                       # Although in terms of coding efficiency this is not optimal. We could waste a few minutes here
+                                                                                                       # But the biological meaning shown in the intuitive logic is more important here
+                                                                                                       
+                                                                                                       
+                                                                                                       
                                                                                                        tmp_list <- lapply(seq_along(strain_clade_newick_all_nodes),
                                                                                                                           function(node_entry){
                                                                                                                             
                                                                                                                             node <- strain_clade_newick_all_nodes[node_entry]
                                                                                                                             sub_strain_clade_newick <- Subtree(strain_clade_newick,
                                                                                                                                                                node)
-                                                                                                                            #Check if this clade has only study genomes
-                                                                                                                            if(!any(grepl("GCA_|GCF_",sub_strain_clade_newick$tip.label))){
+                                                                                                                            
+                                                                                                                            sub_strain_clade_total_genomes <- sub_strain_clade_newick$tip.label
+                                                                                                                            sub_strain_clade_global_genomes <- setdiff(grep("GCA_|GCF_",
+                                                                                                                                                                            sub_strain_clade_total_genomes,
+                                                                                                                                                                            value = TRUE),
+                                                                                                                                                                       strain_clade_poor_global_genomes)
+                                                                                                                            
+                                                                                                                            
+                                                                                                                            # Check if this clade has only study genomes
+                                                                                                                            if(length(sub_strain_clade_global_genomes) == 0){
                                                                                                                               # If there are only study genomes
                                                                                                                               # proceed to check if this is the biggest pure-study-genome clade (There are breaker genomes in the parent clade)
                                                                                                                               # Parent node:
                                                                                                                               parent_node <- strain_clade_newick$edge[which(strain_clade_newick$edge[,2] == node), 1]
                                                                                                                               parent_sub_strain_clade_newick <- Subtree(strain_clade_newick,
                                                                                                                                                                         parent_node)
-                                                                                                                              if(any(grepl("GCA_|GCF_",parent_sub_strain_clade_newick$tip.label))){
+                                                                                                                              
+                                                                                                                              parent_sub_strain_clade_newick_global_genomes <- setdiff(grep("GCA_|GCF_",parent_sub_strain_clade_newick$tip.label,
+                                                                                                                                                                                            value = TRUE),
+                                                                                                                                                                                       strain_clade_poor_global_genomes)
+                                                                                                                                
+                                                                                                                              if(length(parent_sub_strain_clade_newick_global_genomes) > 0){
                                                                                                                                 
                                                                                                                                 return(
                                                                                                                                   list(
@@ -312,7 +357,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                          )))
                                                                                                        }
                                                                                                        return(tmp_list)
-                                                                                                     }else if(use_cladebreaker == "False"){
+                                                                                                     }else if(use_cladebreaker == "false"){
                                                                                                        # If use_cladebreaker is False, then the function will not perform cladebreaker
                                                                                                        # The genomes in the strain will be the study genomes excluding GenBank(GCA) or RefSeq(GCF) genomes
                                                                                                        return(

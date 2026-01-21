@@ -301,7 +301,11 @@ def main():
     print("=" * term_width)
     print("Validating input arguments".center(term_width))
     print("=" * term_width)
-    validate_function(args)
+    try:
+        validate_function(args)
+    except Exception as e:
+        print(f"Error during validation: {e}")
+        return 1
 
     # Initialize variables
     config_path = None

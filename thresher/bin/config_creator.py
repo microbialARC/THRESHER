@@ -17,6 +17,7 @@ def strain_identifier_full_config(args):
         'whatsgnu_db_path': args.whatsgnu_db_path,
         'bakta_db_type': args.bakta_db_type,
         'bakta_db_path': args.bakta_db_path,
+        'snp_coverage_threshold': args.snp_coverage_threshold,
         'core_threshold': args.core_threshold,
         'core_bootstrap_method': args.core_bootstrap_method,
         'core_bootstrap_number': args.core_bootstrap_number,
@@ -65,6 +66,7 @@ def strain_identifier_new_snps_config(args):
         'species': args.species,
         'new_metadata': args.new_metadata,
         "original_metadata": args.original_metadata,
+        'snp_coverage_threshold': args.snp_coverage_threshold,
         'thresher_output': args.thresher_output,
         'output': args.output,
         'threads': args.threads
@@ -90,6 +92,7 @@ def strain_identifier_new_full_config(args):
         'bakta_db_type': args.bakta_db_type,
         'bakta_db_path': args.bakta_db_path,
         'thresher_output': args.thresher_output,
+        'snp_coverage_threshold': args.snp_coverage_threshold,
         'core_threshold': args.core_threshold,
         'core_bootstrap_method': args.core_bootstrap_method,
         'core_bootstrap_number': args.core_bootstrap_number,

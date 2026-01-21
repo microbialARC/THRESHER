@@ -26,7 +26,9 @@ whatsgnu_list <- list.files(path = snakemake@params[["whatsgnu_dir"]],
 metadata_path <- snakemake@params[["metadata"]]
 
 actual_download_topgenomes_path <- snakemake@input[["actual_download_topgenomes"]]
-  
+
+snp_coverage_threshold <- as.numeric(snakemake@params[["snp_coverage_threshold"]])
+
 metadata <- read.table(metadata_path,
                        sep = "\t",
                        header = FALSE)
@@ -186,20 +188,39 @@ cl <- makeCluster(detectCores())
 #export the data needed for the parallel process
 clusterExport(cl,
               c("sum_snp_df",
-                "unique_comparisons"),
+                "unique_comparisons",
+                "snp_coverage_threshold"),
               envir = environment())
 
 remove_redundancy <- function(i){
+  # If the both percentages are above the snp_coverage_threshold, the snp_quality is "good", else "poor"
+  AlignedBases_reference_entry <- sum_snp_df$AlignedBases_reference[sum_snp_df$subject == unique_comparisons$subject[i] &
+                                                                      sum_snp_df$query == unique_comparisons$query[i]]
+  
+  AlignedBases_reference_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_reference_entry))
+  
+  
+  AlignedBases_query_entry <- sum_snp_df$AlignedBases_reference[sum_snp_df$subject == unique_comparisons$query[i] &
+                                                                  sum_snp_df$query == unique_comparisons$subject[i]]
+  
+  AlignedBases_query_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_query_entry))
+  
+  snp_quality_entry <- if(AlignedBases_reference_pct >= snp_coverage_threshold &
+                          AlignedBases_query_pct >= snp_coverage_threshold){
+    "good"
+  } else {
+    "poor"
+  }
+  
   return(data.frame(subject = unique_comparisons$subject[i],
                     query = unique_comparisons$query[i],
                     snp = mean(c(sum_snp_df$snp[sum_snp_df$subject==unique_comparisons$subject[i] & sum_snp_df$query == unique_comparisons$query[i]],
                                  sum_snp_df$snp[sum_snp_df$subject==unique_comparisons$query[i] & sum_snp_df$query == unique_comparisons$subject[i]])),
                     gsnp = mean(c(sum_snp_df$gsnp[sum_snp_df$subject==unique_comparisons$subject[i] & sum_snp_df$query == unique_comparisons$query[i]],
                                   sum_snp_df$gsnp[sum_snp_df$subject==unique_comparisons$query[i] & sum_snp_df$query == unique_comparisons$subject[i]])),
-                    AlignedBases_reference = sum_snp_df$AlignedBases_reference[sum_snp_df$subject == unique_comparisons$subject[i] &
-                                                                                 sum_snp_df$query == unique_comparisons$query[i]],
-                    AlignedBases_query = sum_snp_df$AlignedBases_reference[sum_snp_df$subject == unique_comparisons$query[i] &
-                                                                             sum_snp_df$query == unique_comparisons$subject[i]]
+                    AlignedBases_reference = AlignedBases_reference_entry,
+                    AlignedBases_query = AlignedBases_query_entry,
+                    snp_quality = snp_quality_entry
                     ))
 }
 

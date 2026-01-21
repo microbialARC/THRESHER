@@ -20,6 +20,7 @@ parse_genome_name <- function(original_name) {
 
 update_study_snp_matrix <- function(output_list,
                                     original_snp_matrix_path,
+                                    snp_coverage_threshold,
                                     ncores){
   
   ## Summarize the concatenated output ----
@@ -120,17 +121,33 @@ update_study_snp_matrix <- function(output_list,
   sum_snp_df_unique <- do.call(rbind,
                                mclapply(seq_len(nrow(unique_comparisons)),
                                         function(row_entry){
+                                          # If the both percentages are above the snp_coverage_threshold, the snp_quality is "good", else "poor"
+                                          AlignedBases_reference_entry <- sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$subject[row_entry] &
+                                                                              sum_snp_df$query == unique_comparisons$query[row_entry]]
                                           
+                                          AlignedBases_reference_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_reference_entry))
+                                          
+                                          AlignedBases_query_entry <- sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$query[row_entry] &
+                                                                                                         sum_snp_df$query == unique_comparisons$subject[row_entry]]
+                                          
+                                          AlignedBases_query_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_query_entry))
+                                          
+                                          snp_quality_entry <- if(AlignedBases_reference_pct >= snp_coverage_threshold &
+                                                                  AlignedBases_query_pct >= snp_coverage_threshold){
+                                            "good"
+                                          } else {
+                                            "poor"
+                                          }
+                                                                                                         
                                           return(data.table(subject = unique_comparisons$subject[row_entry],
                                                             query = unique_comparisons$query[row_entry],
                                                             snp = mean(c(sum_snp_df$snp[sum_snp_df$reference==unique_comparisons$subject[row_entry] & sum_snp_df$query == unique_comparisons$query[row_entry]],
                                                                          sum_snp_df$snp[sum_snp_df$reference==unique_comparisons$query[row_entry] & sum_snp_df$query == unique_comparisons$subject[row_entry]])),
                                                             gsnp = mean(c(sum_snp_df$gsnp[sum_snp_df$reference==unique_comparisons$subject[row_entry] & sum_snp_df$query == unique_comparisons$query[row_entry]],
                                                                           sum_snp_df$gsnp[sum_snp_df$reference==unique_comparisons$query[row_entry] & sum_snp_df$query == unique_comparisons$subject[row_entry]])),
-                                                            AlignedBases_reference = sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$subject[row_entry] &
-                                                                                                                         sum_snp_df$query == unique_comparisons$query[row_entry]],
-                                                            AlignedBases_query = sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$query[row_entry] &
-                                                                                                                     sum_snp_df$query == unique_comparisons$subject[row_entry]]))
+                                                            AlignedBases_reference = AlignedBases_reference_entry,
+                                                            AlignedBases_query = AlignedBases_query_entry,
+                                                            snp_quality = snp_quality_entry))
                                           
                                           
                                         },
@@ -171,10 +188,12 @@ metadata <- rbind(read.table(new_metadata_path,
                              header = FALSE))
 metadata$V1 <- sapply(metadata$V1, parse_genome_name)
 ncores <- snakemake@threads
+snp_coverage_threshold <- as.numeric(snakemake@params[["snp_coverage_threshold"]])
 
 # Execute the function to get updated study_snp_matrix
 study_snp_matrix_new <- update_study_snp_matrix(output_list = output_list,
                                                 original_snp_matrix_path = original_snp_matrix_path,
+                                                snp_coverage_threshold = snp_coverage_threshold,
                                                 ncores = ncores)
 
 # Save the matrix in RDS format

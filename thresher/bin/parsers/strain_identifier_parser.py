@@ -107,6 +107,16 @@ If not provided, defaults to <OUTPUT>/bakta/db""",
     )
 
     full_parser.add_argument(
+        "--snp_coverage_threshold",
+        required=False,
+        type=int,
+        default=80,
+        help="""Minimum alignment coverage (0-100%) required for pairwise SNP distances to be included in analysis. 
+Low-coverage alignments can yield unreliable SNP count.
+SNP distance below this threshold are excluded. Default: 80."""
+    )
+
+    full_parser.add_argument(
         "--core_threshold",
         required=False,
         type=float,
@@ -339,6 +349,16 @@ sepi: Staphylococcus epidermidis
 cdiff: Clostridium difficile
 kp: Klebsiella pneumoniae"""
     )
+
+    new_snps_parser.add_argument(
+        "--snp_coverage_threshold",
+        required=False,
+        type=int,
+        default=80,
+        help="""Minimum alignment coverage (0-100%) required for pairwise SNP distances to be included in analysis. 
+Low-coverage alignments can yield unreliable SNP count.
+SNP distance below this threshold are excluded. Default: 80."""
+    )
     
     new_snps_parser.add_argument(
         "-t",
@@ -443,6 +463,16 @@ Default is full"""
         help="""The path of the directory where the existing Bakta database locates.
 If provided, the Bakta database will not be downloaded.
 If not provided, defaults to <OUTPUT>/bakta/db""",
+    )
+
+    new_full_parser.add_argument(
+        "--snp_coverage_threshold",
+        required=False,
+        type=int,
+        default=80,
+        help="""Minimum alignment coverage (0-100%) required for pairwise SNP distances to be included in analysis. 
+Low-coverage alignments can yield unreliable SNP count.
+SNP distance below this threshold are excluded. Default: 80."""
     )
 
     new_full_parser.add_argument(

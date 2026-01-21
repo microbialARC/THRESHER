@@ -11,6 +11,7 @@ rule study_snp_matrix_new_full:
         original_metadata = config["original_metadata"],
         new_metadata = config["new_metadata"],
         report_dir = os.path.join(config["output"],"mummer4_study"),
+        snp_coverage_threshold = config["snp_coverage_threshold"],
         original_snp_matrix = os.path.join(config["thresher_output"], "mummer4_study", "study_snp_matrix.RDS")
     threads:
         config["threads"]
@@ -33,6 +34,7 @@ rule global_snp_matrix_new_full:
         new_metadata = config["new_metadata"],
         report_dir = os.path.join(config["output"],"mummer4_global"),
         original_snp_matrix = os.path.join(config["thresher_output"], "mummer4_global", "global_snp_matrix.RDS"),
+        snp_coverage_threshold = config["snp_coverage_threshold"],
         whatsgnu_dir = os.path.join(config["output"],"whatsgnu")
     threads:
         config["threads"]

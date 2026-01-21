@@ -149,6 +149,13 @@ def validate_strain_identifier_full(args):
         print("Unsupported Bakta database type, using default 'full'")
         args.bakta_db_type = "full"
 
+    # SNP coverage threshold
+    if not args.snp_coverage_threshold:
+        print("SNP coverage threshold not provided, using default threshold of 80(80%)")
+        args.snp_coverage_threshold = 80
+    elif args.snp_coverage_threshold < 0 or args.snp_coverage_threshold > 100:
+        print("SNP coverage threshold must be between 0 and 100, using default threshold of 80(80%)")
+        args.snp_coverage_threshold = 80
     # Check core gene threshold
     if not args.core_threshold:
         print("Core gene threshold not provided, using default threshold of 0.95")
@@ -390,6 +397,13 @@ def validate_strain_identifier_new_snps(args):
         else:
             print("Prior transmission cluster compositions found.")
 
+    # SNP coverage threshold
+    if not args.snp_coverage_threshold:
+        print("SNP coverage threshold not provided, using default threshold of 80(80%)")
+        args.snp_coverage_threshold = 80
+    elif args.snp_coverage_threshold < 0 or args.snp_coverage_threshold > 100:
+        print("SNP coverage threshold must be between 0 and 100, using default threshold of 80(80%)")
+        args.snp_coverage_threshold = 80
     
     # Check species
     if not args.species:
@@ -645,6 +659,14 @@ def validate_strain_identifier_new_full(args):
     elif args.threads > os.cpu_count():
         print(f"Thread number exceeds available threads ({os.cpu_count()}), using 1 thread")
         args.threads = 1
+
+    # SNP coverage threshold
+    if not args.snp_coverage_threshold:
+        print("SNP coverage threshold not provided, using default threshold of 80(80%)")
+        args.snp_coverage_threshold = 80
+    elif args.snp_coverage_threshold < 0 or args.snp_coverage_threshold > 100:
+        print("SNP coverage threshold must be between 0 and 100, using default threshold of 80(80%)")
+        args.snp_coverage_threshold = 80
 
     # Check core gene threshold
     if not args.core_threshold:
