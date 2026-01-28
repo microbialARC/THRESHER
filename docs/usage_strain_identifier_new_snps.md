@@ -25,6 +25,10 @@ options:
                         sepi: Staphylococcus epidermidis
                         cdiff: Clostridium difficile
                         kp: Klebsiella pneumoniae
+  --snp_coverage_threshold SNP_COVERAGE_THRESHOLD
+                        Minimum alignment coverage (0-100) required for pairwise SNP distances to be included in analysis.
+                        Low-coverage alignments can yield unreliable SNP count.
+                        SNP distance below this threshold are excluded. Default: 80.
   -t THREADS, --threads THREADS
                         Thread number. Default is 1.
   --prefix PREFIX       Prefix for config file. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
@@ -53,16 +57,19 @@ options:
     The bacterial species being analyzed (e.g., sau, sepi, cdiff, kp).
 
 ## Optional Input
-1. **Output Directory(--output):** 
+1. **SNP Coverage Threshold(--snp_coverage_threshold):**
+    - Minimum alignment coverage percentage (0-100) required for pairwise SNP distances to be included in analysis (default: 80). Genome pairs with alignment coverage below this threshold are excluded from downstream cladebreaker analysis.
+    - Low-coverage alignments can produce artificially low SNP counts, as unaligned regions are not compared and potential variants in those regions go undetected. This can lead to falsely inflated genomic similarity between genomically distantly related genomes. The default threshold of 80% balances sensitivity with reliability.
+2. **Output Directory(--output):** 
 
     Path to the output directory for the new-snps analysis. If not provided, defaults to `thresher_strain_identifier_new_snps_<YYYY_MM_DD_HHMMSS>` under the current working directory.
-2. **Thread Number(--threads / -t):**
+3. **Thread Number(--threads / -t):**
 
     Number of threads to use for the analysis. Default is 1. It is highly recommended to increase the thread count using this option to improve performance, regardless of dataset size.
-3. **Prefix(--prefix):**
+4. **Prefix(--prefix):**
 
     Prefix for config file. If not provided, defaults to timestamp: `YYYY_MM_DD_HHMMSS`.
-4. **Conda Environment Directory(--conda_prefix):**
+5. **Conda Environment Directory(--conda_prefix):**
     Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.  You can reuse the conda environments from previous THRESHER runs to save time and disk space.
 
 ## Output

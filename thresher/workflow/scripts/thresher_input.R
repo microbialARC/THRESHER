@@ -11,6 +11,8 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                group_tree_dir,
                                study_snp_matrix_path,
                                study_global_snp_matrix_path,
+                               use_cladebreaker = use_cladebreaker,
+                               correction_bootstrap = correction_bootstrap,
                                ncores){
   ## Input for the function ----
   ###  Study SNP-distance matrix
@@ -242,10 +244,10 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                               # Only perform correction when there is discrepancy
                                                               if(length(correction_strain_tree) > 0){
                                                                 # Filter the list to keep only the strains with discrepancy between tree and gsnp
-                                                                # And only accept the correction only if the bootstrap support >= 70 (https://doi.org/10.1093/sysbio/42.2.182)
-                                                                # Or this is the root of the tree
+                                                                # And only accept the correction only if the bootstrap support is above the threshold provided
+                                                                # If the bootstrap support is "Root", then also accept the correction
                                                                 
-                                                                correction_strain_tree <- correction_strain_tree[sapply(correction_strain_tree, function(strain) ((strain$bootstrap_support >= 70) | (strain$bootstrap_support == "Root")))]
+                                                                correction_strain_tree <- correction_strain_tree[sapply(correction_strain_tree, function(strain) ((strain$bootstrap_support >= correction_bootstrap) | (strain$bootstrap_support == "Root")))]
                                                                 clones_corrected <- length(correction_strain_tree)
                                                                 # The function to perform Cladebreaker to return the list of Cladebreaker-divided strains
                                                                 correction_strain_list <- lapply(correction_strain_tree,
@@ -509,6 +511,9 @@ study_global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
 output_dir <- snakemake@params[["thresher_input_dir"]]
 # Whether or not to perfrom cladebreaker
 use_cladebreaker <- snakemake@params[["use_cladebreaker"]]
+# Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition
+correction_bootstrap <- snakemake@params[["correction_bootstrap"]]
+correction_bootstrap <- as.integer(correction_bootstrap)
 # Execute the function to get thresher input
 setwd(dir = output_dir)
 
@@ -516,6 +521,8 @@ thresher_input <- get_thresher_input(hierarchical_clustering_groups_path = hiera
                                      group_tree_dir = group_tree_dir,
                                      study_snp_matrix_path = study_snp_matrix_path,
                                      study_global_snp_matrix_path = study_global_snp_matrix_path,
+                                     use_cladebreaker = use_cladebreaker,
+                                     correction_bootstrap = correction_bootstrap,
                                      ncores = ncores)
 
 # Export the output back to Snakemake

@@ -37,6 +37,10 @@ options:
                         The path of the directory where the existing Bakta database locates.
                         If provided, the Bakta database will not be downloaded.
                         If not provided, defaults to <OUTPUT>/bakta/db
+  --snp_coverage_threshold SNP_COVERAGE_THRESHOLD
+                        Minimum alignment coverage (0-100) required for pairwise SNP distances to be included in analysis.
+                        Low-coverage alignments can yield unreliable SNP count.
+                        SNP distance below this threshold are excluded. Default: 80.
   --core_threshold CORE_THRESHOLD
                         Panaroo Core-genome sample threshold. The frequency of a gene in your sample required to classify it as 'core'.
                         Range is 0.0 to 1.0. Default is 0.95.
@@ -64,6 +68,8 @@ options:
                         Use CladeBreaker to restrain the strain composition.
                         Options are [True, False].
                         Default is True.
+  --correction_bootstrap CORRECTION_BOOTSTRAP
+                        Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition (default: 0).
   --endpoint ENDPOINT   The endpoint method to use for determing clusters and making plots.
                         Available Options: [plateau, peak, discrepancy, global]
                         plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
@@ -125,6 +131,9 @@ options:
     - The path of the directory where the existing Bakta database locates.
     - If provided, the Bakta database will not be downloaded.
     - If not provided, defaults to `<OUTPUT>/bakta/db`
+- **SNP Coverage Threshold(--snp_coverage_threshold):**
+    - Minimum alignment coverage percentage (0-100) required for pairwise SNP distances to be included in analysis (default: 80). Genome pairs with alignment coverage below this threshold are excluded from downstream cladebreaker analysis.
+    - Low-coverage alignments can produce artificially low SNP counts, as unaligned regions are not compared and potential variants in those regions go undetected. This can lead to falsely inflated genomic similarity between genomically distantly related genomes. The default threshold of 80% balances sensitivity with reliability.
 - **Core Threshold(--core_threshold):**
     - Panaroo Core-genome sample threshold. The frequency of a gene in your sample required to classify it as 'core'.
     - Range is 0.0 to 1.0. Default is 0.95. 
@@ -152,6 +161,9 @@ options:
     - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
     - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
     - `True` or `False`, default is `True`.
+-  **Correction Bootstrap Threshold(--correction_bootstrap):**
+    - Minimum bootstrap support required to apply phylogenetic corrections to SNP strain composition (default: 0). Nodes with bootstrap values below this threshold are excluded from correction, except for the root node which is always retained.
+    - Higher thresholds enforce stricter corrections but may reduce the number of corrections applied, particularly in trees with lower overall bootstrap support. The default of 0 applies all possible corrections regardless of bootstrap support, which may be appropriate for small genome groups where high bootstrap values are difficult to achieve. Adjust based on your bootstrap method and resampling depth.
 - **Endpoint Method(--endpoint):**
     - The endpoint method to use for determing clusters and making plots.
     - Available Options: `plateau`, `peak`, `discrepancy`, `global`

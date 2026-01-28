@@ -36,6 +36,10 @@ options:
                         The path of the directory where the existing Bakta database locates.
                         If provided, the Bakta database will not be downloaded.
                         If not provided, defaults to <OUTPUT>/bakta/db
+  --snp_coverage_threshold SNP_COVERAGE_THRESHOLD
+                        Minimum alignment coverage (0-100) required for pairwise SNP distances to be included in analysis.
+                        Low-coverage alignments can yield unreliable SNP count.
+                        SNP distance below this threshold are excluded. Default: 80.
   --core_threshold CORE_THRESHOLD
                         Panaroo Core-genome sample threshold. The frequency of a gene in your sample required to classify it as 'core'.
                         Range is 0.0 to 1.0. Default is 0.95.
@@ -59,6 +63,8 @@ options:
                         The number of bootstrap replicates for phylogeny of each hierarchical group.
                         If method is ultrafast, default is 1000.
                         If method is nonparametric, default is 100.
+  --correction_bootstrap CORRECTION_BOOTSTRAP
+                        Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition (default: 0).
   --use_cladebreaker USE_CLADEBREAKER
                         Use CladeBreaker to restrain the strain composition.
                         Options are [True, False].
@@ -120,38 +126,42 @@ options:
 3. **WhatsGNU Database Path(--whatsgnu_db_path):**
     - Path to an existing WhatsGNU database. If not provided, the database will be downloaded
       to `<OUTPUT>/whatsgnu/db`.
-
 4. **Bakta Database Type(--bakta_db_type) and Path(--bakta_db_path):**
     - Specify the type of Bakta database (`full` or `light`, default is `full`).
     - Path to an existing Bakta database. If not provided, the database will be downloaded to `<OUTPUT>/bakta/db`.
-5. **Core Threshold(--core_threshold):**
+5. **SNP Coverage Threshold(--snp_coverage_threshold):**
+    - Minimum alignment coverage percentage (0-100) required for pairwise SNP distances to be included in analysis (default: 80). Genome pairs with alignment coverage below this threshold are excluded from downstream cladebreaker analysis.
+    - Low-coverage alignments can produce artificially low SNP counts, as unaligned regions are not compared and potential variants in those regions go undetected. This can lead to falsely inflated genomic similarity between genomically distantly related genomes. The default threshold of 80% balances sensitivity with reliability.
+6. **Core Threshold(--core_threshold):**
     - Panaroo Core-genome sample threshold. The frequency of a gene in your sample required to classify it as 'core'.
     - Range is 0.0 to 1.0. Default is 0.95. 
-6. **Bootstrap Methods and Numbers(--core/group_bootstrap_method, --core/group_bootstrap_number):**
+7. **Bootstrap Methods and Numbers(--core/group_bootstrap_method, --core/group_bootstrap_number):**
     - Specify bootstrap methods (`ultrafast` or `nonparametric`) and the number of replicates for both core genome phylogeny and group phylogeny.
     - Default methods are `ultrafast`, with default replicate numbers of 1000 for ultrafast and 100 for nonparametric.
-7. **CladeBreaker(--use_cladebreaker):**
+8. **CladeBreaker(--use_cladebreaker):**
     - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
     - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
     - `True` or `False`, default is `True`.
-
-8. **Endpoint Method(--endpoint):**
+9. **Correction Bootstrap Threshold(--correction_bootstrap):**
+    - Minimum bootstrap support required to apply phylogenetic corrections to SNP strain composition (default: 0). Nodes with bootstrap values below this threshold are excluded from correction, except for the root node which is always retained.
+    - Higher thresholds enforce stricter corrections but may reduce the number of corrections applied, particularly in trees with lower overall bootstrap support. The default of 0 applies all possible corrections regardless of bootstrap support, which may be appropriate for small genome groups where high bootstrap values are difficult to achieve. Adjust based on your bootstrap method and resampling depth.
+10. **Endpoint Method(--endpoint):**
     - Choose the endpoint method for determining clusters and generating plots. Options include `plateau` (default), `peak`, `discrepancy`, and `global`.
     - `plateau`: Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group.
     - `peak`: Phylothreshold set at the peak number of clones defined within the group.
     - `discrepancy`: Phylothreshold set at the point where the discrepancy is minimized within the group.
     - `global`: Phylothreshold set at the first time a global genome is included in any strain within the group.
-9. **Plateau Length(--plateau_length):**
+11. **Plateau Length(--plateau_length):**
     - Specify the plateau length for the plateau endpoint method (default is 15). Only used when the endpoint method is `plateau`.
-10. **Threads(--threads / -t):**
+12. **Threads(--threads / -t):**
     - Number of threads to use (default is the maximum available).
     - The default thread count is 1, which may result in lengthy runtimes. It is highly recommended to increase the thread count to improve performance, regardless of dataset size.
     - Bakta genome annotation runs `{threads}` parallel jobs, each requiring approximately 10 GB of RAM. Ensure your system has sufficient memory to support the requested thread count.
-11. **Prefix(--prefix):**
+13. **Prefix(--prefix):**
     - Prefix for config file, output files, and analysis naming. If not provided, defaults to a timestamp in the format `YYYY_MM_DD_HHMMSS`.
-12. **Conda Prefix(--conda_prefix):**
+14. **Conda Prefix(--conda_prefix):**
     - Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.
-13. **Force Execution(--force):**
+15. **Force Execution(--force):**
     - Bypass system compatibility checks (operating system and available RAM) and force execution of the pipeline. This may cause instability or failures.
     
 ## Output

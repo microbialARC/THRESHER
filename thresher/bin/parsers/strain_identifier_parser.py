@@ -111,7 +111,7 @@ If not provided, defaults to <OUTPUT>/bakta/db""",
         required=False,
         type=int,
         default=80,
-        help="""Minimum alignment coverage (0-100%) required for pairwise SNP distances to be included in analysis. 
+        help="""Minimum alignment coverage (0-100) required for pairwise SNP distances to be included in analysis. 
 Low-coverage alignments can yield unreliable SNP count.
 SNP distance below this threshold are excluded. Default: 80."""
     )
@@ -168,6 +168,14 @@ Default is ultrafast."""
         help="""The number of bootstrap replicates for phylogeny of each hierarchical group.
 If method is ultrafast, default is 1000.
 If method is nonparametric, default is 100."""
+    )
+
+    full_parser.add_argument(
+        "--correction_bootstrap",
+        required=False,
+        type=int,
+        default=0,
+        help="""Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition (default: 0)."""
     )
 
     full_parser.add_argument(
@@ -296,7 +304,7 @@ def _add_new_snps_parser(strain_identifier_mode):
         "new-snps",
         formatter_class=argparse.RawTextHelpFormatter,
         help=(
-            "Add new genomes to an existing strain compositions  using only SNP phylothresholds.\n\n"
+            "Add new genomes to an existing strain compositions using only SNP phylothresholds.\n"
             "Updates strain compositions for all endpoint methods and assigns new genomes to existing clusters if applicable."
         ),
     )
@@ -355,7 +363,7 @@ kp: Klebsiella pneumoniae"""
         required=False,
         type=int,
         default=80,
-        help="""Minimum alignment coverage (0-100%) required for pairwise SNP distances to be included in analysis. 
+        help="""Minimum alignment coverage (0-100) required for pairwise SNP distances to be included in analysis. 
 Low-coverage alignments can yield unreliable SNP count.
 SNP distance below this threshold are excluded. Default: 80."""
     )
@@ -470,7 +478,7 @@ If not provided, defaults to <OUTPUT>/bakta/db""",
         required=False,
         type=int,
         default=80,
-        help="""Minimum alignment coverage (0-100%) required for pairwise SNP distances to be included in analysis. 
+        help="""Minimum alignment coverage (0-100) required for pairwise SNP distances to be included in analysis. 
 Low-coverage alignments can yield unreliable SNP count.
 SNP distance below this threshold are excluded. Default: 80."""
     )
@@ -526,6 +534,14 @@ Default is ultrafast"""
         help="""The number of bootstrap replicates for phylogeny of each hierarchical group.
 If method is ultrafast, default is 1000.
 If method is nonparametric, default is 100."""
+    )
+
+    new_full_parser.add_argument(
+        "--correction_bootstrap",
+        required=False,
+        type=int,
+        default=0,
+        help="Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition (default: 0)."
     )
 
     new_full_parser.add_argument(

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "thresher"
-version = "0.2.3-beta"
+version = "0.2.4-beta"
 description = "THRESHER: A toolkit for bacterial genome analysis including strain identification, genome profiling, and evolution simulation."
 readme = "README.md"
 authors = [

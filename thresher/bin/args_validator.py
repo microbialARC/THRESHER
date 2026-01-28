@@ -151,10 +151,10 @@ def validate_strain_identifier_full(args):
 
     # SNP coverage threshold
     if not args.snp_coverage_threshold:
-        print("SNP coverage threshold not provided, using default threshold of 80(80%)")
+        print("SNP coverage threshold not provided, using default threshold of 80")
         args.snp_coverage_threshold = 80
     elif args.snp_coverage_threshold < 0 or args.snp_coverage_threshold > 100:
-        print("SNP coverage threshold must be between 0 and 100, using default threshold of 80(80%)")
+        print("SNP coverage threshold must be between 0 and 100, using default threshold of 80")
         args.snp_coverage_threshold = 80
     # Check core gene threshold
     if not args.core_threshold:
@@ -191,6 +191,17 @@ def validate_strain_identifier_full(args):
         elif args.group_bootstrap_method == "nonparametric":
             print("Group bootstrap number not provided, using default 100 replicates for standard nonparametric method")
             args.group_bootstrap_number = 100
+
+    # Check the value of correction_bootstrap
+    if type(args.correction_bootstrap) is not int:
+        print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) must be an integer between 0 and 100, using default 0")
+        args.correction_bootstrap = 0
+    if not args.correction_bootstrap:
+        print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) not provided, using default 0")
+        args.correction_bootstrap = 0
+    elif args.correction_bootstrap < 0 or args.correction_bootstrap > 100:
+        print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) must be between 0 and 100, using default 0")
+        args.correction_bootstrap = 0
 
     # Check the bool of use_cladebreaker
     if not args.use_cladebreaker:
@@ -399,10 +410,10 @@ def validate_strain_identifier_new_snps(args):
 
     # SNP coverage threshold
     if not args.snp_coverage_threshold:
-        print("SNP coverage threshold not provided, using default threshold of 80(80%)")
+        print("SNP coverage threshold not provided, using default threshold of 80")
         args.snp_coverage_threshold = 80
     elif args.snp_coverage_threshold < 0 or args.snp_coverage_threshold > 100:
-        print("SNP coverage threshold must be between 0 and 100, using default threshold of 80(80%)")
+        print("SNP coverage threshold must be between 0 and 100, using default threshold of 80")
         args.snp_coverage_threshold = 80
     
     # Check species
@@ -662,10 +673,10 @@ def validate_strain_identifier_new_full(args):
 
     # SNP coverage threshold
     if not args.snp_coverage_threshold:
-        print("SNP coverage threshold not provided, using default threshold of 80(80%)")
+        print("SNP coverage threshold not provided, using default threshold of 80")
         args.snp_coverage_threshold = 80
     elif args.snp_coverage_threshold < 0 or args.snp_coverage_threshold > 100:
-        print("SNP coverage threshold must be between 0 and 100, using default threshold of 80(80%)")
+        print("SNP coverage threshold must be between 0 and 100, using default threshold of 80")
         args.snp_coverage_threshold = 80
 
     # Check core gene threshold
@@ -703,6 +714,16 @@ def validate_strain_identifier_new_full(args):
         elif args.group_bootstrap_method == "nonparametric":
             print("Group bootstrap number not provided, using default 100 replicates for standard nonparametric method")
             args.group_bootstrap_number = 100
+    
+    if type(args.correction_bootstrap) is not int:
+        print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) must be an integer between 0 and 100, using default 0")
+        args.correction_bootstrap = 0
+    if not args.correction_bootstrap:
+        print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) not provided, using default 0")
+        args.correction_bootstrap = 0
+    elif args.correction_bootstrap < 0 or args.correction_bootstrap > 100:
+        print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) must be between 0 and 100, using default 0")
+        args.correction_bootstrap = 0
     
     # Check the bool of use_cladebreaker
     if not args.use_cladebreaker:
