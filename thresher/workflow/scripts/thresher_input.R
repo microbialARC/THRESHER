@@ -11,8 +11,8 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                group_tree_dir,
                                study_snp_matrix_path,
                                study_global_snp_matrix_path,
-                               use_cladebreaker = use_cladebreaker,
-                               correction_bootstrap = correction_bootstrap,
+                               use_cladebreaker,
+                               correction_bootstrap,
                                ncores){
   ## Input for the function ----
   ###  Study SNP-distance matrix
@@ -27,13 +27,6 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
 
   ### Read HC groups RDS
   hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
-
-  ### Get the list of trees from group_tree_path
-  group_trees <- list.files(path = group_tree_dir,
-                            pattern = "\\.contree$",
-                            all.files = TRUE,
-                            full.names = TRUE,
-                            recursive = FALSE)
 
   # Process each hierarchical clustering group in hierarchical_clustering_groups
   # and return the corresponding thresher input list
@@ -62,23 +55,35 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                  group_tree_newick <- read.tree(group_tree_path)
                                  group_tree_newick <- phytools::midpoint_root(group_tree_newick)
                                  group_tree_newick <- Preorder(group_tree_newick)
-                                 group_tree_newick_all_nodes <- (length(group_tree_newick$tip.label) + 1):(length(group_tree_newick$tip.label) + group_tree_newick$Nnode)
+                                 n_tips <- length(group_tree_newick$tip.label)
+                                 group_tree_newick_all_nodes <- (n_tips + 1):(n_tips + group_tree_newick$Nnode)
                                  
-                                 group_tree_newick_sum <- lapply(seq_along(group_tree_newick_all_nodes),
+                                 group_tree_newick_sum <- lapply(group_tree_newick_all_nodes,
                                                                  function(node_entry){
-                                                                   sub_group_tree_newick <- Subtree(group_tree_newick,
-                                                                                                    group_tree_newick_all_nodes[node_entry])
+                                                                   
+                                                                   sub_group_tree_newick <- Subtree(group_tree_newick, node_entry)
+                                                                   
+                                                                   # Check if this is the root node
+                                                                   is_root <- node_entry == (n_tips + 1)
+                                                                   
+                                                                   # Get bootstrap value
+                                                                   if (is_root || is.null(sub_group_tree_newick$node.label[1])) {
+                                                                     bootstrap_val <- "Root"
+                                                                   } else {
+                                                                     raw_label <- sub_group_tree_newick$node.label[1]
+                                                                     bootstrap_val <- ifelse(
+                                                                       is.na(raw_label) || raw_label == "",
+                                                                       NA_real_,
+                                                                       as.numeric(raw_label)
+                                                                     )
+                                                                   }
                                                                    
                                                                    return(list(
-                                                                     node = group_tree_newick_all_nodes[node_entry],
-                                                                     bootstrap_support = ifelse(
-                                                                       node_entry == 1,
-                                                                       "Root",
-                                                                       as.numeric(group_tree_newick$node.label[node_entry])
-                                                                     ),
+                                                                     node = node_entry,
+                                                                     bootstrap_support = bootstrap_val,
                                                                      genomes = sub_group_tree_newick$tip.label
                                                                    ))
-                                                                 }) 
+                                                                 })
                                }
                                
                                # Test gsnp from min to 500 ----
@@ -241,7 +246,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                  length(setdiff(strain$snp_tree_genomes[!grepl("GCA_|GCF_",strain$snp_tree_genomes)],
                                                                                                                 strain$snp_only_genomes))
                                                                                                })))
-                                                              # Only perform correction when there is discrepancy
+                                                              
                                                               if(length(correction_strain_tree) > 0){
                                                                 # Filter the list to keep only the strains with discrepancy between tree and gsnp
                                                                 # And only accept the correction only if the bootstrap support is above the threshold provided
@@ -266,7 +271,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                      )
                                                                                                    }else{
                                                                                                      # 2nd situation: cladebreaker(global) genomes were introduced (with or without discrepancy genomes)
-                                                                                                     if(use_cladebreaker == "true"){
+                                                                                                     if(use_cladebreaker){
                                                                                                        # If use_cladebreaker is true, then the function will perform cladebreaker
                                                                                                        strain_clade_newick <- Subtree(group_tree_newick,
                                                                                                                                       strain_clade$node)
@@ -359,7 +364,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                          )))
                                                                                                        }
                                                                                                        return(tmp_list)
-                                                                                                     }else if(use_cladebreaker == "false"){
+                                                                                                     }else if(!use_cladebreaker){
                                                                                                        # If use_cladebreaker is False, then the function will not perform cladebreaker
                                                                                                        # The genomes in the strain will be the study genomes excluding GenBank(GCA) or RefSeq(GCF) genomes
                                                                                                        return(
@@ -511,6 +516,7 @@ study_global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
 output_dir <- snakemake@params[["thresher_input_dir"]]
 # Whether or not to perfrom cladebreaker
 use_cladebreaker <- snakemake@params[["use_cladebreaker"]]
+use_cladebreaker <- as.logical(use_cladebreaker)
 # Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition
 correction_bootstrap <- snakemake@params[["correction_bootstrap"]]
 correction_bootstrap <- as.integer(correction_bootstrap)
