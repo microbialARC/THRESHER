@@ -69,6 +69,12 @@ options:
                         Use CladeBreaker to restrain the strain composition.
                         Options are [True, False].
                         Default is True.
+  --threshold_ceiling THRESHOLD_CEILING
+                        The ceiling of the range of SNP distances to search for the optimal phylothreshold.
+                        Default is 500.
+  --singleton_threshold SINGLETON_THRESHOLD
+                        The SNP distance threshold above which every genome in the group is considered a singleton.
+                        Default is 100.
   --endpoint ENDPOINT   The endpoint method to use for determing clusters and making plots.
                         Available Options: [plateau, peak, discrepancy, global]
                         plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
@@ -142,26 +148,34 @@ options:
     - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
     - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
     - `True` or `False`, default is `True`.
-9. **Correction Bootstrap Threshold(--correction_bootstrap):**
+9. **Threshold Ceiling(--threshold_ceiling):**
+    - The ceiling of the range tested to search for the optimal phylothreshold (default: 500).
+    - This parameter sets the upper limit of SNP phylothresholds considered when determining the optimal phylothreshold for defining strains within hierarchical clustering groups.
+    - Adjust this ceiling based on the expected genomic diversity within your dataset and the species being analyzed. A higher ceiling allows for the inclusion of more distantly related genomes in the strain identification process, which may be appropriate for highly diverse species.
+10. **Singleton Threshold(--singleton_threshold):**
+    - The SNP distance threshold above which every genome in the hierarchical clustering group is considered a singleton (default: 100).
+    - If the minimal SNP distance between any two genomes in a hierarchical clustering group is equal to or greater than this threshold, all genomes in that group will be classified as singletons, meaning each genome forms its own unique strain.
+    - This parameter helps to avoid defining strains in groups where genomes are too distantly related to form meaningful strain. Adjust this threshold based on the expected genomic diversity within your dataset and the species being analyzed.
+11. **Correction Bootstrap Threshold(--correction_bootstrap):**
     - Minimum bootstrap support required to apply phylogenetic corrections to SNP strain composition (default: 0). Nodes with bootstrap values below this threshold are excluded from correction, except for the root node which is always retained.
     - Higher thresholds enforce stricter corrections but may reduce the number of corrections applied, particularly in trees with lower overall bootstrap support. The default of 0 applies all possible corrections regardless of bootstrap support, which may be appropriate for small genome groups where high bootstrap values are difficult to achieve. Adjust based on your bootstrap method and resampling depth.
-10. **Endpoint Method(--endpoint):**
+12. **Endpoint Method(--endpoint):**
     - Choose the endpoint method for determining clusters and generating plots. Options include `plateau` (default), `peak`, `discrepancy`, and `global`.
     - `plateau`: Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group.
     - `peak`: Phylothreshold set at the peak number of clones defined within the group.
     - `discrepancy`: Phylothreshold set at the point where the discrepancy is minimized within the group.
     - `global`: Phylothreshold set at the first time a global genome is included in any strain within the group.
-11. **Plateau Length(--plateau_length):**
+13. **Plateau Length(--plateau_length):**
     - Specify the plateau length for the plateau endpoint method (default is 15). Only used when the endpoint method is `plateau`.
-12. **Threads(--threads / -t):**
+14. **Threads(--threads / -t):**
     - Number of threads to use (default is the maximum available).
     - The default thread count is 1, which may result in lengthy runtimes. It is highly recommended to increase the thread count to improve performance, regardless of dataset size.
     - Bakta genome annotation runs `{threads}` parallel jobs, each requiring approximately 10 GB of RAM. Ensure your system has sufficient memory to support the requested thread count.
-13. **Prefix(--prefix):**
+15. **Prefix(--prefix):**
     - Prefix for config file, output files, and analysis naming. If not provided, defaults to a timestamp in the format `YYYY_MM_DD_HHMMSS`.
-14. **Conda Prefix(--conda_prefix):**
+16. **Conda Prefix(--conda_prefix):**
     - Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.
-15. **Force Execution(--force):**
+17. **Force Execution(--force):**
     - Bypass system compatibility checks (operating system and available RAM) and force execution of the pipeline. This may cause instability or failures.
     
 ## Output
@@ -323,6 +337,32 @@ The strain composition files generated by all 4 endpoint methods contain the fol
     - `plots/comprehensive_tree_mlst.pdf`
     - `plots/comprehensive_tree_mlst.RDS`(R object)
   - SNP distance: `plots/SNP_Distance.pdf`
+  - Strain compositions visualized with ML Phylogeny and SNP distance Heatmap of each hirarchical group for four endpoint methods:
+    - RDS files:
+      - Plateau: `plots/strain_compositions/plateau/plateau_strain_tree_snp.RDS`
+      - Peak: `plots/strain_compositions/peak/peak_strain_tree_snp.RDS`
+      - Discrepancy: `plots/strain_compositions/discrepancy/discrepancy_strain_tree_snp.RDS`
+      - Global: `plots/strain_compositions/global/global_strain_tree_snp.RDS`
+    - PDF files:
+      - Plateau: `plots/strain_compositions/plateau/Group{Group_ID}_plateau_strain_composition.pdf`
+      - Peak: `plots/strain_compositions/peak/Group{Group_ID}_peak_strain_composition.pdf`
+      - Discrepancy: `plots/strain_compositions/discrepancy/Group{Group_ID}_discrepancy_strain_composition.pdf`
+      - Global: `plots/strain_compositions/global/Group{Group_ID}_global_strain_composition.pdf`
+    - Figure descriptions:
+      - **ML Phylogeny (left panel)**
+        - Midpoint-rooted ML tree of the group
+        - **Tip points**: Blue circles = study genomes, Brown circles = global genomes (CladeBreaker)
+        - **Highlighted clades**: Genomes assigned to the same clone (strain with ≥2 genomes) are highlighted with a green rectangle and labeled with their strain ID (e.g., `1_1`)
+        - **Scale bar**: Branch length in substitutions per site
+        - **Optimal Phylothreshold**: The optimal phylothreshold determined by the selected endpoint method displayed at the top
+      - **SNP Distance Heatmap (right panel)**
+        - Rows aligned to phylogeny tip labels; columns show study genomes only
+        - **White to blue gradient**: Pairwise SNP distances between study genomes
+        - **Grey cells**: Comparisons of study genomes to corresponding top global genomes. The color of these cells are greyed out.
+        The cells with no values indicate this study genome is not compared to the global genome(s) as the global genome(s) is/are not the top hit for this study genome in WhatsGNU analysis.
+        - **Text color indicates SNP quality**:
+          - Green = good quality (alignments meet coverage threshold)
+          - Red = poor quality (low-coverage alignments, interpret with caution)
 
 18. **Cluster Plots:** (if full analysis mode is enabled)
   - Cluster plots: `plots/ClusterPlots/`

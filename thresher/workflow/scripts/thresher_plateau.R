@@ -2,17 +2,17 @@
 get_plateau_strains <- function(thresher_input,
                                 hierarchical_clustering_groups,
                                 plateau_length,
+                                singleton_threshold,
                                 output_dir,
                                 ncores){
   
   group_output <- mclapply(thresher_input, function(group_input){
     
     group_id <- group_input[[1]]$HC_group
-    
-    # Check if the group start with singleton 
-    # If yes proceed without finding plateau
-    
-    if(group_input[[1]]$cutoff >= 500){
+    # If the starting cutoff is already above the singleton_threshold and there is only one composition
+    # all genomes are singletons
+    if(group_input[[1]]$cutoff >= singleton_threshold &
+       length(group_input) == 1){
       return(list(
         group = group_id,
         plateau = "Singletons",
@@ -66,37 +66,50 @@ get_plateau_strains <- function(thresher_input,
       }else NULL
       
       
-      # If the cutoff starts below 500 but the compositions are always singletons 
-      # Also return "Singletons" instead of plateau length and positions
       
-      if_all_singletons <- sapply(plateau_cutoff:(plateau_cutoff+plateau_length),
-                                  function(cutoff){
-                                    cutoff_strain_composition <- group_input[which(sapply(group_input, `[[`, "cutoff") == cutoff)][[1]]$strain_composition
-                                    
-                                    if_cutoff_strain_singleton <- sapply(cutoff_strain_composition,
-                                                                         function(cutoff_strain){
-                                                                           if(cutoff_strain$category == "singleton") TRUE else FALSE
-                                                                         })
-                                    if(all(if_cutoff_strain_singleton)){
-                                      return(TRUE)
-                                    }else{
-                                      return(FALSE)
-                                    }
-                                  })
-      if(all(if_all_singletons)){
+      # If plateau_cutoff is "No Plateau Found", then the strain composition is the last cutoff we tested
+      
+      if(plateau_cutoff == "No Plateau Found"){
+        group_input[which(sapply(group_input, `[[`, "cutoff") == max(sapply(group_input, `[[`, "cutoff")))][[1]]
         return(list(
           group = group_id,
-          plateau = "Singletons",
-          plateau_length = "Singletons",
-          composition = plateau_strains
-        ))
-      }else{
-        return(list(
-          group = group_id,
-          plateau = plateau_cutoff,
+          plateau = "No Plateau Found",
           plateau_length = plateau_length,
           composition = plateau_strains
         ))
+      }else{
+        
+        # If the cutoff starts below singleton_threshold but the compositions are always singletons 
+        # Also return "Singletons" instead of plateau length and positions
+        if_all_singletons <- sapply(plateau_cutoff:(plateau_cutoff+plateau_length),
+                                    function(cutoff){
+                                      cutoff_strain_composition <- group_input[which(sapply(group_input, `[[`, "cutoff") == cutoff)][[1]]$strain_composition
+                                      
+                                      if_cutoff_strain_singleton <- sapply(cutoff_strain_composition,
+                                                                           function(cutoff_strain){
+                                                                             if(cutoff_strain$category == "singleton") TRUE else FALSE
+                                                                           })
+                                      if(all(if_cutoff_strain_singleton)){
+                                        return(TRUE)
+                                      }else{
+                                        return(FALSE)
+                                      }
+                                    })
+        if(all(if_all_singletons)){
+          return(list(
+            group = group_id,
+            plateau = "Singletons",
+            plateau_length = "Singletons",
+            composition = plateau_strains
+          ))
+        }else{
+          return(list(
+            group = group_id,
+            plateau = plateau_cutoff,
+            plateau_length = plateau_length,
+            composition = plateau_strains
+          ))
+        }
       }
     }
   },
@@ -164,6 +177,7 @@ library(parallel)
 thresher_input_path <- snakemake@input[["thresher_input"]]
 hierarchical_clustering_groups_path <- snakemake@input[["hc_groups"]]
 plateau_length <- as.integer(snakemake@params[["plateau_length"]])
+singleton_threshold <- as.integer(snakemake@params[["singleton_threshold"]])
 output_dir <- snakemake@params[["output_dir"]]
 ncores <- snakemake@threads
 system(paste0("mkdir -p ",output_dir))
@@ -174,6 +188,7 @@ thresher_input <- readRDS(thresher_input_path)
 final_strains <- get_plateau_strains(thresher_input,
                                      hierarchical_clustering_groups,
                                      plateau_length,
+                                     singleton_threshold,
                                      output_dir,
                                      ncores)
 saveRDS(final_strains,

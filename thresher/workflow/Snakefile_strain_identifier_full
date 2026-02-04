@@ -92,6 +92,11 @@ rule all:
         os.path.join(config["output"], "plots", "SNP_Distance.pdf"),
         # Multi-SNP-Threshold Plot
         os.path.join(config["output"], "thresher", "output", "MSTP","MSTP.RDS"),
+        # Strain Composition indicated by Tree + SNP Heatmap for four endpoint methods
+        os.path.join(config["output"], "plots", "strain_compositions","plateau","plateau_strain_tree_snp.RDS"),
+        os.path.join(config["output"], "plots", "strain_compositions","peak","peak_strain_tree_snp.RDS"),
+        os.path.join(config["output"], "plots", "strain_compositions","discrepancy","discrepancy_strain_tree_snp.RDS"),
+        os.path.join(config["output"], "plots", "strain_compositions","global","global_strain_tree_snp.RDS"),
         # Thresher QC
         os.path.join(config["output"], "thresher", "output", "QC", "plateau_qc_plot.pdf"),
         os.path.join(config["output"], "thresher", "output", "QC", "peak_qc_plot.pdf"),
@@ -130,6 +135,7 @@ include: os.path.join(BASE_PATH,"rules","snp_matrix.smk")
 include: os.path.join(BASE_PATH,"rules","plot_snp.smk")
 include: os.path.join(BASE_PATH,"rules","hierarchical_clustering.smk")
 include: os.path.join(BASE_PATH,"rules","plot_comprehensive_tree.smk")
+include: os.path.join(BASE_PATH,"rules","plot_strain_compositions.smk")
 include: os.path.join(BASE_PATH,"rules","snippy_input.smk")
 include: os.path.join(BASE_PATH,"rules","snippy_groups.smk")
 include: os.path.join(BASE_PATH,"rules","iqtree_groups.smk")

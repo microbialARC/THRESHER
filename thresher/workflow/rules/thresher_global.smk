@@ -6,7 +6,8 @@ rule thresher_global:
         hc_groups = os.path.join(config["output"], "thresher", "input","hierarchical_clustering_groups.RDS"),
         global_snp_matrix = os.path.join(config["output"], "mummer4_global", "global_snp_matrix.RDS")
     params:
-        output_dir = os.path.join(config["output"], "thresher", "output")
+        output_dir = os.path.join(config["output"], "thresher", "output"),
+        threshold_ceiling = config["threshold_ceiling"]
     threads:
         config["threads"]
     output:

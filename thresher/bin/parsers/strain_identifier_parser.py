@@ -171,6 +171,24 @@ If method is nonparametric, default is 100."""
     )
 
     full_parser.add_argument(
+        "--threshold_ceiling",
+        required=False,
+        type=int,
+        default=500,
+        help="""The ceiling of the range of SNP distances to search for the optimal phylothreshold.
+Default is 500."""
+    )
+
+    full_parser.add_argument(
+        "--singleton_threshold",
+        required=False,
+        type=int,
+        default=100,
+        help="""The SNP distance threshold above which every genome in the group is considered a singleton.
+Default is 100."""
+    )
+
+    full_parser.add_argument(
         "--correction_bootstrap",
         required=False,
         type=int,
@@ -534,6 +552,24 @@ Default is ultrafast"""
         help="""The number of bootstrap replicates for phylogeny of each hierarchical group.
 If method is ultrafast, default is 1000.
 If method is nonparametric, default is 100."""
+    )
+
+    new_full_parser.add_argument(
+        "--threshold_ceiling",
+        required=False,
+        type=int,
+        default=500,
+        help="""The ceiling of the range of SNP distances to search for the optimal phylothreshold.
+Default is 500."""
+    )
+
+    new_full_parser.add_argument(
+        "--singleton_threshold",
+        required=False,
+        type=int,
+        default=100,
+        help="""The SNP distance threshold above which every genome in the group is considered a singleton.
+Default is 100."""
     )
 
     new_full_parser.add_argument(

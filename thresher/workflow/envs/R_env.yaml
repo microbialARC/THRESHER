@@ -4,14 +4,14 @@ channels:
  - bioconda
  - defaults
 dependencies:
- - conda-forge::r-base>=4.4.2
+ - conda-forge::r-base>=4.4.0
  - conda-forge::r-treetools>=1.12.0
  - conda-forge::r-ape>=5.8_1
  - conda-forge::r-cluster>=2.1.8
  - conda-forge::r-dplyr>=1.1.4
  - conda-forge::r-purrr>=1.0.2
- - conda-forge::r-ggplot2>=3.5.1
- - conda-forge::r-scales>=1.3.0
+ - conda-forge::r-ggplot2==4.0.1
+ - conda-forge::r-scales==1.4.0
  - conda-forge::r-reshape2>=1.4.4
  - conda-forge::r-patchwork>=1.3.0
  - conda-forge::r-phytools>=2.4_4
@@ -22,16 +22,15 @@ dependencies:
  - conda-forge::r-showtext>=0.9-7
  - conda-forge::r-ggrepel>=0.9.6
  - conda-forge::r-colorspace>=2.1_1
- - bioconda::bioconductor-ggtree>=3.14.0
- - bioconda::bioconductor-ggtreeextra>=1.16.0
+ - bioconda::bioconductor-ggtree==4.0.4
  - conda-forge::r-data.table>=1.17.0
  - bioconda::bioconductor-biostrings>=2.70
  - conda-forge::r-entropy>=1.3.2
  - conda-forge::r-cowplot>=1.0.0
- - conda-forge::r-ggnewscale>=0.5.2
+ - conda-forge::r-ggnewscale==0.5.2
  - conda-forge::r-tidyr>=1.3.1
  - bioconda::bioconductor-complexheatmap>=2.22.0
  - conda-forge::r-circlize>=0.4.16
  - conda-forge::r-ggstar>=1.0.4
  - conda-forge::r-treesim>=2.4
- 
+ - conda-forge::r-aplot==0.2.9

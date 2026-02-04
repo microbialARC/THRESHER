@@ -6,6 +6,7 @@ rule thresher_plateau:
         hc_groups = os.path.join(config["output"], "thresher", "input","hierarchical_clustering_groups.RDS")
     params:
         plateau_length = config["plateau_length"],
+        singleton_threshold = config["singleton_threshold"],
         output_dir = os.path.join(config["output"], "thresher", "output")
     threads:
         config["threads"]

@@ -1,6 +1,7 @@
 get_discrepancy_strains <- function(thresher_input,
                                     hierarchical_clustering_groups,
                                     output_dir,
+                                    singleton_threshold,
                                     ncores){
   
   group_output <- mclapply(thresher_input, function(group_input){
@@ -8,7 +9,7 @@ get_discrepancy_strains <- function(thresher_input,
     group_id <- group_input[[1]]$HC_group
     # After the peak at the beginning of the threshold 
     # Find the threshold that have minimal discrepancy in this group
-    # Find the peak <= 50 gSNP
+    # Find the phylothreshold using discrepancy endpoint before singleton threshold
     
     if(length(group_input) == 1){
     # If length(group_input) == 1, skip because the discrepancy function does not work here
@@ -19,8 +20,8 @@ get_discrepancy_strains <- function(thresher_input,
       )
     
     }else{
-      # Only consider the cutoff range below 100
-      peak_discrepancy <- group_input[[which.max(sapply(group_input, \(x) x$discrepancy * (x$cutoff <= 100)))]]$cutoff
+      # Only consider the cutoff range below or equal to singleton threshold
+      peak_discrepancy <- group_input[[which.max(sapply(group_input, \(x) x$discrepancy * (x$cutoff <= singleton_threshold)))]]$cutoff
       discrepancy_cutoff <- group_input[[which.min(sapply(group_input, \(x) if(x$cutoff > peak_discrepancy) x$discrepancy else Inf))]]$cutoff
       # Pull the discrepancy strains
       discrepancy_strains <- group_input[which(sapply(group_input, `[[`, "cutoff") == discrepancy_cutoff)][[1]]
@@ -103,6 +104,7 @@ thresher_input_path <- snakemake@input[["thresher_input"]]
 hierarchical_clustering_groups_path <- snakemake@input[["hc_groups"]]
 output_dir <- snakemake@params[["output_dir"]]
 ncores = snakemake@threads
+singleton_threshold = as.integer(snakemake@params[["singleton_threshold"]])
 system(paste0("mkdir -p ",output_dir))
 setwd(dir = output_dir)
 hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
@@ -111,6 +113,7 @@ thresher_input <- readRDS(thresher_input_path)
 final_strains <- get_discrepancy_strains(thresher_input,
                                          hierarchical_clustering_groups,
                                          output_dir,
+                                         singleton_threshold,
                                          ncores)
 
 saveRDS(final_strains,

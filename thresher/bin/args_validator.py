@@ -191,6 +191,28 @@ def validate_strain_identifier_full(args):
         elif args.group_bootstrap_method == "nonparametric":
             print("Group bootstrap number not provided, using default 100 replicates for standard nonparametric method")
             args.group_bootstrap_number = 100
+    
+    # Check the value of threshold_ceiling
+    if type(args.threshold_ceiling) is not int:
+        print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
+        args.threshold_ceiling = 500
+    if not args.threshold_ceiling:
+        print("Threshold ceiling(--threshold_ceiling) not provided, using default 500")
+        args.threshold_ceiling = 500
+    elif args.threshold_ceiling < 0:
+        print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
+        args.threshold_ceiling = 500
+
+    # Check the value of singleton_threshold
+    if type(args.singleton_threshold) is not int:
+        print("Singleton SNP distance threshold(--singleton_threshold) must be a positive integer, using default 100")
+        args.singleton_threshold = 100
+    if not args.singleton_threshold:
+        print("Singleton SNP distance threshold(--singleton_threshold) not provided, using default 100")
+        args.singleton_threshold = 100
+    elif args.singleton_threshold < 0:
+        print("Singleton SNP distance threshold(--singleton_threshold) must be a positive integer, using default 100")
+        args.singleton_threshold = 100
 
     # Check the value of correction_bootstrap
     if type(args.correction_bootstrap) is not int:
@@ -714,6 +736,28 @@ def validate_strain_identifier_new_full(args):
         elif args.group_bootstrap_method == "nonparametric":
             print("Group bootstrap number not provided, using default 100 replicates for standard nonparametric method")
             args.group_bootstrap_number = 100
+    
+    # Check the value of threshold_ceiling
+    if type(args.threshold_ceiling) is not int:
+        print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
+        args.threshold_ceiling = 500
+    if not args.threshold_ceiling:
+        print("Threshold ceiling(--threshold_ceiling) not provided, using default 500")
+        args.threshold_ceiling = 500
+    elif args.threshold_ceiling < 0:
+        print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
+        args.threshold_ceiling = 500
+    
+    # Check the value of singleton_threshold
+    if type(args.singleton_threshold) is not int:
+        print("Singleton SNP distance threshold(--singleton_threshold) must be a positive integer, using default 100")
+        args.singleton_threshold = 100
+    if not args.singleton_threshold:
+        print("Singleton SNP distance threshold(--singleton_threshold) not provided, using default 100")
+        args.singleton_threshold = 100
+    elif args.singleton_threshold < 0:
+        print("Singleton SNP distance threshold(--singleton_threshold) must be a positive integer, using default 100")
+        args.singleton_threshold = 100
     
     if type(args.correction_bootstrap) is not int:
         print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) must be an integer between 0 and 100, using default 0")

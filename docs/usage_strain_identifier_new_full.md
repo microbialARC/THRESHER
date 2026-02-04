@@ -68,6 +68,12 @@ options:
                         Use CladeBreaker to restrain the strain composition.
                         Options are [True, False].
                         Default is True.
+  --threshold_ceiling THRESHOLD_CEILING
+                        The ceiling of the range of SNP distances to search for the optimal phylothreshold.
+                        Default is 500.
+  --singleton_threshold SINGLETON_THRESHOLD
+                        The SNP distance threshold above which every genome in the group is considered a singleton.
+                        Default is 100.
   --correction_bootstrap CORRECTION_BOOTSTRAP
                         Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition (default: 0).
   --endpoint ENDPOINT   The endpoint method to use for determing clusters and making plots.
@@ -161,6 +167,14 @@ options:
     - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
     - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
     - `True` or `False`, default is `True`.
+- **Threshold Ceiling(--threshold_ceiling):**
+    - The ceiling of the range tested to search for the optimal phylothreshold (default: 500).
+    - This parameter sets the upper limit of SNP phylothresholds considered when determining the optimal phylothreshold for defining strains within hierarchical clustering groups.
+    - Adjust this ceiling based on the expected genomic diversity within your dataset and the species being analyzed. A higher ceiling allows for the inclusion of more distantly related genomes in the strain identification process, which may be appropriate for highly diverse species.
+- **Singleton Threshold(--singleton_threshold):**
+    - The SNP distance threshold above which every genome in the hierarchical clustering group is considered a singleton (default: 100).
+    - If the minimal SNP distance between any two genomes in a hierarchical clustering group is equal to or greater than this threshold, all genomes in that group will be classified as singletons, meaning each genome forms its own unique strain.
+    - This parameter helps to avoid defining strains in groups where genomes are too distantly related to form meaningful strain. Adjust this threshold based on the expected genomic diversity within your dataset and the species being analyzed.
 -  **Correction Bootstrap Threshold(--correction_bootstrap):**
     - Minimum bootstrap support required to apply phylogenetic corrections to SNP strain composition (default: 0). Nodes with bootstrap values below this threshold are excluded from correction, except for the root node which is always retained.
     - Higher thresholds enforce stricter corrections but may reduce the number of corrections applied, particularly in trees with lower overall bootstrap support. The default of 0 applies all possible corrections regardless of bootstrap support, which may be appropriate for small genome groups where high bootstrap values are difficult to achieve. Adjust based on your bootstrap method and resampling depth.

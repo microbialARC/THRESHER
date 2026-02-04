@@ -13,7 +13,6 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
   library(phytools)
   library(colorspace)
   library(ggtree)
-  library(ggtreeExtra)
   library(ggstar)
   library(TreeTools)
   library(parallel)
@@ -115,7 +114,7 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
                                     levels = c(as.character(sort(as.integer(unique(mlst_df$MLST)[unique(mlst_df$MLST) != "Unassigned"]))),
                                                "Unassigned")))
   
-  # Visualize the tree with ggtree and ggtreeextra
+  # Visualize the tree with ggtree
   
   circular_tree <- ggtree(comprehensive_tree,
                           aes(color = as.numeric(label),

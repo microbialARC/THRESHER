@@ -5,7 +5,8 @@ rule thresher_discrepancy:
         thresher_input = os.path.join(config["output"], "thresher", "input", "thresher_input.RDS"),
         hc_groups = os.path.join(config["output"], "thresher", "input", "hierarchical_clustering_groups.RDS")
     params:
-        output_dir = os.path.join(config["output"], "thresher", "output")
+        output_dir = os.path.join(config["output"], "thresher", "output"),
+        singleton_threshold = config["singleton_threshold"]
     threads:
         config["threads"]
     output:

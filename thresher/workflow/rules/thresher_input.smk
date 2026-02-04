@@ -9,6 +9,8 @@ rule thresher_input:
     params:
         group_tree_dir = os.path.join(config["output"], "iqtree","group_tree"),
         thresher_input_dir = os.path.join(config["output"], "thresher", "input"),
+        threshold_ceiling = config["threshold_ceiling"],
+        singleton_threshold = config["singleton_threshold"],
         correction_bootstrap = config["correction_bootstrap"],
         use_cladebreaker = config["use_cladebreaker"]
     threads:

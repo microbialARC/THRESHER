@@ -1,6 +1,7 @@
 get_global_strains <- function(thresher_input,
                                hierarchical_clustering_groups,
                                global_snp_matrix,
+                               threshold_ceiling,
                                output_dir,
                                ncores){
   
@@ -13,9 +14,9 @@ get_global_strains <- function(thresher_input,
     group_global_snp_matrix <- global_snp_matrix[global_snp_matrix$subject %in% group_genomes,]
     
     # The earliest cutoff a study genome hit a global genome
-    # if the min SNP distance is above 500, threshold is set to 500
+    # if the min SNP distance is above threshold_ceiling, threshold is set to the value of threshold_ceiling
   
-    global_cutoff <- if(round(min(group_global_snp_matrix$gsnp)) >= 500) 500 else round(min(group_global_snp_matrix$gsnp))
+    global_cutoff <- if(round(min(group_global_snp_matrix$gsnp)) >= threshold_ceiling) threshold_ceiling else round(min(group_global_snp_matrix$gsnp))
     
     # If the global_cutoff < min(sapply(group_input, `[[`, "cutoff"))
     # Use min(sapply(group_input, `[[`, "cutoff"))
@@ -88,6 +89,7 @@ thresher_input_path <- snakemake@input[["thresher_input"]]
 hierarchical_clustering_groups_path <- snakemake@input[["hc_groups"]]
 global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
 output_dir <- snakemake@params[["output_dir"]]
+threshold_ceiling <- as.integer(snakemake@params[["threshold_ceiling"]])
 ncores <- snakemake@threads
 setwd(dir = output_dir)
 #Libraries 
@@ -100,6 +102,7 @@ global_snp_matrix <- readRDS(global_snp_matrix_path)
 final_strains <- get_global_strains(thresher_input,
                                     hierarchical_clustering_groups,
                                     global_snp_matrix,
+                                    threshold_ceiling,
                                     output_dir,
                                     ncores)
 
