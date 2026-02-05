@@ -331,23 +331,37 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                                               # proceed to check if this is the biggest pure-study-genome clade (There are breaker genomes in the parent clade)
                                                                                                                               # Parent node:
                                                                                                                               parent_node <- strain_clade_newick$edge[which(strain_clade_newick$edge[,2] == node), 1]
-                                                                                                                              parent_sub_strain_clade_newick <- Subtree(strain_clade_newick,
-                                                                                                                                                                        parent_node)
-                                                                                                                              
-                                                                                                                              parent_sub_strain_clade_newick_global_genomes <- setdiff(grep("GCA_|GCF_",parent_sub_strain_clade_newick$tip.label,
-                                                                                                                                                                                            value = TRUE),
-                                                                                                                                                                                       strain_clade_poor_global_genomes)
-                                                                                                                                
-                                                                                                                              if(length(parent_sub_strain_clade_newick_global_genomes) > 0){
-                                                                                                                                
+                                                                                                                              # If no parent_node found here. This means this is the root node of the strain_clade_newick
+                                                                                                                              if(length(parent_node) == 0){
+                                                                                                                                # This is the root node of the strain_clade_newick
+                                                                                                                                # directly return the study genomes in this clade as a strain
                                                                                                                                 return(
                                                                                                                                   list(
                                                                                                                                     original_strain = strain_clade$strain_id,
-                                                                                                                                    corrected_genomes = sub_strain_clade_newick$tip.label,
+                                                                                                                                    corrected_genomes = sub_strain_clade_newick$tip.label[!grepl("GCA_|GCF_", sub_strain_clade_newick$tip.label)],
                                                                                                                                     category = "clone",
                                                                                                                                     bootstrap_support = as.integer(strain_clade_newick$node.label[node_entry])
                                                                                                                                   )
                                                                                                                                 )
+                                                                                                                              }else{
+                                                                                                                                # If not the root node, check if the parent node has any breaker genomes
+                                                                                                                                parent_sub_strain_clade_newick <- Subtree(strain_clade_newick,
+                                                                                                                                                                          parent_node)
+                                                                                                                                
+                                                                                                                                parent_sub_strain_clade_newick_global_genomes <- setdiff(grep("GCA_|GCF_",parent_sub_strain_clade_newick$tip.label,
+                                                                                                                                                                                              value = TRUE),
+                                                                                                                                                                                         strain_clade_poor_global_genomes)
+                                                                                                                                if(length(parent_sub_strain_clade_newick_global_genomes) > 0){
+                                                                                                                                  
+                                                                                                                                  return(
+                                                                                                                                    list(
+                                                                                                                                      original_strain = strain_clade$strain_id,
+                                                                                                                                      corrected_genomes = sub_strain_clade_newick$tip.label,
+                                                                                                                                      category = "clone",
+                                                                                                                                      bootstrap_support = as.integer(strain_clade_newick$node.label[node_entry])
+                                                                                                                                    )
+                                                                                                                                  )
+                                                                                                                                }
                                                                                                                               }
                                                                                                                             }
                                                                                                                           }) %>% purrr::compact()
