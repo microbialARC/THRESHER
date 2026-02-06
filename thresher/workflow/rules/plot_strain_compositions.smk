@@ -10,7 +10,8 @@ rule plot_strain_compositions:
         discrepancy_strains_rds = os.path.join(config["output"], "thresher", "output", "discrepancy_strains.RDS"),
         iqtree_group_path = os.path.join(config["output"], "iqtree","group_tree","iqtree_group.txt")
     params:
-        output_dir = os.path.join(config["output"], "plots", "strain_compositions")
+        output_dir = os.path.join(config["output"], "plots", "strain_compositions"),
+        use_cladebreaker = config["use_cladebreaker"]
     output:
         plateau_strain_tree_snp_rds = os.path.join(config["output"], "plots", "strain_compositions","plateau","plateau_strain_tree_snp.RDS"),
         peak_strain_tree_snp_rds = os.path.join(config["output"], "plots", "strain_compositions","peak","peak_strain_tree_snp.RDS"),

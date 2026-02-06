@@ -1,4 +1,4 @@
-# Visualize the strain compositions determined by Thresher using ML tree of each group and SNP distancs
+# Visualize the strain compositions determined by Thresher using ML tree of each group and SNP distances
 # Libraries ----
 library(dplyr)
 library(ggtree)
@@ -35,6 +35,7 @@ get_strain_compositions_plot <- function(endpoint_method,
                                          study_snp_matrix_path,
                                          global_snp_matrix_path,
                                          group_tree_path,
+                                         use_cladebreaker,
                                          output_dir){
   
   ## Input ----
@@ -114,7 +115,12 @@ get_strain_compositions_plot <- function(endpoint_method,
     
     thresher_clones <- names(which(table(thresher_strain_df$strain_id[thresher_strain_df$genome %in% group_total_genomes]) > 1))
     
-    # Get the data frame summarizing the nodes of thresher_clones and study_clones
+    # Generate annotation data frame mapping phylogenetic tree nodes to THRESHER-identified strains
+    # When use_cladebreaker is TRUE, strain compositions exclude global genomes (cladebreakers)
+    # reflecting the hypothesis of hyper-local transmission where global genomes should not be considered the same strain
+    # with local strains. When FALSE, global genomes are included in strain composition,
+    # allowing for the situation where the genomes deposited at NCBI GenBank could also be the same strain with study genomes
+    
     group_tree_annotation_df <- do.call(rbind,
                                         lapply(thresher_clones,
                                                function(clone_entry){
@@ -124,14 +130,20 @@ get_strain_compositions_plot <- function(endpoint_method,
                                                  clone_node <- sapply(group_tree_newick_sum,
                                                                       function(node_entry){
                                                                         
-                                                                        if(identical(sort(node_entry$genomes),
+                                                                        node_genomes <- if(use_cladebreaker){
+                                                                          node_entry$genomes
+                                                                        }else if(!use_cladebreaker){
+                                                                          # Exclude global genomes from node only when use_cladebreaker is FALSE
+                                                                          node_entry$genomes[!grepl("GCA_|GCF_", node_entry$genomes)]
+                                                                        }
+                                                                        
+                                                                        if(identical(sort(node_genomes),
                                                                                      sort(clone_genomes))){
                                                                           
                                                                           node_entry$node
                                                                         }else{
                                                                           NULL
                                                                         }
-                                                                        
                                                                       }) %>%
                                                    compact() %>%
                                                    as.character()
@@ -149,7 +161,18 @@ get_strain_compositions_plot <- function(endpoint_method,
                                                }))
     
     if(!is.null(group_tree_annotation_df)){
+      
+      if(!use_cladebreaker){
+        # If cladebreaker is not used 
+        # The same strain could be mapped to multiple nodes due to global genomes inclusion
+        # So we pick the node with least genomes
+        group_tree_annotation_df <- group_tree_annotation_df %>%
+          group_by(strain_id) %>%
+          filter(node == max(as.numeric(node))) %>%
+          ungroup()
+      }
       group_tree_annotation_df$node <- as.numeric(group_tree_annotation_df$node)
+      
       # Offset the label 
       group_tree_annotation_df <- group_tree_annotation_df %>%
         group_by(node) %>%
@@ -411,6 +434,9 @@ group_tree_path <- snakemake@input[["iqtree_group_path"]]
 # Paths to study and global SNP matrices
 study_snp_matrix_path <- snakemake@input[["study_snp_matrix"]]
 global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
+# Whether or not to perfrom cladebreaker
+use_cladebreaker <- snakemake@params[["use_cladebreaker"]]
+use_cladebreaker <- as.logical(use_cladebreaker)
 # Output dir for strain composition plots
 output_dir <- snakemake@params[["output_dir"]]
 
@@ -425,6 +451,7 @@ plateau_plots_rds <- get_strain_compositions_plot(
   study_snp_matrix_path = study_snp_matrix_path,
   global_snp_matrix_path = global_snp_matrix_path,
   group_tree_path = group_tree_path,
+  use_cladebreaker = use_cladebreaker,
   output_dir = output_dir
 )
 
@@ -441,6 +468,7 @@ peak_plots_rds <- get_strain_compositions_plot(
   study_snp_matrix_path = study_snp_matrix_path,
   global_snp_matrix_path = global_snp_matrix_path,
   group_tree_path = group_tree_path,
+  use_cladebreaker = use_cladebreaker,
   output_dir = output_dir
 )
 
@@ -457,6 +485,7 @@ discrepancy_plots_rds <- get_strain_compositions_plot(
   study_snp_matrix_path = study_snp_matrix_path,
   global_snp_matrix_path = global_snp_matrix_path,
   group_tree_path = group_tree_path,
+  use_cladebreaker = use_cladebreaker,
   output_dir = output_dir
 )
 
@@ -473,6 +502,7 @@ global_plots_rds <- get_strain_compositions_plot(
   study_snp_matrix_path = study_snp_matrix_path,
   global_snp_matrix_path = global_snp_matrix_path,
   group_tree_path = group_tree_path,
+  use_cladebreaker = use_cladebreaker,
   output_dir = output_dir
 )
 
