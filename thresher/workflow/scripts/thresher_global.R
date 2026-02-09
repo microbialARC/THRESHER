@@ -13,15 +13,22 @@ get_global_strains <- function(thresher_input,
     group_genomes <- unlist(sapply(hierarchical_clustering_groups, \(x) x$genomes[x$hc_group == group_id]))
     group_global_snp_matrix <- global_snp_matrix[global_snp_matrix$subject %in% group_genomes,]
     
-    # The earliest cutoff a study genome hit a global genome
-    # if the min SNP distance is above threshold_ceiling, threshold is set to the value of threshold_ceiling
-  
+    # Steps to determine the global cutoff for the group:
+    # For each study genome, find the minimum SNP distance to any global genome as the global threshold for the group.
+    # Since the definition of global is the smallest SNP distance of any study genome in the group to a global genome
     global_cutoff <- if(round(min(group_global_snp_matrix$gsnp)) >= threshold_ceiling) threshold_ceiling else round(min(group_global_snp_matrix$gsnp))
-    
-    # If the global_cutoff < min(sapply(group_input, `[[`, "cutoff"))
-    # Use min(sapply(group_input, `[[`, "cutoff"))
+    # and then we want to ensure that the global cutoff is not below the largest cutoff among study genomes in the group
     global_cutoff <- if(global_cutoff < min(sapply(group_input, `[[`, "cutoff"))) min(sapply(group_input, `[[`, "cutoff")) else global_cutoff
-    # Pull the global strains
+    # However, we also want to ensure that the global cutoff does not exceed the threshold ceiling
+    global_cutoff <- if(global_cutoff > threshold_ceiling) threshold_ceiling else global_cutoff
+    
+    # (Optional): If there is only 1 composition in the group 
+    # That is, the smallest SNP distance among study genomes in the group is above the singleton threshold
+    # In this case, we set the global cutoff to be the cutoff of that single composition
+    if(length(group_input) == 1){
+      global_cutoff <- group_input[[1]]$cutoff
+    } 
+    # Use the global cutoff to determine the global strains for the group
     global_strains <- group_input[which(sapply(group_input, `[[`, "cutoff") == global_cutoff)][[1]]
     
     return(list(
