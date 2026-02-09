@@ -37,7 +37,6 @@ rule bakta_annotation_single:
             --tmp-dir {params.output_dir}/bakta_annotation/tmpdir \
             --genus ${{annotation_genus}} \
             --species ${{annotation_species}} \
-            --locus-tag {wildcards.genome_name} \
             {input.genome_path}
         
         """

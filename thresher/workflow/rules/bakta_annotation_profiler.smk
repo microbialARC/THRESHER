@@ -47,7 +47,6 @@ rule bakta_annotation_profiler:
             --tmp-dir {params.output_dir}/bakta_annotation/tmpdir \
             --genus ${{annotation_genus}} \
             --species ${{annotation_species}} \
-            --locus-tag {params.genome_name} \
             {input.genome_path}
         
         rm -rf {params.output_dir}/bakta_annotation/tmpdir
