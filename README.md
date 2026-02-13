@@ -17,13 +17,10 @@ Models bacterial evolution through substitution, gene gain/loss, and recombinati
   ![Strain Identifier Cladebreaker OFF Workflow](data/workflow/Thresher_strain_identifier_cladebreaker_off_workflow.png)
 - Redo Endpoint
   ![Strain Identifier Redo Endpoint Workflow](data/workflow/Thresher_strain_identifier_redo_endpoint_workflow.png)
-  Elements highlighted in green (#91a01e) indicate updates applied to existing results.
 - New SNPs 
   ![Strain Identifier New SNPs Workflow](data/workflow/Thresher_strain_identifier_new_snps_workflow.png)
-  Elements highlighted in green (#91a01e) indicate updates applied to existing results.
 - New Full 
   ![Strain Identifier New Full Workflow](data/workflow/Thresher_strain_identifier_new_full_workflow.png)
-  Elements highlighted in green (#91a01e) indicate updates applied to existing results.
 
 ### Genome Profiler
 ![Genome Profiler Workflow](data/workflow/Thresher_genome_profiler_workflow.png)
