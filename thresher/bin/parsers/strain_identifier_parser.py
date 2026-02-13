@@ -8,7 +8,7 @@ def add_strain_identifier_parser(subparsers):
         "strain_identifier",
         formatter_class=argparse.RawTextHelpFormatter,
         help="Determines strains/transmission clusters using phylothresholds.",
-        usage="thresher strain_identifier {full-pipeline,redo-endpoint,new-snps,new-full}"
+        usage="thresher strain_identifier {full-pipeline,cladebreaker-off,redo-endpoint,new-snps,new-full}"
     )
     
     # subparsers for modes within strain_identifier
@@ -20,6 +20,7 @@ def add_strain_identifier_parser(subparsers):
     )
 
     _add_full_pipeline_parser(strain_identifier_mode)
+    _add_cladebreaker_off_parser(strain_identifier_mode)
     _add_redo_endpoint_parser(strain_identifier_mode)
     _add_new_snps_parser(strain_identifier_mode)
     _add_new_full_parser(strain_identifier_mode)
@@ -313,7 +314,7 @@ Default is plateau."""
     redo_parser.add_argument(
         "--conda_prefix",
         default=None,
-        help = "Directory for conda environments needed for this analysis. If not provided, defaults to OUTPUT/conda_envs"
+        help = "Directory for conda environments needed for this analysis. If not provided, defaults to OUTPUT/conda_envs_<YYYY_MM_DD_HHMMSS>"
     )
 # The parser for the new-snps mode
 def _add_new_snps_parser(strain_identifier_mode):
@@ -641,4 +642,79 @@ Only used when endpoint method is 'plateau'. Default is 15"""
         help="""Bypass system compatibility checks (operating system and available RAM) and force execution of the pipeline.
 This may cause instability or failures."""
     )
+# The parser for cladebreaker-off mode
+def _add_cladebreaker_off_parser(strain_identifier_mode):
+    """Add cladebreaker-off subparser"""
+    cladebreaker_off_parser = strain_identifier_mode.add_parser(
+        "cladebreaker-off",
+        formatter_class=argparse.RawTextHelpFormatter,
+        help="Turn off Cladebreaker using established Thresher results and redo strain composition and plots.",
+    )
+
+    cladebreaker_off_parser.add_argument(
+        "--thresher_output",
+        type=str,
+        required=True,
+        help="""Path to the existing THRESHER directory.
+The existing analysis directory should contain the previous analysis results.""")
     
+    cladebreaker_off_parser.add_argument(
+        "--output",
+        type=str,
+        required=True,
+        help="""Path to output directory.
+If not provided, defaults to thresher_strain_identifier_cladebreaker_off_<YYYY_MM_DD_HHMMSS> under the current working directory.""")
+    
+    cladebreaker_off_parser.add_argument(
+        "--threshold_ceiling",
+        required=False,
+        type=int,
+        default=500,
+        help="""The ceiling of the range of SNP distances to search for the optimal phylothreshold.
+Default is 500."""
+    )
+
+    cladebreaker_off_parser.add_argument(
+        "--singleton_threshold",
+        required=False,
+        type=int,
+        default=100,
+        help="""The SNP distance threshold above which every genome in the group is considered a singleton.
+Default is 100."""
+    )
+
+    cladebreaker_off_parser.add_argument(
+        "--plateau_length",
+        required=False,
+        type=int,
+        default=15,
+        help="The plateau length for the plateau endpoint method. Default is 15."
+    )
+
+    cladebreaker_off_parser.add_argument(
+        "--correction_bootstrap",
+        required=False,
+        type=int,
+        default=0,
+        help="Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition (default: 0)."
+    )
+
+    cladebreaker_off_parser.add_argument(
+        "-t",
+        "--threads",
+        default=1,
+        type=int,
+        help = "Thread number. Default is 1."
+    )
+
+    cladebreaker_off_parser.add_argument(
+        "--prefix",
+        default=None,
+        help = "Prefix for config files. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS"
+    )
+
+    cladebreaker_off_parser.add_argument(
+        "--conda_prefix",
+        default=None,
+        help = "Directory for conda environments needed for this analysis. If not provided, defaults to OUTPUT/conda_envs_<YYYY_MM_DD_HHMMSS>"
+    )

@@ -1,0 +1,21 @@
+rule thresher_input_cladebreaker_off:
+    conda:
+        os.path.join(BASE_PATH,"envs/R_env.yaml")
+    input:
+        hc_groups = os.path.join(config["thresher_output"], "thresher", "input", "hierarchical_clustering_groups.RDS"),
+        study_snp_matrix =  os.path.join(config["thresher_output"],"mummer4_study", "study_snp_matrix.RDS"),
+        global_snp_matrix = os.path.join(config["thresher_output"],"mummer4_global", "global_snp_matrix.RDS"),
+        iqtree_group_path = os.path.join(config["thresher_output"], "iqtree","group_tree","iqtree_group.txt")
+    params:
+        group_tree_dir = os.path.join(config["thresher_output"], "iqtree","group_tree"),
+        thresher_input_dir = os.path.join(config["output"], "thresher", "input"),
+        threshold_ceiling = config["threshold_ceiling"],
+        singleton_threshold = config["singleton_threshold"],
+        correction_bootstrap = config["correction_bootstrap"],
+        use_cladebreaker = config["use_cladebreaker"]
+    threads:
+        config["threads"]
+    output:
+       thresher_input = os.path.join(config["output"], "thresher", "input", "thresher_input.RDS")
+    script:
+        os.path.join(BASE_PATH,"scripts","thresher_input.R")

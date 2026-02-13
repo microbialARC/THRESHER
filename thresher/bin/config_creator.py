@@ -120,6 +120,30 @@ def strain_identifier_new_full_config(args):
         yaml.dump(config, f, default_flow_style=False)
 
     return os.path.join(args.output, "config", f"config_{args.prefix}.yaml")
+# strain_identifier function, cladebreaker_off mode config creators
+def strain_identifier_cladebreaker_off_config(args):
+    """Create config file in yaml format for strain_identifier cladebreaker_off function"""
+    config = {
+        'prefix': args.prefix,
+        'output': args.output,
+        'thresher_output': args.thresher_output,
+        'output': args.output,
+        'threshold_ceiling': args.threshold_ceiling,
+        'singleton_threshold': args.singleton_threshold,
+        'correction_bootstrap': args.correction_bootstrap,
+        'plateau_length': args.plateau_length,
+        'use_cladebreaker': False,
+        'threads': args.threads
+    }
+    
+    if not os.path.exists(os.path.join(args.output, "config")):
+        os.makedirs(os.path.join(args.output, "config"))
+
+    with open(os.path.join(args.output, "config", f"config_{args.prefix}.yaml"), 'w') as f:
+        yaml.dump(config, f, default_flow_style=False)
+
+    return os.path.join(args.output, "config", f"config_{args.prefix}.yaml")
+
 # genome_profiler function config creators
 def genome_profiler_config(args):
     """Create config file in yaml format for genome_profiler function"""

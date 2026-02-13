@@ -241,6 +241,12 @@ def validate_strain_identifier_full(args):
     if args.endpoint == "plateau" and not args.plateau_length:
         print("Plateau length not provided, using default length of 15")
         args.plateau_length = 15
+    
+    # Check if plateau length is a positive integer
+    elif args.endpoint == "plateau":
+        if type(args.plateau_length) is not int or args.plateau_length < 1:
+            print("Plateau length must be a positive integer, using default length of 15")
+            args.plateau_length = 15
 
     # Check threads, if not provided, use 1 thread
     if not args.threads:
@@ -473,7 +479,7 @@ def validate_strain_identifier_new_snps(args):
         print(f"Output directory {args.output} does not exist, creating it.")
         os.makedirs(args.output)
         args.output = os.path.abspath(args.output)
-# Validate arguments for clinality new-full mode
+# Validate arguments for strain_identifier new-full mode
 def validate_strain_identifier_new_full(args):
     """Validate the arguments used in new-full of strain_identifier function"""
     
@@ -786,6 +792,93 @@ def validate_strain_identifier_new_full(args):
     if args.endpoint == "plateau" and not args.plateau_length:
         print("Plateau length not provided, using default length of 15")
         args.plateau_length = 15
+# Validate arguments for strain_identifier cladebreaker_off mode
+def validate_strain_identifier_cladebreaker_off(args):
+    """Validate the arguments used in cladebreaker_off of strain_identifier function"""
+    # Check prefix
+    if not args.prefix:
+        print("Prefix not provided, using default prefix: current timestamp in the format of YYYY_MM_DD_HHMMSS")
+        args.prefix = time.strftime("%Y_%m_%d_%H%M%S")
+    
+    # Check conda prefix
+    if not args.conda_prefix:
+        print("Conda environment path not provided, using default path: <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>")
+        args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
+    
+
+    # Check the value of threshold_ceiling
+    if type(args.threshold_ceiling) is not int:
+        print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
+        args.threshold_ceiling = 500
+    if not args.threshold_ceiling:
+        print("Threshold ceiling(--threshold_ceiling) not provided, using default 500")
+        args.threshold_ceiling = 500
+    elif args.threshold_ceiling < 0:
+        print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
+        args.threshold_ceiling = 500
+
+    # Check the value of singleton_threshold
+    if type(args.singleton_threshold) is not int:
+        print("Singleton SNP distance threshold(--singleton_threshold) must be a positive integer, using default 100")
+        args.singleton_threshold = 100
+    if not args.singleton_threshold:
+        print("Singleton SNP distance threshold(--singleton_threshold) not provided, using default 100")
+        args.singleton_threshold = 100
+    elif args.singleton_threshold < 0:
+        print("Singleton SNP distance threshold(--singleton_threshold) must be a positive integer, using default 100")
+        args.singleton_threshold = 100
+
+    # Check plateau length
+    if not args.plateau_length:
+        print("Plateau length not provided, using default length of 15")
+        args.plateau_length = 15
+    
+    # Check if plateau length is a positive integer
+    elif type(args.plateau_length) is not int or args.plateau_length < 1:
+        print("Plateau length must be a positive integer, using default length of 15")
+        args.plateau_length = 15
+    
+    # Check the value of correction_bootstrap
+    if type(args.correction_bootstrap) is not int:
+        print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) must be an integer between 0 and 100, using default 0")
+        args.correction_bootstrap = 0
+    if not args.correction_bootstrap:
+        print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) not provided, using default 0")
+        args.correction_bootstrap = 0
+    elif args.correction_bootstrap < 0 or args.correction_bootstrap > 100:
+        print("Minimum bootstrap support threshold for applying phylogenetic corrections(--correction_bootstrap) must be between 0 and 100, using default 0")
+        args.correction_bootstrap = 0
+
+    # Check the existing THRESHER directory
+    if not args.thresher_output or not os.path.exists(args.thresher_output):
+        raise ValidationError("Existing THRESHER output directory not found")
+    else:
+        # Get absolute path
+        args.thresher_output =  os.path.abspath(args.thresher_output)
+        # Look for peak_strains.RDS, plateau_strains.RDS, global_strains.RDS, and discrepancy_strains.RDS within the existing THRESHER directory
+        thresher_output = {
+            "hierarchical_groups": os.path.join(args.thresher_output, "thresher", "input", "hierarchical_clustering_groups.RDS"),
+            "thresher_input": os.path.join(args.thresher_output, "thresher", "input", "thresher_input.RDS"),
+            "study_snp_matrix": os.path.join(args.thresher_output, "mummer4_study", "study_snp_matrix.RDS"),
+            "global_snp_matrix": os.path.join(args.thresher_output, "mummer4_global", "global_snp_matrix.RDS"),
+            "group_tree": os.path.join(args.thresher_output, "iqtree","group_tree","iqtree_group.txt")
+        }
+        # Only when all files exist can the mode proceed
+        if not all(os.path.exists(f) for f in thresher_output.values()):
+            missing_files = [f for f in thresher_output.values() if not os.path.exists(f)]
+            raise ValidationError(f"Missing THRESHER output files: {', '.join(missing_files)}")
+        else:
+            print(f"Existing THRESHER output directory found: {args.thresher_output}")
+    
+    # Check new output directory
+    if not args.output:
+        print(f"Output directory not provided, creating a directory named 'thresher_strain_identifier_cladebreaker_off_{args.prefix} under current working directory({os.getcwd()}) as output directory")
+        args.output = os.path.abspath(os.path.join(os.getcwd(), f"thresher_strain_identifier_cladebreaker_off_{args.prefix}"))
+    if not os.path.exists(args.output):
+        print(f"Output directory {args.output} does not exist, creating it.")
+        os.makedirs(args.output)
+        args.output = os.path.abspath(args.output)
+    
 # Validate arguments for genome_profiler function
 def validate_genome_profiler(args):
     """Validate the arguments used in genome_profiler function"""

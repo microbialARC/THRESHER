@@ -6,6 +6,11 @@ Strain Identifier comprises four modes:
 ```
 thresher strain_identifier full-pipeline -h
 ```
+## **[Cladebreaker OFF](usage_strain_identifier_cladebreaker_off.md):** Re-identify strain composition without Cladebreaker correction
+```
+thresher strain_identifier cladebreaker-off -h
+```
+Cladebreaker operates on the assumption that the study genomes represent hyperlocal strains unique to the setting and absent from global databases. Under this assumption, global genomes should not be the same strain with study genomes, thereby constraining strain composition and preventing overestimation of strain size. If, however, the user has evidence that global genomes belong to the same strains as the study genomes, Cladebreaker correction should be disabled. This allows global genomes to cluster with study genomes, avoiding underestimation of strain size and overestimation of the number of strains.
 
 ## **[Redo Endpoint](usage_strain_identifier_redo_endpoint.md):** Only rerun the final endpoint analysis using existing intermediate files.
 ```

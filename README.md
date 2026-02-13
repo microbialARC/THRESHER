@@ -13,6 +13,8 @@ Models bacterial evolution through substitution, gene gain/loss, and recombinati
 ### Strain Identifier
 - Full Pipeline
   ![Strain Identifier Full-Pipeline Workflow](data/workflow/Thresher_strain_identifier_full_pipeline_workflow.png)
+- Cladebreaker OFF
+  ![Strain Identifier Cladebreaker OFF Workflow](data/workflow/Thresher_strain_identifier_cladebreaker_off_workflow.png)
 - Redo Endpoint
   ![Strain Identifier Redo Endpoint Workflow](data/workflow/Thresher_strain_identifier_redo_endpoint_workflow.png)
   Elements highlighted in green (#91a01e) indicate updates applied to existing results.
@@ -37,6 +39,7 @@ Models bacterial evolution through substitution, gene gain/loss, and recombinati
 ### Core Functionalities
 - [Strain Identifier](docs/usage_strain_identifier.md)
   - [Full Pipeline Mode](docs/usage_strain_identifier_full_pipeline.md)
+  - [Cladebreaker OFF Mode](docs/usage_strain_identifier_cladebreaker_off.md)
   - [Redo Endpoint Mode](docs/usage_strain_identifier_redo_endpoint.md)
   - [New SNPs Mode](docs/usage_strain_identifier_new_snps.md)
   - [New Full Mode](docs/usage_strain_identifier_new_full.md)

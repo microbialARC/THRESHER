@@ -2,7 +2,7 @@
 """THRESHER Main Entry
 This script creates the configuration files and executes the Snakemake workflow.
 """
-VERSION = "0.2.4-beta"
+VERSION = "0.3.0-beta"
 # Import standard libraries and custom modules
 import argparse
 import os
@@ -26,6 +26,7 @@ from thresher.bin.args_validator import (
     validate_strain_identifier_redo_endpoint,
     validate_strain_identifier_new_snps,
     validate_strain_identifier_new_full,
+    validate_strain_identifier_cladebreaker_off,
     validate_genome_profiler,
     validate_evo_simulator,
     ValidationError
@@ -37,6 +38,7 @@ from thresher.bin.config_creator import (
     strain_identifier_redo_endpoint_config,
     strain_identifier_new_snps_config,
     strain_identifier_new_full_config,
+    strain_identifier_cladebreaker_off_config,
     genome_profiler_config,
     evo_simulator_config
 )
@@ -331,6 +333,10 @@ def main():
                 validate_strain_identifier_new_full(args)
                 config_path = strain_identifier_new_full_config(args)
                 snakefile = "Snakefile_strain_identifier_new_full"
+            elif args.mode == "cladebreaker-off":
+                validate_strain_identifier_cladebreaker_off(args)
+                config_path = strain_identifier_cladebreaker_off_config(args)
+                snakefile = "Snakefile_strain_identifier_cladebreaker_off"
             else:
                 raise ValidationError(f"Unknown Strain Identifier mode: {args.mode}")
             
