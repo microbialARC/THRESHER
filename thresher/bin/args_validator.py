@@ -1002,6 +1002,18 @@ def validate_evo_simulator(args):
         raise ValidationError("Taxa (offspring) must be provided")
     elif args.taxa < 3 or not isinstance(args.taxa, int):
         raise ValidationError("Taxa (offspring) must be an integer no less than 3")
+    
+    # Check lambda_rate
+    if args.lambda_rate is None:
+        raise ValidationError("Lambda rate (--lambda_rate) must be provided")
+    elif not isinstance(args.lambda_rate, (int, float)) or args.lambda_rate <= 0:
+        raise ValidationError("Lambda rate must be a positive number")
+
+    # Check mu_rate
+    if args.mu_rate is None:
+        raise ValidationError("Mu rate (--mu_rate) must be provided")
+    elif not isinstance(args.mu_rate, (int, float)) or args.mu_rate < 0:
+        raise ValidationError("Mu rate must be a non-negative number (0 for pure-birth Yule process)")
 
     # Check substitution model 
     if not args.substitution_model:

@@ -179,6 +179,8 @@ def evo_simulator_config(args):
         'ancestor': args.ancestor,
         'years': args.years,
         'taxa': args.taxa,
+        'lambda': args.lambda_rate,
+        'mu': args.mu_rate,
         'substitution_model': args.substitution_model,
         'model_parameters': args.model_parameters,
         'mutation_rate': args.mutation_rate,
@@ -197,9 +199,10 @@ def evo_simulator_config(args):
         'min_recombination_size': args.min_recombination_size,
         'mean_recombination_size': args.mean_recombination_size,
         'nu': args.nu,
+        'export_per_event_genomes': args.export_per_event_genomes,
         'output': args.output,
         'seed': args.seed    
-   }
+    }
     
     if not os.path.exists(os.path.join(args.output, "config")):
        os.makedirs(os.path.join(args.output, "config"))

@@ -43,6 +43,8 @@ rule simulator_simulation:
         loss_rate = config["loss_rate"],
         chromosomal_bins = config["bin"],
         mge_fasta = config["mge_fasta"],
-        mge_entropy = config["mge_entropy"]
+        mge_entropy = config["mge_entropy"],
+        # Whether to export per-event-genomes
+        export_per_event_genomes = config["export_per_event_genomes"]
     script:
         os.path.join(BASE_PATH, "scripts", "simulator_simulation.py")

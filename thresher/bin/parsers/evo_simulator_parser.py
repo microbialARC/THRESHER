@@ -41,6 +41,25 @@ def add_evo_simulator_parser(subparsers):
         required=True,
         help="Number of taxa(offspring) at the end of the simulation."
     )
+    
+    evo_simulator_parser.add_argument(
+        "--lambda_rate",
+        type=float,
+        required=True,
+        help="Speciation rate (lambda) for the birth-death tree simulation.\n"
+        "Rate at which new sub-lineages arise per existing lineage per year.\n"
+        "No default value. Must be a positive number."
+    )
+
+    evo_simulator_parser.add_argument(
+        "--mu_rate",
+        type=float,
+        required=True,
+        help="Extinction rate (mu) for the birth-death tree simulation.\n"
+        "Rate at which sub-lineages are lost per lineage per year.\n"
+        "When mu = 0, reduces to a pure-birth (Yule) process.\n"
+        "No default value. Must be a non-negative number."
+    )
 
     evo_simulator_parser.add_argument(
         "--substitution_model",
@@ -213,6 +232,19 @@ def add_evo_simulator_parser(subparsers):
         help="Nu parameter (snps / total length of recombination in bp) for recombination simulation.\n"
         "Required when --use_recombination is True."
     )  
+
+    evo_simulator_parser.add_argument(
+        "--export-per-event-genomes",
+        action="store_true",
+        required=False,
+        default=False,
+        help="Export a genome snapshot after each individual evolutionary event "
+        "(substitution, recombination, or gene gain/loss if applicable) is applied, "
+        "rather than only after all events in an interval have been accumulated. "
+        "By default, genomes are exported once per interval after all events are "
+        "applied. This option enables fine-grained inspection of sequential "
+        "evolutionary changes but may significantly increase output size and runtime."
+    )
 
     evo_simulator_parser.add_argument(
         "--output",

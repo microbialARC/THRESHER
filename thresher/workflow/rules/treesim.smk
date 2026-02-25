@@ -8,6 +8,8 @@ rule phylogeny_simulation:
     params:
         taxa = config["taxa"],
         years = config["years"],
+        lambda_rate = config["lambda"],
+        mu_rate = config["mu"],
         ancestor_name=ancestor_name,
         seed = config["seed"],
         output_dir=os.path.join(config["output"], "treesim")

@@ -456,6 +456,10 @@ loss_rate = float(snakemake.params.loss_rate) 						# Loss rate (Loss events/yea
 chr_bins = str(snakemake.params.chromosomal_bins)     				# Chromosomal bins file
 mge_fasta = str(snakemake.params.mge_fasta)       					# Fasta file containing all MGE sequences
 mge_entropy = str(snakemake.params.mge_entropy)       				# The directory containing entropy of each MGE
+
+# Whether to export the per-event-genome after each event (mutation, gain, loss) in simulated_genomes.fasta
+export_per_event_genomes = bool(snakemake.params.export_per_event_genomes)
+
 # Reproducibility
 rseed = int(snakemake.params.seed)             						# Seed
 
@@ -800,6 +804,11 @@ sequence_length = len(concatenated_contig)
 # Initialize counters for total events
 total_mutation,total_recomb,total_gain,total_loss = 0,0,0,0
 
+# Per-event genome snapshots 
+# if --export-per-event-genomes is enabled, the per-event-genomes will be stored in this list
+# Otherwise this list will remain empty
+per_event_genomes = []
+
 nu_sum=[]
 recomb_size_sum=[]
 # Iterate through each time interval to simulate evolution
@@ -870,6 +879,9 @@ for interval_idx in range(1, max_intervals):
 			# record mutation position
 			mutation_log.append(mutation_info)
 			total_mutation+=1
+			# If export_per_event_genomes is enabled, export the genome after this mutation event
+			if export_per_event_genomes:
+				per_event_genomes.append((f"{event_node}_mutation_{total_mutation}", sequence[event_node]))
 
 		elif event_category == "gain":
 			if use_mge and gain_rate != 0 and chr_bins is not None and mge_fasta is not None and mge_entropy is not None:
@@ -880,6 +892,9 @@ for interval_idx in range(1, max_intervals):
 				# record gene gain event
 				gain_log.append(gene_gain_info)
 				total_gain += 1
+				# If export_per_event_genomes is enabled, export the genome after this gene gain event
+				if export_per_event_genomes:
+					per_event_genomes.append((f"{event_node}_gain_{total_gain}", sequence[event_node]))
 			else:
 				print("MGE gain simulation skipped due to incomplete data.")
 		
@@ -893,6 +908,9 @@ for interval_idx in range(1, max_intervals):
 				# record gene loss event
 				loss_log.append(gene_loss_info)
 				total_loss += 1
+				# If export_per_event_genomes is enabled, export the genome after this gene loss event
+				if export_per_event_genomes:
+					per_event_genomes.append((f"{event_node}_loss_{total_loss}", sequence[event_node]))
 			else:
 				print("MGE loss simulation skipped due to incomplete data.")
 			
@@ -965,6 +983,9 @@ for interval_idx in range(1, max_intervals):
 						sequence[event_node] = sequence[event_node][:start] + sequence[donor][start:end] + sequence[event_node][end:]
 						nu_sum.append(nu_idx)
 						recomb_size_sum.append(donor_seq_valid_len)
+						# If export_per_event_genomes is enabled, export the genome after this recombination event
+						if export_per_event_genomes:
+							per_event_genomes.append((f"{event_node}_recomb_int_{total_recomb}", sequence[event_node]))
 
 		elif event_category == "recomb_ext":
 			# using 'nu' to generate random mutations in the recombination event
@@ -1034,6 +1055,9 @@ for interval_idx in range(1, max_intervals):
 				sequence[event_node] = sequence[event_node][:start] + new_rext_seq_str + sequence[event_node][end:]
 				nu_sum.append(nu_idx)
 				recomb_size_sum.append(old_rext_seq_valid_len)
+				# If export_per_event_genomes is enabled, export the genome after this recombination event
+				if export_per_event_genomes:
+					per_event_genomes.append((f"{event_node}_recomb_ext_{total_recomb}", sequence[event_node]))
 
 # Export Recombination log
 recombination_log = pd.DataFrame(recombination_log)
@@ -1059,14 +1083,40 @@ with open(os.path.join(intermediate_path, "names.txt"), "r") as f:
     rename = dict(line.strip().split("\t") for line in f)
 
 # Export the simulated genomes
-# both tips and nodes
-with open(os.path.join(output_path, "simulated_genomes.fasta"), "w") as h:
-	for node in sequence:
-		if node != "root":
-			if branch_type[node] == "tip":
-				h.write(f">{rename[node]}\n{sequence[node]}\n")
-			elif branch_type[node] == "branch":
-				h.write(f">{node}\n{sequence[node]}\n")
+# When exporting the simulated genomes
+# if export_per_event_genomes is enabled
+# there are 3 files exported:
+# 1) simulated_genomes.fasta: contains the simulated genomes for all tips and internal nodes
+# 2) per_event_genomes.fasta: contains the simulated per-event-genomes after each event
+# 3) Combined_simulated_genomes.fasta: contains both the simulated genomes for all tips and internal nodes and the per-event-genomes after each event
+if export_per_event_genomes:
+	# Export per-event-genomes
+	with open(os.path.join(output_path, "per_event_genomes.fasta"), "w") as h:
+		for genome_name, genome_seq in per_event_genomes:
+			h.write(f">{genome_name}\n{genome_seq}\n")
+	# Export simulated genomes for tips and nodes as simulated_genomes.fasta
+	with open(os.path.join(output_path, "simulated_genomes.fasta"), "w") as h:
+		for node in sequence:
+			if node != "root":
+				if branch_type[node] == "tip":
+					h.write(f">{rename[node]}\n{sequence[node]}\n")
+				elif branch_type[node] == "branch":
+					h.write(f">{node}\n{sequence[node]}\n")
+	# Concatenate simulated_genomes.fasta + per_event_genomes.fasta
+	with open(os.path.join(output_path, "combined_simulated_genomes.fasta"), "w") as h:
+		for fasta_file in ["simulated_genomes.fasta", "per_event_genomes.fasta"]:
+			with open(os.path.join(output_path, fasta_file), "r") as f:
+				h.write(f.read())
+elif not export_per_event_genomes:
+	# If export_per_event_genomes is not enabled, only export the simulated genomes for tips and nodes as simulated_genomes.fasta
+	# both tips and nodes
+	with open(os.path.join(output_path, "simulated_genomes.fasta"), "w") as h:
+		for node in sequence:
+			if node != "root":
+				if branch_type[node] == "tip":
+					h.write(f">{rename[node]}\n{sequence[node]}\n")
+				elif branch_type[node] == "branch":
+					h.write(f">{node}\n{sequence[node]}\n")
 
 # Calculate values once
 rm_value = 0.0 if recom_rate == 0 else recom_rate * mean_recomb_size * sum(nu_sum) / len(nu_sum)
