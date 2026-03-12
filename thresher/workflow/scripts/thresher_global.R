@@ -28,8 +28,14 @@ get_global_strains <- function(thresher_input,
     if(length(group_input) == 1){
       global_cutoff <- group_input[[1]]$cutoff
     } 
+    # Find the index of the composition in the group that has the same cutoff as the global cutoff after the above adjustments.
+    global_index <- which(sapply(group_input, `[[`, "cutoff") == global_cutoff)
+    # However, if there is still no global_index found after the above adjustments, use the maximum cutoff among the compositions in the group that is less than the global cutoff
+    if(length(global_index) == 0){
+      global_index <- which.max(sapply(group_input, `[[`, "cutoff")[sapply(group_input, `[[`, "cutoff") < global_cutoff])
+    }
     # Use the global cutoff to determine the global strains for the group
-    global_strains <- group_input[which(sapply(group_input, `[[`, "cutoff") == global_cutoff)][[1]]
+    global_strains <- group_input[[global_index]]
     
     return(list(
       group = group_id,
