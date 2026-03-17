@@ -146,8 +146,9 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                      before_correction_singletons = length(c(group_genomes, group_entry$genomes_overlimit)),
                                      before_correction_clones = 0,
                                      clones_corrected = 0,
-                                     after_correction_singletons = length(group_genomes),
-                                     after_correction_clones = 0,
+                                     # The early return is triggered so no correction will be applied, thus after-correction singletons and clones are NA
+                                     after_correction_singletons = NA_integer_,
+                                     after_correction_clones = NA_integer_,
                                      median_strain_bootstrap_support = NA_integer_,
                                      mean_strain_bootstrap_support = NA_integer_,
                                      strain_composition = strain_composition
