@@ -42,6 +42,36 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                group_genomes <- setdiff(group_genomes,
                                                         group_entry$genomes_overlimit)
                                
+                               # After the exclusion, if there is no genome left in the group, the early return is triggered
+                               # then return the list and quit the function for this group, and move on to the next group
+                                if(length(group_genomes) == 0){
+                                  return(
+                                    list(
+                                      list(
+                                        HC_group = group_id,
+                                        cutoff = NA_integer_,
+                                        discrepancy = NA_integer_,
+                                        before_correction_singletons = length(group_entry$genomes),
+                                        before_correction_clones = 0,
+                                        clones_corrected = 0,
+                                        # No correction will be applied, thus after-correction singletons and clones are NA
+                                        after_correction_singletons = NA_integer_,
+                                        after_correction_clones = NA_integer_,
+                                        median_strain_bootstrap_support = NA_integer_,
+                                        mean_strain_bootstrap_support = NA_integer_,
+                                        strain_composition = list(
+                                          list(
+                                            strain_id = paste(group_id,seq_along(group_entry$genomes),sep = "_"),
+                                            category = "singleton",
+                                            genome = group_entry$genomes,
+                                            correction = FALSE,
+                                            bootstrap_support = 0
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                }
                                # theoretically the group tree will have path:
                                group_tree_path <- file.path(group_tree_dir,paste0("Group",group_id,".contree"))
                                # IQtree: It makes no sense to perform bootstrap with less than 4 sequences.
@@ -92,16 +122,18 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                # If the minimal snp distance in the group is larger than user-defined singleton_threshold(default:100), every genome in the group is singleton
                                
                                if(ceiling(min(group_snp_matrix$gsnp)) >= singleton_threshold){
-                                 
-                                 
-                                 strain_composition <- lapply(seq_along(group_genomes),
+                                 # Another early return is triggered if the minimal gsnp distance in the group is larger than the singleton threshold, which means all genomes in the group are singletons
+                                 # and no phylogenetic correction will be applied
+                                 strain_composition <- lapply(seq_along(c(group_genomes, group_entry$genomes_overlimit)),
                                                               function(genome_entry){
                                                                 list(
                                                                   strain_id = paste0(group_id,"_",genome_entry),
                                                                   category = 'singleton',
-                                                                  genome = group_genomes[genome_entry],
+                                                                  genome = c(group_genomes, group_entry$genomes_overlimit)[genome_entry],
                                                                   correction = FALSE,
-                                                                  bootstrap_support = 0
+                                                                  # Since no phylogenetic correction will be applied,
+                                                                  # the support will be NA
+                                                                  bootstrap_support = NA_integer_
                                                                 )
                                                               })
                                  
@@ -110,14 +142,14 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                    list(
                                      HC_group = group_id,
                                      cutoff = ceiling(min(group_snp_matrix$gsnp)),
-                                     discrepancy = NA,
-                                     before_correction_singletons = length(group_genomes),
+                                     discrepancy = NA_integer_,
+                                     before_correction_singletons = length(c(group_genomes, group_entry$genomes_overlimit)),
                                      before_correction_clones = 0,
                                      clones_corrected = 0,
                                      after_correction_singletons = length(group_genomes),
                                      after_correction_clones = 0,
-                                     median_strain_bootstrap_support = 0,
-                                     mean_strain_bootstrap_support = 0,
+                                     median_strain_bootstrap_support = NA_integer_,
+                                     mean_strain_bootstrap_support = NA_integer_,
                                      strain_composition = strain_composition
                                    )
                                  )
