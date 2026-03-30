@@ -7,9 +7,24 @@ get_peak_strains <- function(thresher_input,
     
     group_id <- group_input[[1]]$HC_group
     # Find the threshold that generates most clones in this group
-    peak_cutoff <- min(group_input[[which.max(sapply(group_input, \(x) x$after_correction_clones))]]$cutoff)
-    # Pull the peak strains
-    peak_strains <- group_input[which(sapply(group_input, `[[`, "cutoff") == peak_cutoff)][[1]]
+    # First determine whether or not this group has only singletons. 
+    # If it does then no peak cutoff and the value is NA
+
+    # there are 3 conditions to tell whether this group has only singletons
+    # 1. Only 1 entry in the group_input
+    condition_1 <- length(group_input) == 1
+    # 2. Cutoff is NA for the entry
+    condition_2 <- all(sapply(group_input, function(x) is.na(x$cutoff)))
+    # 3. Only 1 entry in group_input[[1]]$strain_composition
+    condition_3 <- length(group_input[[1]]$strain_composition) == 1
+    if(condition_1 || condition_2 || condition_3){
+      peak_cutoff <- NA
+      peak_strains <- group_input[[1]]
+    } else {
+      peak_cutoff <- min(group_input[[which.max(sapply(group_input, \(x) x$after_correction_clones))]]$cutoff)
+      # Pull the peak strains
+      peak_strains <- group_input[which(sapply(group_input, `[[`, "cutoff") == peak_cutoff)][[1]]
+    }
    
     return(list(
       group = group_id,

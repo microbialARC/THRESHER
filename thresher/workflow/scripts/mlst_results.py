@@ -46,7 +46,10 @@ def get_cdiff_clade(st, db):
     try:
         st = int(st)
         clade = db.loc[db['ST'] == st, 'mlst_clade'].values[0]
-        return 'Unassigned' if pd.isna(clade) else clade
+        # Because for C. difficile, there is no prefix for the clades in the database
+        # I add "Clade " here for clarity in the output
+        # Return 'Unassigned' if clade is NaN or "", otherwise return "CladeX" where X is the clade number
+        return 'Unassigned' if pd.isna(clade) or clade == "" else f"Clade{clade}"
     except (ValueError, IndexError):
         return 'Unassigned'
 #Add clonal complex or clade to output dataframe

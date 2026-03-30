@@ -9,6 +9,22 @@ get_plateau_strains <- function(thresher_input,
   group_output <- mclapply(thresher_input, function(group_input){
     
     group_id <- group_input[[1]]$HC_group
+    # there are 3 conditions to tell whether this group has only singletons
+    # 1. Only 1 entry in the group_input
+    condition_1 <- length(group_input) == 1
+    # 2. Cutoff is NA for the entry
+    condition_2 <- all(sapply(group_input, function(x) is.na(x$cutoff)))
+    # 3. Only 1 entry in group_input[[1]]$strain_composition
+    condition_3 <- length(group_input[[1]]$strain_composition) == 1
+    
+    if(condition_1 & condition_2 & condition_3){
+      return(list(
+        group = group_id,
+        plateau = "Singletons",
+        plateau_length = "Singletons",
+        composition = group_input[[1]]
+      ))
+    }
     # If the starting cutoff is already above the singleton_threshold and there is only one composition
     # all genomes are singletons
     if(group_input[[1]]$cutoff >= singleton_threshold &
