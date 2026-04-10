@@ -88,8 +88,8 @@ hierarchical_clustering <- function(comprehensive_tree_path,
       all(condition1_genomes %in% clade$genomes))] %>%
       #the best final clade is the one with least number of genomes 
       {.[which.min(sapply(., function(clade) length(clade$genomes)))]}
-    
-    if(condition1_clade[[1]]$bootstrap_support == "Root"){
+    # The bootstrap support of this clade should be "Root" because the clade covers all genomes in the tree, which means the clade is the root of the tree
+    if(!is.na(condition1_clade[[1]]$bootstrap_support) && condition1_clade[[1]]$bootstrap_support == "Root"){
       TRUE
     }else{
       FALSE
@@ -155,101 +155,89 @@ hierarchical_clustering <- function(comprehensive_tree_path,
     
   }
   
-  # Look at each group to check the pair-wise SNP distance
-  # If the genome in the group has no link with other genomes within 1000 gsnps (can be changed)
-  # The genome is a singleton and will be separated from the group
+  # Correct the hirerarchical clustering groups using tree topology if necessary
+  # First step: fix final_group to be topology-consistent
+  for(hc_group in sort(unique(final_group))) {
+    group_genomes <- names(final_group)[final_group == hc_group]
+    if(length(group_genomes) > 1) {
+      sum_entry <- which(sapply(comprehensive_tree_sum, function(sum_entry)
+        identical(sort(as.character(sum_entry$genomes)), sort(group_genomes))))
+      if(length(sum_entry) == 0) {
+        fix_sum_entry <- which.min(sapply(comprehensive_tree_sum, function(sum_entry) {
+          if(all(group_genomes %in% sum_entry$genomes)) length(sum_entry$genomes) else Inf
+        }))
+        discrepant_genomes <- setdiff(comprehensive_tree_sum[[fix_sum_entry]]$genomes, group_genomes)
+        final_group[discrepant_genomes] <- hc_group
+      }
+    }
+  }
+
+  # Second step: build hc_groups_qc from the corrected final_group
   
-  hc_groups_qc <- lapply(sort(unique(final_group)),
-                         function(hc_group){
-                           
-                           group_genomes <- names(final_group)[final_group == hc_group]
-                           
-                           if(length(group_genomes) > 1){
-                             
-                             # Find the SHaLRT/bootstrap support of this HC group
-                             sum_entry <- which(sapply(comprehensive_tree_sum,
-                                                       function(summary){identical(sort(as.character(summary$genomes)),
-                                                                                   sort(group_genomes))}))
-                             
-                             
-                             
-                             # If no exact match is found, find the clade that covers all group genomes and has the least number of genomes (the best match)
-                             if(length(sum_entry) == 0){
-
-                                fix_sum_entry <- which.min(sapply(comprehensive_tree_sum,
-                                                          function(summary){
-                                                            if(all(group_genomes %in% summary$genomes)){
-                                                              return(length(summary$genomes))
-                                                            }else{
-                                                              return(Inf)
-                                                            }
-                                                          }))
-                              # Now this means that there is discrepancy between the topology of the tree and hierarchical clustering result
-                              # Within the lapply, change the upper level final_group based on sum_entry
-                              
-                              # Get the disrepant genomes between comprehensive_tree_sum[[fix_sum_entry]]$genomes and group_genomes
-                              discrepant_genomes <- setdiff(comprehensive_tree_sum[[fix_sum_entry]]$genomes,group_genomes)
-                              
-                              # Change the group of the discrepant genomes to the current hc_group of the iteration
-                              final_group[discrepant_genomes] <<- hc_group
-
-                              # Update the group_genomes to be the genomes in comprehensive_tree_sum[[fix_sum_entry]]$genomes
-                              group_SHaLRT_support <- comprehensive_tree_sum[[fix_sum_entry]]$SHaLRT_support
-                              group_bootstrap_support <- comprehensive_tree_sum[[fix_sum_entry]]$bootstrap_support
-
-                              # Update group_genomes
-                              group_genomes <- comprehensive_tree_sum[[fix_sum_entry]]$genomes
-                             }else{
-                               group_SHaLRT_support <- comprehensive_tree_sum[[sum_entry]]$SHaLRT_support
-                               group_bootstrap_support <- comprehensive_tree_sum[[sum_entry]]$bootstrap_support
-                               
-                             }
-
-                             # If all genomes over 1000 gsnp limit?
-                             group_study_snp_matrix <- study_snp_matrix[(study_snp_matrix$subject %in% group_genomes) &
-                                                                          (study_snp_matrix$query %in% group_genomes),]
-                             
-                             if(min(group_study_snp_matrix$gsnp) >= 1000){
-                               
-                               group_all_overlimit <- TRUE
-                               genomes_overlimit <- group_genomes
-                               
-                             }else{
-                               
-                               group_all_overlimit <- FALSE
-                               
-                               # Iterate through group_genomes to find which genomes has >= 1000 gsnp
-                               genomes_overlimit <- as.character(unlist(sapply(group_genomes,
-                                                                  function(genome){
-                                                                    group_study_snp_matrix_genome <- group_study_snp_matrix[group_study_snp_matrix$subject == genome |
-                                                                                                                              group_study_snp_matrix$query == genome,]
-                                                                    if(min(group_study_snp_matrix_genome$gsnp) >= 1000){
-                                                                      return(genome)
-                                                                    }
-                                                                  })))
-                             }
-
-                             return(list(
-                               hc_group = hc_group,
-                               genomes = group_genomes,
-                               all_overlimit = group_all_overlimit,
-                               genomes_overlimit = genomes_overlimit,
-                               SHaLRT_support = group_SHaLRT_support,
-                               bootstrap_support = group_bootstrap_support
-                             ))
-                             
-                           }else{
-                             # If there is only 1 group genome: singleton
-                             return(list(
-                               hc_group = hc_group,
-                               genomes = group_genomes,
-                               all_overlimit = FALSE,
-                               genomes_overlimit = NULL,
-                               SHaLRT_support = "N/A",
-                               bootstrap_support = "N/A"
-                             ))
-                           }
-                         })
+  hc_groups_qc <- lapply(sort(unique(final_group)), function(hc_group) {
+    
+    group_genomes <- names(final_group)[final_group == hc_group]
+    
+    if (length(group_genomes) > 1) {
+      
+      # Find the SHaLRT/bootstrap support of this HC group
+      sum_entry <- which(sapply(comprehensive_tree_sum, function(summary) {
+        identical(sort(as.character(summary$genomes)), sort(group_genomes))
+      }))
+      
+      if (length(sum_entry) == 0) {
+        # Find the smallest clade covering all group genomes
+        sum_entry <- which.min(sapply(comprehensive_tree_sum, function(summary) {
+          if (all(group_genomes %in% summary$genomes)) length(summary$genomes) else Inf
+        }))
+      }
+      
+      group_SHaLRT_support <- comprehensive_tree_sum[[sum_entry]]$SHaLRT_support
+      group_bootstrap_support <- comprehensive_tree_sum[[sum_entry]]$bootstrap_support
+      
+      # Check pair-wise SNP distances within group
+      group_study_snp_matrix <- study_snp_matrix[
+        (study_snp_matrix$subject %in% group_genomes) &
+          (study_snp_matrix$query %in% group_genomes), ]
+      
+      # Look at each group to check the pair-wise SNP distance
+      # If the genome in the group has no link with other genomes within 1000 gsnps (can be changed)
+      # The genome is a singleton and will be separated from the group
+      
+      if (min(group_study_snp_matrix$gsnp) >= 1000) {
+        group_all_overlimit <- TRUE
+        genomes_overlimit <- group_genomes
+      } else {
+        group_all_overlimit <- FALSE
+        genomes_overlimit <- as.character(unlist(sapply(group_genomes, function(genome) {
+          genome_snps <- group_study_snp_matrix[
+            group_study_snp_matrix$subject == genome |
+              group_study_snp_matrix$query == genome, ]
+          if (min(genome_snps$gsnp) >= 1000) return(genome)
+        })))
+      }
+      
+      return(list(
+        hc_group = hc_group,
+        genomes = group_genomes,
+        all_overlimit = group_all_overlimit,
+        genomes_overlimit = genomes_overlimit,
+        SHaLRT_support = group_SHaLRT_support,
+        bootstrap_support = group_bootstrap_support
+      ))
+      
+    } else {
+      # Singleton
+      return(list(
+        hc_group = hc_group,
+        genomes = group_genomes,
+        all_overlimit = FALSE,
+        genomes_overlimit = NULL,
+        SHaLRT_support = "N/A",
+        bootstrap_support = "N/A"
+      ))
+    }
+  })
   # Remove those entries with no genomes (if any) because of the correction/fix of the hierarchical clustering groups
   hc_groups_qc <- hc_groups_qc[sapply(hc_groups_qc, function(group) length(group$genomes) > 0)]
   
@@ -265,7 +253,7 @@ hierarchical_clustering <- function(comprehensive_tree_path,
                                          }))
   # Return hc_groups_qc full and simplified csv
   return(list("full" = hc_groups_qc,
-              "simplified " = hc_groups_simplified))
+              "simplified" = hc_groups_simplified))
 }
 
 hierarchical_clustering_groups <- hierarchical_clustering(comprehensive_tree_path,
@@ -276,7 +264,7 @@ hierarchical_clustering_groups <- hierarchical_clustering(comprehensive_tree_pat
 saveRDS(hierarchical_clustering_groups[["full"]],
         snakemake@output[["hc_groups"]])
 # Export the simplified output as csv to Snakemake
-write.csv(hierarchical_clustering_groups$`simplified `,
+write.csv(hierarchical_clustering_groups[["simplified"]],
           snakemake@output[["hc_groups_csv"]],
           quote = FALSE,
           row.names = FALSE)

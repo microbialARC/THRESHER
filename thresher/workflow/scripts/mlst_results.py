@@ -4,11 +4,27 @@ import glob as glob
 
 #Import from snakemake
 species = snakemake.params.species
-mlst_raw = pd.read_csv(snakemake.input.mlst_output, sep='\t', header=None)
 metadata = pd.read_csv(snakemake.params.metadata, sep='\t', header=None)
 analysis_mode = snakemake.params.analysis_mode
 from thresher.bin.parse_genome_name import parse_genome_name
 
+# Parse MLST output manually to handle variable column counts
+# Because some mlst output lines can have only 3 columns like /path/to/genome - -
+# which causes pandas to misalign the columns when reading the file directly with read_csv
+mlst_raw_line_path = snakemake.input.mlst_output
+mlst_raw_rows = []
+with open(mlst_raw_line_path, 'r') as f:
+    for line in f:
+        fields = line.strip().split('\t')
+        if len(fields) >= 3:
+            mlst_raw_rows.append((fields[0], fields[2]))
+        elif len(fields) == 2:
+            # Edge case: only path and scheme, no ST
+            mlst_raw_rows.append((fields[0], '-'))
+        else:
+            mlst_raw_rows.append((fields[0], '-'))
+
+mlst_raw = pd.DataFrame(mlst_raw_rows, columns=['path', 'ST'])
 #Create output dataframe
 # Actually we just need genome_name and genome_path from metadata
 # But I leave the other columns in for now in case we need them later
@@ -23,9 +39,8 @@ mlst_results = pd.DataFrame()
 mlst_results['genome'] = metadata['genome_name']
 mlst_results['genome'] = mlst_results['genome'].apply(lambda x: parse_genome_name(x))
 
-# Create a mapping from genome_path to ST
-# column 0 is path, column 2 is ST
-path_to_st = dict(zip(mlst_raw[0], mlst_raw[2])) 
+# Create a mapping from genome_path to ST using the raw MLST output
+path_to_st = dict(zip(mlst_raw['path'], mlst_raw['ST']))
 # Map ST values using genome_path from metadata
 mlst_results['ST'] = metadata['genome_path'].map(path_to_st)
 
@@ -46,6 +61,8 @@ def get_cdiff_clade(st, db):
     try:
         st = int(st)
         clade = db.loc[db['ST'] == st, 'mlst_clade'].values[0]
+        # Make the clade character but not number (e.g. Don't show 1.0 but just 1)
+        clade = str(clade).split('.')[0]
         # Because for C. difficile, there is no prefix for the clades in the database
         # I add "Clade " here for clarity in the output
         # Return 'Unassigned' if clade is NaN or "", otherwise return "CladeX" where X is the clade number

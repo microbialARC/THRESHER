@@ -31,6 +31,11 @@ def validate_strain_identifier_full(args):
         input_df[4] = None
         input_df[5] = None
     input_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+    # Check genome_name 
+    # If pure number, return the error
+    if input_df["genome_name"].apply(lambda x: str(x).isdigit()).any():
+        raise ValidationError("Genome name cannot be pure number. Please provide genome names that are not pure numbers to ensure proper parsing and analysis.")
+    
     # Check if there is space in the genome_name column
     # if so, parse the genome_name
     # Parse genome names with invalid characters
@@ -270,6 +275,8 @@ def validate_strain_identifier_redo_endpoint(args):
     original_metadata_df["genome_path"] = original_metadata_df["genome_path"].apply(lambda x: os.path.abspath(x))
     if original_metadata_df.shape[1] != 5:
         raise ValidationError("Input file must have 5 columns")
+    if original_metadata_df["genome_name"].apply(lambda x: str(x).isdigit()).any():
+        raise ValidationError("Genome name cannot be pure number. Please provide genome names that are not pure numbers to ensure proper parsing and analysis.")
     # Check if there is space in the genome_name column
     # if so, parse the genome_name
     # Parse genome names with invalid characters
@@ -336,6 +343,10 @@ def validate_strain_identifier_new_snps(args):
         new_metadata_df[4] = None
         new_metadata_df[5] = None
     new_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+
+    if new_metadata_df["genome_name"].apply(lambda x: str(x).isdigit()).any():
+        raise ValidationError("Genome name cannot be pure number. Please provide genome names that are not pure numbers to ensure proper parsing and analysis.")
+    
     # Check if there is space in the genome_name column
     # if so, parse the genome_name
     # Parse genome names with invalid characters
@@ -495,6 +506,10 @@ def validate_strain_identifier_new_full(args):
         new_metadata_df[4] = None
         new_metadata_df[5] = None
     new_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+
+    if new_metadata_df["genome_name"].apply(lambda x: str(x).isdigit()).any():
+        raise ValidationError("Genome name cannot be pure number. Please provide genome names that are not pure numbers to ensure proper parsing and analysis.")
+    
     # Check if there is space in the genome_name column
     # if so, parse the genome_name
     # Parse genome names with invalid characters
@@ -546,6 +561,9 @@ def validate_strain_identifier_new_full(args):
         original_metadata_df[4] = None
         original_metadata_df[5] = None
     original_metadata_df.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
+    
+    if original_metadata_df["genome_name"].apply(lambda x: str(x).isdigit()).any():
+        raise ValidationError("Genome name cannot be pure number. Please provide genome names that are not pure numbers to ensure proper parsing and analysis.")
     #  Check if there is space in the genome_name column
     # if so, parse the genome_name
     # Parse genome names with invalid characters
