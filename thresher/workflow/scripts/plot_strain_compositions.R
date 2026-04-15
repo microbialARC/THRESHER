@@ -193,6 +193,30 @@ get_strain_compositions_plot <- function(endpoint_method,
         ) %>%
         ungroup()
     }
+
+    # In rare cases, there could be clones that are missed in the annotation because the clone genomes are not exactly the same as any node genomes in the tree
+    # This will be addressed in the future
+    # For now, in this case, I will use geom_cladelab() to label the clone without geom_hilight() highlighting the clone, which is not ideal but at least can show the strain composition information of the clone
+    annotation_missing_clones <- setdiff(thresher_clones, group_tree_annotation_df$strain_id)
+    annotation_missing_clones_df <- NULL
+    
+    if(length(annotation_missing_clones)>0){
+      annotation_missing_clones_df <- do.call(rbind,lapply(annotation_missing_clones,function(clone_entry){
+        clone_genomes <- thresher_strain_df$genome[thresher_strain_df$strain_id == clone_entry]
+        # If no matching node found, instead of silently dropping it, annotate the individual tips directly.
+        tip_nodes <- which(group_tree_newick$tip.label %in% clone_genomes)
+        return(
+          data.frame(
+            node = tip_nodes,
+            strain_id = clone_entry,
+            method = tools::toTitleCase(endpoint_method),
+            label_offset = 0
+            )
+          )
+        }))
+    }
+
+
     
     ## Visualization ----
 
@@ -269,6 +293,31 @@ get_strain_compositions_plot <- function(endpoint_method,
                               guide = guide_legend(order = 2))
           )
         )
+      }} + 
+      {if (!is.null(annotation_missing_clones_df) && nrow(annotation_missing_clones_df) > 0) {
+        c(
+          list(
+            ggnewscale::new_scale_color(),
+            ggnewscale::new_scale_fill()
+          ),
+          list(
+            geom_cladelab(
+              data = annotation_missing_clones_df,
+              mapping = aes(node = node, label = strain_id, color = method),
+              hjust = 0,
+              vjust = 1,
+              geom = "label",
+              angle = 0,
+              barsize = 0,
+              fontface = 2,
+              fontsize = cladelab_text_size
+            )
+          ),
+          list(
+            guides(color = "none"),
+            scale_color_manual(values = "#91a01e")
+          )
+        )
       }}
     
     
@@ -282,8 +331,8 @@ get_strain_compositions_plot <- function(endpoint_method,
       filter(
         subject %in% group_total_genomes & query %in% group_total_genomes
       )
-    
-    all_tip_order <- group_tree_newick$tip.label[group_tree_newick$edge[group_tree_newick$edge[,2] <= length(group_tree_newick$tip.label), 2]]
+    tree_data <- group_tree$data
+    all_tip_order <- tree_data %>% filter(isTip) %>% arrange(y) %>% pull(label)
     study_tip_order <- all_tip_order[!grepl("GCA_|GCF_",all_tip_order)]
     
     
@@ -332,7 +381,8 @@ get_strain_compositions_plot <- function(endpoint_method,
     
     heatmap_df <- heatmap_df %>%
       mutate(
-        column_genome = factor(column_genome, levels = study_tip_order)
+        column_genome = factor(column_genome, levels = study_tip_order),
+        row_genome = factor(row_genome, levels = rev(all_tip_order))
       )
     
     # Another SNP matrix containing study genomes compared to each of their top 3 global genomes
@@ -377,7 +427,8 @@ get_strain_compositions_plot <- function(endpoint_method,
     
     global_heatmap_df <- global_heatmap_df %>%
       mutate(
-        column_genome = factor(column_genome, levels = study_tip_order)
+        column_genome = factor(column_genome, levels = study_tip_order),
+        row_genome = factor(row_genome, levels = rev(all_tip_order))
       )
     
     snp_heatmap <- ggplot(heatmap_df,
