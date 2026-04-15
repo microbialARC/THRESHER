@@ -13,16 +13,28 @@ library(purrr)
 
 # Helper function to calculate PDF dimensions based on number of genomes
 get_pdf_dimensions <- function(n_genomes) {
-  # Define scaling factors and minimum dimensions
-  # Height and width increase with number of genomes to ensure readability
-  height_per_genome <- 0.6
-  min_height <- 6
-
-  width_per_genome <- 0.6
-  min_width <- 12
+  if (n_genomes <= 10) {
+    height_per_genome <- 0.8
+    width_per_genome <- 0.6
+    min_height <- 6
+    min_width <- 10
+  } else if (n_genomes <= 20) {
+    height_per_genome <- 0.5
+    width_per_genome <- 0.35
+    min_height <- 10
+    min_width <- 14
+  } else {
+    height_per_genome <- 0.15
+    width_per_genome <- 0.1
+    min_height <- 10
+    min_width <- 14
+  }
   
-  height <- max(min_height, n_genomes * height_per_genome)
-  width <- max(min_width, n_genomes * width_per_genome + 10)
+  max_height <- 80
+  max_width <- 60
+  
+  height <- min(max_height, max(min_height, n_genomes * height_per_genome))
+  width <- min(max_width, max(min_width, n_genomes * width_per_genome + 8))
   
   return(list(width = round(width, 1), height = round(height, 1)))
 }
@@ -183,13 +195,25 @@ get_strain_compositions_plot <- function(endpoint_method,
     }
     
     ## Visualization ----
+
+    # Get the size of the text and pdf
+    n_genomes <- length(group_tree_newick$tip.label)
+    dims <- get_pdf_dimensions(n_genomes)
+    
+    snp_text_size <- max(1.5, min(4, 80 / n_genomes))
+    tip_text_size <- max(4, min(8, 200 / n_genomes))
+    annotation_text_size <- if (n_genomes <= 10) 2 else max(2, min(5, 100 / n_genomes))
+    treescale_fontsize <- if (n_genomes <= 10) 1.5 else max(1.5, min(4, 80 / n_genomes))
+    cladelab_text_size <- max(1, min(3, 50 / n_genomes))
+    tippoint_size <- max(1, min(3.5, 70 / n_genomes))
+
     # Tree
     group_tree <- ggtree(group_tree_newick,
                          layout = "rectangular") +
       geom_treescale(x = 0,
                      y = length(group_tree_newick$tip.label) - 1,
                      width = signif(max(group_tree_newick$edge.length)/10, 1),
-                     fontsize = 3.5,
+                     fontsize = treescale_fontsize,
                      linesize = 0.5,
                      offset = -0.5) +
       geom_tiplab(size = 0,
@@ -198,7 +222,7 @@ get_strain_compositions_plot <- function(endpoint_method,
       geom_tippoint(aes(color = ifelse(grepl("GCA_", label),
                                        "Global",
                                        "Study")),
-                    size = 3.5,
+                    size = tippoint_size,
                     alpha = 1) +
       scale_color_manual(values = c("Global" = "#786452", "Study" = "#41b6e6")) +
       labs(color = "Genome Category") +
@@ -209,7 +233,7 @@ get_strain_compositions_plot <- function(endpoint_method,
                label = paste0("Optimal Phylothreshold: ", thresher_phylothresholds_df$phylothreshold[thresher_phylothresholds_df$group == group_id]),
                hjust = 0,
                vjust = 1,
-               size = 3.5,
+               size = annotation_text_size,
                fontface = "bold") +
       {if (!is.null(group_tree_annotation_df) && nrow(group_tree_annotation_df) > 0) {
         c(
@@ -234,7 +258,7 @@ get_strain_compositions_plot <- function(endpoint_method,
               angle = 0,
               barsize = 0,
               fontface = 2,
-              size = 10
+              fontsize = cladelab_text_size
             )
           ),
           list(
@@ -364,7 +388,7 @@ get_strain_compositions_plot <- function(endpoint_method,
       # Text of study genomes compared to other study genomes
       geom_text(aes(label = ifelse(is.na(gsnp), "", as.character(gsnp)),
                     color = snp_quality),
-                size = 3.5,
+                size = snp_text_size,
                 fontface = "bold",
                 show.legend = TRUE) +
       # Text of study genomes compared to their top global genomes (cladebreaker)
@@ -374,7 +398,7 @@ get_strain_compositions_plot <- function(endpoint_method,
                     label = gsnp,
                     color = snp_quality),
                 inherit.aes = FALSE,
-                size = 3.5,
+                size = snp_text_size,
                 fontface = "bold",
                 show.legend = TRUE) +
       scale_fill_gradient(
@@ -395,8 +419,9 @@ get_strain_compositions_plot <- function(endpoint_method,
            color = "SNP Quality") +
       theme_minimal() +
       theme(
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = tip_text_size),
         axis.title.x = element_blank(),
+        axis.text.y = element_text(size = tip_text_size),
         panel.background = element_rect(fill = "transparent",
                                         colour = "transparent"),
         panel.grid = element_blank()
@@ -404,7 +429,7 @@ get_strain_compositions_plot <- function(endpoint_method,
       coord_fixed()
     
     
-    tree_snp_matrix_plot <- snp_heatmap %>% insert_left(group_tree)
+    tree_snp_matrix_plot <- snp_heatmap %>% insert_left(group_tree, width = 1/2)
     
     
     # Export the plot as pdf file
