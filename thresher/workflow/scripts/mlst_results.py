@@ -61,12 +61,15 @@ def get_cdiff_clade(st, db):
     try:
         st = int(st)
         clade = db.loc[db['ST'] == st, 'mlst_clade'].values[0]
+        # Return Unassigned if clade is NaN before stringifying (avoids "Cladenan")
+        if pd.isna(clade):
+            return 'Unassigned'
         # Make the clade character but not number (e.g. Don't show 1.0 but just 1)
         clade = str(clade).split('.')[0]
         # Because for C. difficile, there is no prefix for the clades in the database
         # I add "Clade " here for clarity in the output
         # Return 'Unassigned' if clade is NaN or "", otherwise return "CladeX" where X is the clade number
-        return 'Unassigned' if pd.isna(clade) or clade == "" else f"Clade{clade}"
+        return 'Unassigned' if clade == "" or clade.lower() == "nan" else f"Clade{clade}"
     except (ValueError, IndexError):
         return 'Unassigned'
 #Add clonal complex or clade to output dataframe
@@ -77,10 +80,10 @@ elif species == "cdiff":
     db = pd.read_csv(snakemake.params.mlst_cdiff_db, sep='\t')
     mlst_results['MLST'] = mlst_results['ST'].apply(lambda x: get_cdiff_clade(x, db))
 elif species == "kp":
-    # This is a placeholder because I haven't found something similar to clonal complex or clade for K. pneumoniae
-    mlst_results['MLST'] = mlst_results['ST'].apply(lambda x: 'Unassigned' if x == "-" else x)
+    # No clonal complex / clade equivalent for K. pneumoniae for now. Prefix with "ST" for clarity
+    mlst_results['MLST'] = mlst_results['ST'].apply(lambda x: 'Unassigned' if x == "-" else f"ST{x}")
 elif species == "sepi":
-    # This is a placeholder because I haven't found something similar to clonal complex or clade for S. epidermidis
-    mlst_results['MLST'] = mlst_results['ST'].apply(lambda x: 'Unassigned' if x == "-" else x)
+    # No clonal complex / clade equivalent for S. epidermidis for now. Prefix with "ST" for clarity
+    mlst_results['MLST'] = mlst_results['ST'].apply(lambda x: 'Unassigned' if x == "-" else f"ST{x}")
 #Write output
 mlst_results.to_csv(snakemake.output["mlst_results"], sep='\t', index=False)

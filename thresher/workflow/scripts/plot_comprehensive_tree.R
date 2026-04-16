@@ -1,4 +1,4 @@
-# Funciton to visualize the comprehensive-tree annotated with HC groups and MLST ----
+# Function to visualize the comprehensive-tree annotated with HC groups and MLST ----
 comprehensive_tree_visual <- function(comprehensive_tree_path,
                                       hc_groups_path,
                                       mlst_path,
@@ -92,27 +92,18 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
                          c(sort(unique(mlst_df$MLST[mlst_df$MLST!="Unassigned"])),
                            "Unassigned"))
   
-  genome_mlst_name <- switch(genome_species,
-                             "sau" = "Clonal Complex",
-                             "cdiff" = "MLST Clade",
-                             "sepi" = "Sequence Type",
-                             "kp" = "Sequence Type")
+  mlst_prefix <- switch(genome_species,
+                        "sau" = "CC",
+                        "cdiff" = "Clade",
+                        "sepi" = "ST",
+                        "kp" = "ST")
   
-  mlst_df$MLST <- switch(genome_species,
-                      "sau" = factor(mlst_df$MLST,
-                                     levels = c(paste0("CC",
-                                                       sort(as.integer(gsub("CC","",unique(mlst_df$MLST)[unique(mlst_df$MLST) != "Unassigned"])))),
-                                                "Unassigned")),
-                      "cdiff" = factor(mlst_df$MLST,
-                                       levels = c(paste0("Clade",
-                                                         sort(as.integer(gsub("Clade","",unique(mlst_df$MLST)[unique(mlst_df$MLST) != "Unassigned"])))),
-                                                  "Unassigned")),
-                      "sepi" = factor(as.character(mlst_df$MLST),
-                                      levels = c(as.character(sort(as.integer(unique(mlst_df$MLST)[unique(mlst_df$MLST) != "Unassigned"]))),
-                                                 "Unassigned")),
-                      "kp" = factor(as.character(mlst_df$MLST),
-                                    levels = c(as.character(sort(as.integer(unique(mlst_df$MLST)[unique(mlst_df$MLST) != "Unassigned"]))),
-                                               "Unassigned")))
+  mlst_levels <- unique(mlst_df$MLST[mlst_df$MLST != "Unassigned"])
+  mlst_levels <- paste0(mlst_prefix,
+                        sort(as.integer(gsub(mlst_prefix, "", mlst_levels))))
+  
+  mlst_df$MLST <- factor(as.character(mlst_df$MLST),
+                         levels = c(mlst_levels, "Unassigned"))
   
   # Visualize the tree with ggtree
   
@@ -120,7 +111,7 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
                           aes(color = as.numeric(label),
                               subset = !isTip & !is.na(as.numeric(label))),
                           layout = "fan",
-                          size=0.5,
+                          linewidth=0.5,
                           open.angle=15) +
     scale_color_continuous(name = "Bootstrap Support",
                            low = "#9E1A1A",
