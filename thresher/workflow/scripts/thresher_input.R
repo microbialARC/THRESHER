@@ -427,8 +427,115 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                      }
                                                                                                    }
                                                                                                  })
-                                                                
-                                                                
+                                                                # Detect and resolve overlapping genomes between corrected strains: 
+                                                                # when two strains share genomes, the larger clade absorbs the smaller one to ensure each genome is assigned to exactly one strain.
+                                                                # The repeat loop re-checks overlaps after each merging pass to catch cascade cases 
+                                                                # Single-linkage Clustering (e.g., A overlaps B, B overlaps C, but A and C do not directly overlap), iterate till no overlaps remain.
+                                                                repeat {
+                                                                  
+                                                                  # Step 1: detect overlapping pairs
+                                                                  strain_overlap_check <- list()
+                                                                  if(length(correction_strain_list) >= 2){
+                                                                    for(strain1_idx in seq_len(length(correction_strain_list) - 1)){
+                                                                      
+                                                                      strain1_ori_id <- correction_strain_list[[strain1_idx]][[1]]$original_strain
+                                                                      strain1_genomes <- correction_strain_list[[strain1_idx]][[1]]$corrected_genomes
+                                                                      
+                                                                      for(strain2_idx in (strain1_idx + 1):length(correction_strain_list)){
+                                                                        
+                                                                        strain2_ori_id <- correction_strain_list[[strain2_idx]][[1]]$original_strain
+                                                                        strain2_genomes <- correction_strain_list[[strain2_idx]][[1]]$corrected_genomes
+                                                                        
+                                                                        shared_genomes <- intersect(strain1_genomes, strain2_genomes)
+                                                                        
+                                                                        if(length(shared_genomes) > 0){
+                                                                          strain_overlap_check <- c(strain_overlap_check,
+                                                                                                    list(list(
+                                                                                                      strain1_id = strain1_ori_id,
+                                                                                                      strain1_genomes = strain1_genomes,
+                                                                                                      strain2_id = strain2_ori_id,
+                                                                                                      strain2_genomes = strain2_genomes,
+                                                                                                      shared_genomes = shared_genomes
+                                                                                                    )))
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                  
+                                                                  # Exit when no overlaps remain
+                                                                  if(length(strain_overlap_check) == 0) break
+                                                                  
+                                                                  # Step 2: get unique original strain IDs involved in any overlap
+                                                                  overlapping_strain_ori_ids <- unique(as.character(unlist(sapply(strain_overlap_check, function(check_entry){
+                                                                    return(c(check_entry$strain1_id, check_entry$strain2_id))
+                                                                  }))))
+                                                                  
+                                                                  
+                                                                  # Step 3: rank overlapping strains by clade size, descending
+                                                                  overlapping_strain_ori_ids_df <- do.call(rbind,lapply(overlapping_strain_ori_ids,function(id_idx){
+                                                                    
+                                                                    id_pos <- which(sapply(correction_strain_list, function(list_entry){
+                                                                      list_entry[[1]]$original_strain == id_idx
+                                                                    }))
+                                                                    
+                                                                    data.frame(
+                                                                      orig_strain_id = id_idx,
+                                                                      orig_strain_size  = length(correction_strain_list[[id_pos]][[1]]$corrected_genomes)
+                                                                    )
+                                                                  }))
+                                                                  
+                                                                  overlapping_strain_ori_ids_df <- overlapping_strain_ori_ids_df %>%
+                                                                    arrange(desc(orig_strain_size))
+                                                                  
+                                                                  # Step 4: bigger strain absorbs smaller; drop absorbed entry
+                                                                  for(row_idx in seq_len(nrow(overlapping_strain_ori_ids_df))){
+                                                                    
+                                                                    absorb_strain_ori_id <- overlapping_strain_ori_ids_df$orig_strain_id[row_idx]
+                                                                    
+                                                                    # Skip if this strain was already absorbed by a bigger one in a prior iteration of this pass
+                                                                    absorb_strain_pos <- which(sapply(correction_strain_list, function(list_entry){
+                                                                      list_entry[[1]]$original_strain == absorb_strain_ori_id
+                                                                    }))
+                                                                    
+                                                                    if(length(absorb_strain_pos) == 0) next
+                                                                    
+                                                                    is_absorb_candidate <- as.character(unlist(sapply(strain_overlap_check, function(check_entry){
+                                                                      if(absorb_strain_ori_id %in% c(check_entry$strain1_id, check_entry$strain2_id)){
+                                                                        return(
+                                                                          setdiff(c(check_entry$strain1_id, check_entry$strain2_id),
+                                                                                  absorb_strain_ori_id)
+                                                                        )
+                                                                      }
+                                                                    })))
+                                                                    
+                                                                    # Merge and drop absorb_candidate from correction_strain_list
+                                                                    for(is_absorb_idx in is_absorb_candidate){
+                                                                      
+                                                                      is_absorb_pos <- which(sapply(correction_strain_list, function(list_entry){
+                                                                        list_entry[[1]]$original_strain == is_absorb_idx
+                                                                      }))
+                                                                      
+                                                                      # Skip if already absorbed by someone else earlier in this pass
+                                                                      if(length(is_absorb_pos) == 0) next
+                                                                      
+                                                                      is_absorb_genomes <- correction_strain_list[[is_absorb_pos]][[1]]$corrected_genomes
+                                                                      
+                                                                      # Re-find absorb_strain_pos because the list has been shrinking
+                                                                      absorb_strain_pos <- which(sapply(correction_strain_list, function(list_entry){
+                                                                        list_entry[[1]]$original_strain == absorb_strain_ori_id
+                                                                      }))
+                                                                      
+                                                                      # Union the genomes into the absorbing strain
+                                                                      correction_strain_list[[absorb_strain_pos]][[1]]$corrected_genomes <- union(
+                                                                        correction_strain_list[[absorb_strain_pos]][[1]]$corrected_genomes,
+                                                                        is_absorb_genomes
+                                                                      )
+                                                                      
+                                                                      # Drop the absorbed strain
+                                                                      correction_strain_list <- correction_strain_list[-is_absorb_pos]
+                                                                    }
+                                                                  }
+                                                                }
                                                                 # Use correction_strain_list to update info in unique_strain_df
                                                                 for(correction_strain in correction_strain_list){
                                                                   for(i in seq_along(correction_strain)){
