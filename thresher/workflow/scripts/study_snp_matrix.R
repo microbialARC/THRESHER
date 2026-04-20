@@ -25,9 +25,11 @@ metadata_path <- snakemake@params[["metadata"]]
 
 snp_coverage_threshold <- as.numeric(snakemake@params[["snp_coverage_threshold"]])
 
-metadata <- read.table(metadata_path,
-                       sep = "\t",
-                       header = FALSE)
+metadata <- read.delim(metadata_path,
+                       header = FALSE,
+                       comment.char = "",
+                       quote = "",
+                       stringsAsFactors = FALSE)
 
 metadata$V1 <- sapply(metadata$V1, parse_genome_name)
 
