@@ -29,9 +29,12 @@ actual_download_topgenomes_path <- snakemake@input[["actual_download_topgenomes"
 
 snp_coverage_threshold <- as.numeric(snakemake@params[["snp_coverage_threshold"]])
 
-metadata <- read.table(metadata_path,
-                       sep = "\t",
-                       header = FALSE)
+metadata <- read.delim(metadata_path,
+                       comment.char = "",
+                       quote = "",
+                       header = FALSE,
+                       stringsAsFactors = FALSE)
+
 metadata$V1 <- sapply(metadata$V1, parse_genome_name)
 
 actual_download_topgenomes <- unique(readLines(actual_download_topgenomes_path))

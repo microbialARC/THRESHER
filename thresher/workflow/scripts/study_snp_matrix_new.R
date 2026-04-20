@@ -180,12 +180,17 @@ original_snp_matrix_path <- snakemake@params[["original_snp_matrix"]]
 new_metadata_path <- snakemake@params[["new_metadata"]]
 original_metadata_path <- snakemake@params[["original_metadata"]]
 
-metadata <- rbind(read.table(new_metadata_path,
-                             sep = "\t",
-                             header = FALSE),
-                  read.table(original_metadata_path,
-                             sep = "\t",
-                             header = FALSE))
+metadata <- rbind(read.delim(new_metadata_path,
+                             comment.char = "",
+                             quote = "",
+                             header = FALSE,
+                             stringsAsFactors = FALSE),
+                  read.delim(original_metadata_path,
+                             comment.char = "",
+                             quote = "",
+                             header = FALSE,
+                             stringsAsFactors = FALSE))
+
 metadata$V1 <- sapply(metadata$V1, parse_genome_name)
 ncores <- snakemake@threads
 snp_coverage_threshold <- as.numeric(snakemake@params[["snp_coverage_threshold"]])

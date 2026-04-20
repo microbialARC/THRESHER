@@ -219,12 +219,17 @@ original_metadata_path <- snakemake@params[["original_metadata"]]
 
 snp_coverage_threshold <- as.numeric(snakemake@params[["snp_coverage_threshold"]])
 
-metadata <- rbind(read.table(new_metadata_path,
-                             sep = "\t",
-                             header = FALSE),
-                  read.table(original_metadata_path,
-                             sep = "\t",
-                             header = FALSE))
+metadata <- rbind(read.delim(new_metadata_path,
+                             comment.char = "",
+                             quote = "",
+                             header = FALSE,
+                             stringsAsFactors = FALSE),
+                  read.delim(original_metadata_path,
+                             comment.char = "",
+                             quote = "",
+                             header = FALSE,
+                             stringsAsFactors = FALSE))
+
 metadata$V1 <- sapply(metadata$V1, parse_genome_name)
 actual_download_topgenomes_path <- snakemake@input[["actual_download_topgenomes"]]
 
