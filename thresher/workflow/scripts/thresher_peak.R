@@ -15,8 +15,9 @@ get_peak_strains <- function(thresher_input,
     condition_1 <- length(group_input) == 1
     # 2. Cutoff is NA for the entry
     condition_2 <- all(sapply(group_input, function(x) is.na(x$cutoff)))
-    # 3. Only 1 entry in group_input[[1]]$strain_composition
-    condition_3 <- length(group_input[[1]]$strain_composition) == 1
+    # 3. All strain compositions are singletons (i.e. only one genome in each composition)
+    condition_3 <- all(sapply(group_input, function(x) all(sapply(x$strain_composition, function(comp) length(comp$genome) == 1))))
+    
     if(condition_1 || condition_2 || condition_3){
       peak_cutoff <- NA
       peak_strains <- group_input[[1]]

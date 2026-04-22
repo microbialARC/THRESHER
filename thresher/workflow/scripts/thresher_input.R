@@ -45,6 +45,16 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                # After the exclusion, if there is no genome left in the group, the early return is triggered
                                # then return the list and quit the function for this group, and move on to the next group
                                 if(length(group_genomes) == 0){
+                                  strain_composition <- lapply(seq_along(group_entry$genomes),
+                                                               function(genome_entry){
+                                                                 list(
+                                                                   strain_id = paste0(group_id,"_",group_entry$genomes_overlimit[genome_entry]),
+                                                                   category = 'singleton',
+                                                                   genome = group_entry$genomes_overlimit[genome_entry],
+                                                                   correction = FALSE,
+                                                                   bootstrap_support = NA_integer_
+                                                                 )
+                                                               })
                                   return(
                                     list(
                                       list(
@@ -59,15 +69,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                         after_correction_clones = NA_integer_,
                                         median_strain_bootstrap_support = NA_integer_,
                                         mean_strain_bootstrap_support = NA_integer_,
-                                        strain_composition = list(
-                                          list(
-                                            strain_id = paste(group_id,seq_along(group_entry$genomes),sep = "_"),
-                                            category = "singleton",
-                                            genome = group_entry$genomes,
-                                            correction = FALSE,
-                                            bootstrap_support = 0
-                                          )
-                                        )
+                                        strain_composition = strain_composition
                                       )
                                     )
                                   )
@@ -248,7 +250,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                               # Find the strain number of the strain with no less than 2 genomes (clones)
                                                               # Add bootstrap support for the strains
                                                               unique_strain_df <- unique_strain_df %>% mutate(correction = NA,
-                                                                                                              bootstrap_support = NA)
+                                                                                                              bootstrap_support = NA_integer_)
                                                               
                                                               unique_strain_df$bootstrap_support[unique_strain_df$category == "singleton"] <- 0
                                                               
