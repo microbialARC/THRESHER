@@ -329,11 +329,46 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                        
                                                                                                        strain_clade_global_snp_matrix <- global_snp_matrix[global_snp_matrix$subject %in% strain_clade_study_genomes &
                                                                                                                                                              global_snp_matrix$query %in% strain_clade_global_genomes,]
+
+                                                                                                       # Before we determine the poor global genomes, we want to add a new safety check to exclude the poor study genomes
+                                                                                                       # If a study genome has poor quality of SNP distance with all the rest of the study genomes in the clade, then this study genome is considered "poor"
+                                                                                                       # And this genome will be excluded from the analysis to determine the poor global genomes and this study genome will be considered a singleton automatically
+                                                                                                       # Again, this is a safety check and should not happen in most cases
+                                                                                                       # Because we ask for a stringent quality check before the users put their genomes into the thresher strain identifier analysis at the first step
+                                                                                                       strain_clade_study_genome_matrix <- group_snp_matrix[group_snp_matrix$subject %in% strain_clade_study_genomes & 
+                                                                                                                                                              group_snp_matrix$query %in% strain_clade_study_genomes, ]
+                                                                                                       
+                                                                                                       # Only trigger this test when there could potentially be poor study genomes
+                                                                                                       if(any(strain_clade_study_genome_matrix$snp_quality == "poor")){
+                                                                                                         
+                                                                                                         strain_clade_poor_study_genomes <- as.character(unlist(sapply(strain_clade_study_genomes,function(study_genome_entry){
+                                                                                                           
+                                                                                                           all_query_genomes <- setdiff(strain_clade_study_genomes,study_genome_entry)
+                                                                                                           all_query_snp_quality <- c(
+                                                                                                             strain_clade_study_genome_matrix$snp_quality[strain_clade_study_genome_matrix$subject == study_genome_entry],
+                                                                                                             strain_clade_study_genome_matrix$snp_quality[strain_clade_study_genome_matrix$query == study_genome_entry]
+                                                                                                           )
+                                                                                                           if(all(all_query_snp_quality == "poor")){
+                                                                                                             return(study_genome_entry)
+                                                                                                           }else{
+                                                                                                             return(NULL)
+                                                                                                           }
+                                                                                                         })))
+                                                                                                         
+                                                                                                       }else{
+                                                                                                         strain_clade_poor_study_genomes <- character(0)
+                                                                                                       }
+                                                                                                       
                                                                                                        
                                                                                                        # Only consider the cladebreaker genomes valid if the quality of the SNP distance is good (snp_coverage >= 80%)
-                                                                                                       # As long as there is one "poor" record for the alignment between a study genome and a cladebreaker genome
-                                                                                                       # The cladebreaker genome is considered "poor" and will be considered invalid for cladebreak
-                                                                                                       strain_clade_poor_global_genomes <- unique(strain_clade_global_snp_matrix$query[strain_clade_global_snp_matrix$snp_quality == "poor"])
+                                                                                                       # As long as there is one "poor" record for the alignment between any "good" study genome and a cladebreaker(global) genome
+                                                                                                       # The cladebreaker(global) genome is considered "poor" and will be considered invalid for cladebreaking process
+                                                                                                       strain_clade_poor_global_genomes <- unique(strain_clade_global_snp_matrix$query[
+                                                                                                         strain_clade_global_snp_matrix$snp_quality == "poor" &
+                                                                                                           !(strain_clade_global_snp_matrix$subject %in% strain_clade_poor_study_genomes)
+                                                                                                       ]
+                                                                                                       )
+                                                                                                       
                                                                                                        # Normally this would not happen, where strain_clade_poor_global_genomes should be of length 0
                                                                                                        # Because at the step where panaroo generates the core-gene alignment 
                                                                                                        # Those study genomes with low coverage of core genes would have been excluded
@@ -341,8 +376,6 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                        # But just in case, we still put this check here
                                                                                                        # Although in terms of coding efficiency this is not optimal. We could waste a few minutes here
                                                                                                        # But the biological meaning shown in the intuitive logic is more important here
-                                                                                                       
-                                                                                                       
                                                                                                        
                                                                                                        tmp_list <- lapply(seq_along(strain_clade_newick_all_nodes),
                                                                                                                           function(node_entry){
@@ -400,6 +433,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                                           }) %>% purrr::compact()
                                                                                                        
                                                                                                        #Add the singletons to the list
+                                                                                                       # Any genome that is not already assigned to a strain in tmp_list will be considered a singleton
                                                                                                        singletons <- setdiff(strain_clade$snp_tree_genomes[!grepl("GCA_|GCF_", strain_clade$snp_tree_genomes)],
                                                                                                                              unlist(sapply(tmp_list, `[[`, "corrected_genomes")))
                                                                                                        
@@ -663,7 +697,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                              return(thresher_input)
 }
 
-# Get the input from Snakemake
+# Get the input from Snakemake ----
 ncores <- snakemake@threads
 hierarchical_clustering_groups_path <- snakemake@input[["hc_groups"]]
 group_tree_dir <- snakemake@params[["group_tree_dir"]]
@@ -682,9 +716,9 @@ use_cladebreaker <- as.logical(use_cladebreaker)
 # Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition
 correction_bootstrap <- snakemake@params[["correction_bootstrap"]]
 correction_bootstrap <- as.integer(correction_bootstrap)
-# Execute the function to get thresher input
-setwd(dir = output_dir)
 
+# Execute the function to get thresher input ----
+setwd(dir = output_dir)
 thresher_input <- get_thresher_input(hierarchical_clustering_groups_path = hierarchical_clustering_groups_path,
                                      group_tree_dir = group_tree_dir,
                                      study_snp_matrix_path = study_snp_matrix_path,
