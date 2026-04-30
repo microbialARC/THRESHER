@@ -81,6 +81,15 @@ GeomRrect <- ggplot2::ggproto(
 ) # nocov end
 
 
+# Helper function to replace any non-alphanumeric characters (except dash/underscore) with underscore in the first column
+parse_genome_name <- function(original_name) {
+  parsed_name <- gsub("[^a-zA-Z0-9._-]", "_", original_name)
+  parsed_name <- gsub("_+", "_", parsed_name)
+  if (parsed_name == "Reference") {
+    parsed_name <- "Reference_Genome"
+  }
+  trimws(parsed_name, whitespace = "_")
+}
 
 # Import from snakemake ----
 thresher_output <- snakemake@params[["thresher_output"]]
@@ -107,6 +116,8 @@ metadata <- read.csv(metadata_path,
                      header = FALSE,
                      sep = "\t") %>%
   select(V1,V4,V5)
+
+metadata$V1 <- sapply(metadata$V1, parse_genome_name)
 # read mlst 
 mlst_results <- read.csv(mlst_results_path,
                          sep = "\t")
