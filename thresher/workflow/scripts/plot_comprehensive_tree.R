@@ -104,14 +104,29 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
   
   mlst_df$MLST <- factor(as.character(mlst_df$MLST),
                          levels = c(mlst_levels, "Unassigned"))
-  
+
+  # Size-adaptive parameters based on number of tips
+  n_tips <- length(comprehensive_tree$tip.label)
+  # PDF dimensions: scale with sqrt(n_tips) so size grows but doesn't explode.
+  pdf_size <- max(7.5, min(40, 7.5 * sqrt(n_tips / 100)))
+  pdf_width <- pdf_size
+  pdf_height <- pdf_size * (5 / 7.5)
+  # Branch linewidth: thinner for dense trees so branches don't merge visually.
+  tree_linewidth <- max(0.15, min(0.6, 0.5 * (100 / n_tips)^0.5))
+  # Clade label / bar size: scales similarly to linewidth.
+  clade_barsize  <- max(0.6, min(2.5, 2 * (100 / n_tips)^0.4))
+  # Font size for clade labels (group / MLST). Smaller as tips increase.
+  clade_fontsize <- max(1.5, min(4, 3.88 * (100 / n_tips)^0.4))
+  # Legend / theme text size
+  base_fontsize  <- max(7, min(11, 10 * (100 / n_tips)^0.15))
+
   # Visualize the tree with ggtree
   
   circular_tree <- ggtree(comprehensive_tree,
                           aes(color = as.numeric(label),
                               subset = !isTip & !is.na(as.numeric(label))),
                           layout = "fan",
-                          linewidth=0.5,
+                          linewidth=tree_linewidth,
                           open.angle=15) +
     scale_color_continuous(name = "Bootstrap Support",
                            low = "#9E1A1A",
@@ -119,7 +134,9 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
     theme(
       legend.background = element_rect(fill = NA),
       legend.position = c(0, 0.5),
-      legend.direction = "vertical"  
+      legend.direction = "vertical",
+      legend.text  = element_text(size = base_fontsize),
+      legend.title = element_text(size = base_fontsize)
     )
   
   
@@ -134,9 +151,11 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
       ),
       geom = "text",
       angle = "auto",
-      barsize = 2) + 
+      barsize = clade_barsize,
+      fontsize = clade_fontsize) + 
     geom_treescale(x = 0,
-                   y = 0) +
+                   y = 0,
+                   fontsize = clade_fontsize) +
     scale_fill_manual(values = hc_groups_color,
                       guide = "none") +
     scale_color_manual(values = hc_groups_color,
@@ -159,9 +178,11 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
       ),
       geom = "text",
       angle = "auto",
-      barsize = 2) + 
+      barsize = clade_barsize,
+      fontsize = clade_fontsize) + 
     geom_treescale(x = 0,
-                   y = 0) +
+                   y = 0,
+                   fontsize = clade_fontsize) +
     scale_fill_manual(values = mlst_color,
                       guide = "none") +
     scale_color_manual(values = mlst_color,
@@ -175,8 +196,8 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
     
   # Export circular tree annotated with MLST
   pdf(file=snakemake@output[["comprehensive_tree_mlst_pdf"]],
-      width=7.5,
-      height=5)
+      width=pdf_width,
+      height=pdf_height)
   print(circular_tree_MLST)
   dev.off()
   
@@ -185,8 +206,8 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
  
   # Export circular tree annotated with HC group
   pdf(file=snakemake@output[["comprehensive_tree_group_pdf"]],
-      width=7.5,
-      height=5)
+      width=pdf_width,
+      height=pdf_height)
   print(circular_tree_group)
   dev.off()
   
