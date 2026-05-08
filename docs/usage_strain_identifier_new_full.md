@@ -68,6 +68,9 @@ options:
                         Use CladeBreaker to restrain the strain composition.
                         Options are [True, False].
                         Default is True.
+  --threshold_floor THRESHOLD_FLOOR
+                        The floor of the range of SNP distances to search for the optimal phylothreshold.
+                        Default is 5.
   --threshold_ceiling THRESHOLD_CEILING
                         The ceiling of the range of SNP distances to search for the optimal phylothreshold.
                         Default is 500.
@@ -167,6 +170,9 @@ options:
     - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
     - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
     - `True` or `False`, default is `True`.
+- **Threshold Floor(--threshold_floor):**
+    - The floor of the range tested to search for the optimal phylothreshold (default: 5).
+    - This parameter sets the lower limit of SNP phylothresholds considered when determining the optimal phylothreshold for defining strains within hierarchical clustering groups.
 - **Threshold Ceiling(--threshold_ceiling):**
     - The ceiling of the range tested to search for the optimal phylothreshold (default: 500).
     - This parameter sets the upper limit of SNP phylothresholds considered when determining the optimal phylothreshold for defining strains within hierarchical clustering groups.

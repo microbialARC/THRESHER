@@ -69,6 +69,9 @@ options:
                         Use CladeBreaker to restrain the strain composition.
                         Options are [True, False].
                         Default is True.
+  --threshold_floor THRESHOLD_FLOOR
+                        The floor of the range of SNP distances to search for the optimal phylothreshold.
+                        Default is 5.
   --threshold_ceiling THRESHOLD_CEILING
                         The ceiling of the range of SNP distances to search for the optimal phylothreshold.
                         Default is 500.
@@ -148,34 +151,37 @@ options:
     - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
     - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
     - `True` or `False`, default is `True`.
-9. **Threshold Ceiling(--threshold_ceiling):**
+9. **Threshold Floor(--threshold_floor):**
+    - The floor of the range tested to search for the optimal phylothreshold (default: 5).
+    - This parameter sets the lower limit of SNP phylothresholds considered when determining the optimal phylothreshold for defining strains within hierarchical clustering groups.
+10. **Threshold Ceiling(--threshold_ceiling):**
     - The ceiling of the range tested to search for the optimal phylothreshold (default: 500).
     - This parameter sets the upper limit of SNP phylothresholds considered when determining the optimal phylothreshold for defining strains within hierarchical clustering groups.
     - Adjust this ceiling based on the expected genomic diversity within your dataset and the species being analyzed. A higher ceiling allows for the inclusion of more distantly related genomes in the strain identification process, which may be appropriate for highly diverse species.
-10. **Singleton Threshold(--singleton_threshold):**
+11. **Singleton Threshold(--singleton_threshold):**
     - The SNP distance threshold above which every genome in the hierarchical clustering group is considered a singleton (default: 100).
     - If the minimal SNP distance between any two genomes in a hierarchical clustering group is equal to or greater than this threshold, all genomes in that group will be classified as singletons, meaning each genome forms its own unique strain.
     - This parameter helps to avoid defining strains in groups where genomes are too distantly related to form meaningful strain. Adjust this threshold based on the expected genomic diversity within your dataset and the species being analyzed.
-11. **Correction Bootstrap Threshold(--correction_bootstrap):**
+12. **Correction Bootstrap Threshold(--correction_bootstrap):**
     - Minimum bootstrap support required to apply phylogenetic corrections to SNP strain composition (default: 0). Nodes with bootstrap values below this threshold are excluded from correction, except for the root node which is always retained.
     - Higher thresholds enforce stricter corrections but may reduce the number of corrections applied, particularly in trees with lower overall bootstrap support. The default of 0 applies all possible corrections regardless of bootstrap support, which may be appropriate for small genome groups where high bootstrap values are difficult to achieve. Adjust based on your bootstrap method and resampling depth.
-12. **Endpoint Method(--endpoint):**
+13. **Endpoint Method(--endpoint):**
     - Choose the endpoint method for determining clusters and generating plots. Options include `plateau` (default), `peak`, `discrepancy`, and `global`.
     - `plateau`: Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group.
     - `peak`: Phylothreshold set at the peak number of clones defined within the group.
     - `discrepancy`: Phylothreshold set at the point where the discrepancy is minimized within the group.
     - `global`: Phylothreshold set at the first time a global genome is included in any strain within the group.
-13. **Plateau Length(--plateau_length):**
+14. **Plateau Length(--plateau_length):**
     - Specify the plateau length for the plateau endpoint method (default is 15). Only used when the endpoint method is `plateau`.
-14. **Threads(--threads / -t):**
+15. **Threads(--threads / -t):**
     - Number of threads to use (default is the maximum available).
     - The default thread count is 1, which may result in lengthy runtimes. It is highly recommended to increase the thread count to improve performance, regardless of dataset size.
     - Bakta genome annotation runs `{threads}` parallel jobs, each requiring approximately 10 GB of RAM. Ensure your system has sufficient memory to support the requested thread count.
-15. **Prefix(--prefix):**
+16. **Prefix(--prefix):**
     - Prefix for config file, output files, and analysis naming. If not provided, defaults to a timestamp in the format `YYYY_MM_DD_HHMMSS`.
-16. **Conda Prefix(--conda_prefix):**
+17. **Conda Prefix(--conda_prefix):**
     - Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.
-17. **Force Execution(--force):**
+18. **Force Execution(--force):**
     - Bypass system compatibility checks (operating system and available RAM) and force execution of the pipeline. This may cause instability or failures.
     
 ## Output

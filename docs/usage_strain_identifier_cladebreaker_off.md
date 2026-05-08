@@ -9,6 +9,9 @@ options:
                                 The existing analysis directory should contain the previous analysis results.
   --output OUTPUT       Path to output directory.
                                 If not provided, defaults to thresher_strain_identifier_cladebreaker_off_<YYYY_MM_DD_HHMMSS> under the current working directory.
+  --threshold_floor THRESHOLD_FLOOR
+                        The floor of the range of SNP distances to search for the optimal phylothreshold.
+                        Default is 5.
   --threshold_ceiling THRESHOLD_CEILING
                         The ceiling of the range of SNP distances to search for the optimal phylothreshold.
                         Default is 500.
@@ -32,28 +35,31 @@ options:
    Path to the existing THRESHER directory containing previous analysis results.
 
 ## Optional Input
-1. **Threshold Ceiling(--threshold_ceiling):**
+1. **Threshold Floor(--threshold_floor):**
+   
+   The floor of the range of SNP distances to search for the optimal phylothreshold. Default is 5.
+2. **Threshold Ceiling(--threshold_ceiling):**
    
    The ceiling of the range of SNP distances to search for the optimal phylothreshold. Default is 500.
 
-2. **Singleton Threshold(--singleton_threshold):**
+3. **Singleton Threshold(--singleton_threshold):**
    
    The SNP distance threshold above which every genome in the group is considered a singleton. Default is 100.
 
-3. **Plateau Length(--plateau_length):**
+4. **Plateau Length(--plateau_length):**
 
    The plateau length for the plateau endpoint method. Default is 15.
 
 
-4. **Output Directory(--output):**
+5. **Output Directory(--output):**
    
    Path to the output directory. If not provided, defaults to `thresher_strain_identifier_cladebreaker_off_<YYYY_MM_DD_HHMMSS>` under the current working directory.
 
-5. **Prefix(--prefix):**
+6. **Prefix(--prefix):**
 
    Prefix for config files. If not provided, defaults to timestamp: `YYYY_MM_DD_HHMMSS`.
 
-6. **Conda Environment Directory(--conda_prefix):**
+7. **Conda Environment Directory(--conda_prefix):**
 
    Directory for conda environments needed for this analysis. If not provided, defaults to `OUTPUT/conda_envs`. You can reuse the conda environments from previous THRESHER runs to save time and disk space.
 
