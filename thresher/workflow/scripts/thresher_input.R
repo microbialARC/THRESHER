@@ -12,6 +12,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                study_snp_matrix_path,
                                study_global_snp_matrix_path,
                                singleton_threshold,
+                               threshold_floor,
                                threshold_ceiling,
                                use_cladebreaker,
                                correction_bootstrap,
@@ -119,11 +120,12 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                    ))
                                                                  })
                                }
-                               
-                               # Test gsnp from min to user-defined snp_search_ceiling (default:500) ----
+                               # The real threshold_floor is the maximum of the user-defined threshold_floor and the minimum gsnp in the group
+                               threshold_floor <- max(ceiling(min(group_snp_matrix$gsnp)), threshold_floor)
+                               # Test gsnp from user-defined threshold_floor (default:5) to threshold_ceiling (default:500) ----
                                # If the minimal snp distance in the group is larger than user-defined singleton_threshold(default:100), every genome in the group is singleton
                                
-                               if(ceiling(min(group_snp_matrix$gsnp)) >= singleton_threshold){
+                               if(threshold_floor >= singleton_threshold){
                                  # Another early return is triggered if the minimal gsnp distance in the group is larger than the singleton threshold, which means all genomes in the group are singletons
                                  # and no phylogenetic correction will be applied
                                  strain_composition <- lapply(seq_along(c(group_genomes, group_entry$genomes_overlimit)),
@@ -160,7 +162,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                  
                                }else{
                                  
-                                 hc_group_input <- lapply((ceiling(min(group_snp_matrix$gsnp)):threshold_ceiling),
+                                 hc_group_input <- lapply(threshold_floor:threshold_ceiling,
                                                           function(gsnp_cutoff){
                                                             
                                                             ### SNP only ----
@@ -706,7 +708,9 @@ group_tree_dir <- snakemake@params[["group_tree_dir"]]
 study_snp_matrix_path <- snakemake@input[["study_snp_matrix"]]
 study_global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
 output_dir <- snakemake@params[["thresher_input_dir"]]
-# The ceiling of SNP distances range to search for optimal phylothresholds
+# The floor and ceiling of SNP distances range to search for optimal phylothresholds
+threshold_floor <- snakemake@params[["threshold_floor"]]
+threshold_floor <- as.integer(threshold_floor)
 threshold_ceiling <- snakemake@params[["threshold_ceiling"]]
 threshold_ceiling <- as.integer(threshold_ceiling)
 # The singleton threshold
@@ -726,6 +730,7 @@ thresher_input <- get_thresher_input(hierarchical_clustering_groups_path = hiera
                                      study_snp_matrix_path = study_snp_matrix_path,
                                      study_global_snp_matrix_path = study_global_snp_matrix_path,
                                      singleton_threshold = singleton_threshold,
+                                     threshold_floor = threshold_floor,
                                      threshold_ceiling = threshold_ceiling,
                                      use_cladebreaker = use_cladebreaker,
                                      correction_bootstrap = correction_bootstrap,

@@ -172,6 +172,15 @@ If method is nonparametric, default is 100."""
     )
 
     full_parser.add_argument(
+        "--threshold_floor",
+        required=False,
+        type=int,
+        default=5,
+        help="""The floor of the range of SNP distances to search for the optimal phylothreshold.
+Default is 5."""
+    )
+
+    full_parser.add_argument(
         "--threshold_ceiling",
         required=False,
         type=int,
@@ -554,6 +563,15 @@ Default is ultrafast"""
 If method is ultrafast, default is 1000.
 If method is nonparametric, default is 100."""
     )
+    
+    new_full_parser.add_argument(
+        "--threshold_floor",
+        required=False,
+        type=int,
+        default=5,
+        help="""The floor of the range of SNP distances to search for the optimal phylothreshold.
+Default is 5."""
+    )
 
     new_full_parser.add_argument(
         "--threshold_ceiling",
@@ -665,6 +683,15 @@ The existing analysis directory should contain the previous analysis results."""
         help="""Path to output directory.
 If not provided, defaults to thresher_strain_identifier_cladebreaker_off_<YYYY_MM_DD_HHMMSS> under the current working directory.""")
     
+    cladebreaker_off_parser.add_argument(
+        "--threshold_floor",
+        required=False,
+        type=int,
+        default=5,
+        help="""The floor of the range of SNP distances to search for the optimal phylothreshold.
+Default is 5."""
+    )
+
     cladebreaker_off_parser.add_argument(
         "--threshold_ceiling",
         required=False,

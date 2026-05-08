@@ -207,7 +207,22 @@ def validate_strain_identifier_full(args):
     elif args.threshold_ceiling < 0:
         print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
         args.threshold_ceiling = 500
-
+    # Check the value of threshold_floor
+    if type(args.threshold_floor) is not int:
+        print("Threshold floor(--threshold_floor) must be a positive integer, using default 5")
+        args.threshold_floor = 5
+    if not args.threshold_floor:
+        print("Threshold floor(--threshold_floor) not provided, using default 5")
+        args.threshold_floor = 5
+    elif args.threshold_floor < 0:
+        print("Threshold floor(--threshold_floor) must be a positive integer, using default 5")
+        args.threshold_floor = 5
+    # Check the relationship between threshold_floor and threshold_ceiling
+    if args.threshold_floor >= args.threshold_ceiling:
+        print("Threshold floor must be smaller than threshold ceiling. Using default threshold floor of 5 and threshold ceiling of 500")
+        args.threshold_floor = 5
+        args.threshold_ceiling = 500
+    
     # Check the value of singleton_threshold
     if type(args.singleton_threshold) is not int:
         print("Singleton SNP distance threshold(--singleton_threshold) must be a positive integer, using default 100")
@@ -772,6 +787,22 @@ def validate_strain_identifier_new_full(args):
         print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
         args.threshold_ceiling = 500
     
+    # Check the value of threshold_floor
+    if type(args.threshold_floor) is not int:
+        print("Threshold floor(--threshold_floor) must be a positive integer, using default 5")
+        args.threshold_floor = 5
+    if not args.threshold_floor:
+        print("Threshold floor(--threshold_floor) not provided, using default 5")
+        args.threshold_floor = 5
+    elif args.threshold_floor < 0:
+        print("Threshold floor(--threshold_floor) must be a positive integer, using default 5")
+        args.threshold_floor = 5
+    # Check the relationship between threshold_floor and threshold_ceiling
+    if args.threshold_floor >= args.threshold_ceiling:
+        print("Threshold floor must be smaller than threshold ceiling. Using default threshold floor of 5 and threshold ceiling of 500")
+        args.threshold_floor = 5
+        args.threshold_ceiling = 500
+    
     # Check the value of singleton_threshold
     if type(args.singleton_threshold) is not int:
         print("Singleton SNP distance threshold(--singleton_threshold) must be a positive integer, using default 100")
@@ -834,7 +865,23 @@ def validate_strain_identifier_cladebreaker_off(args):
     elif args.threshold_ceiling < 0:
         print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
         args.threshold_ceiling = 500
-
+    
+    # Check the value of threshold_floor
+    if type(args.threshold_floor) is not int:
+        print("Threshold floor(--threshold_floor) must be a positive integer, using default 5")
+        args.threshold_floor = 5
+    if not args.threshold_floor:
+        print("Threshold floor(--threshold_floor) not provided, using default 5")
+        args.threshold_floor = 5
+    elif args.threshold_floor < 0:
+        print("Threshold floor(--threshold_floor) must be a positive integer, using default 5")
+        args.threshold_floor = 5
+    # Check the relationship between threshold_floor and threshold_ceiling
+    if args.threshold_floor >= args.threshold_ceiling:
+        print("Threshold floor must be smaller than threshold ceiling. Using default threshold floor of 5 and threshold ceiling of 500")
+        args.threshold_floor = 5
+        args.threshold_ceiling = 500
+    
     # Check the value of singleton_threshold
     if type(args.singleton_threshold) is not int:
         print("Singleton SNP distance threshold(--singleton_threshold) must be a positive integer, using default 100")
