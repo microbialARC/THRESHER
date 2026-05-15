@@ -26,7 +26,7 @@ rule mummer4_global_single:
     shell:
         """
         chmod +x {input.script}
-        bash {input.script}
+        bash {input.script} > /dev/null 2>&1
         """
 
 rule mummer4_global_all:

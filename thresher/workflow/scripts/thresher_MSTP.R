@@ -45,8 +45,9 @@ thresher_MSTP <- function(output_path,
       plateau_pos <- plateau_strains$plateaus$plateau[plateau_strains$plateaus$group == group_id]
       plateau_length <- unique(plateau_strains$plateaus$plateau_length)
       plateau_plot_pos <- ifelse(plateau_pos == "No Plateau Found",
+                                 # If no plateau found, set the position of the label at the peak position
                                  peak_strains$peaks$peak[peak_strains$peaks$group == group_id],
-                                 (as.integer(plateau_pos) + plateau_length))
+                                 (as.integer(plateau_pos)))
       plateau_plot_label <- ifelse(plateau_pos == "No Plateau Found",
                                    "No Plateau Found",
                                    paste0("Plateau: ",plateau_pos," - ",(as.integer(plateau_pos) + plateau_length)))
@@ -70,12 +71,12 @@ thresher_MSTP <- function(output_path,
         # The plateau
         annotate("rect",
                  xmin=plateau_plot_pos,
-                 xmax=plateau_plot_pos+15,
+                 xmax=plateau_plot_pos + plateau_length,
                  ymin=-Inf,
                  ymax=Inf,
                  alpha=0.35,
                  fill="#B3C16D") + 
-        annotate(x=plateau_plot_pos+15,
+        annotate(x=plateau_plot_pos + plateau_length/2,
                  y=+Inf,
                  label=plateau_plot_label,
                  vjust=5,

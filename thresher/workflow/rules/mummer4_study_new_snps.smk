@@ -83,7 +83,7 @@ rule mummer4_new_snps_single:
         output_dir = config["output"]
     shell:
         """
-        bash {input.mummer4_new_snps_single_cmd}
+        bash {input.mummer4_new_snps_single_cmd} > /dev/null 2>&1
         """
 
 rule mummer4_new_snps_all:

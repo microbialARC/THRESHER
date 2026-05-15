@@ -45,7 +45,7 @@ rule mummer4_study_single:
         output_dir = config["output"]
     shell:
         """
-        bash {input.mummer4_study_single_cmd}
+        bash {input.mummer4_study_single_cmd} > /dev/null 2>&1
         """
 
 rule mummer4_study_all:

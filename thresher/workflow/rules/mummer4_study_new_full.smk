@@ -90,7 +90,7 @@ rule mummer4_new_full_all:
         mummer4_new_full_done = os.path.join(config["output"], "mummer4_study", ".mummer4_study_complete")
     shell:
         """
-        touch {output.mummer4_new_full_done}
+        touch {output.mummer4_new_full_done} > /dev/null 2>&1
         """
 
     
