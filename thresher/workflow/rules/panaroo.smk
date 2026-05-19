@@ -26,6 +26,7 @@ rule panaroo:
         --family_threshold 0.7 \
         --refind_prop_match 0.5 \
         --search_radius 5000 \
-        --threads {threads}
+        --threads {threads} \
+        > /dev/null 2>&1
         rm -rf {params.output_dir}/panaroo/input
         """

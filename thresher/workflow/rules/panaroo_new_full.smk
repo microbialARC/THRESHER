@@ -36,14 +36,16 @@ rule panaroo_new_full:
         --family_threshold 0.7 \
         --refind_prop_match 0.5 \
         --search_radius 5000 \
-        --threads {threads}
+        --threads {threads} \
+        > /dev/null 2>&1
         rm -rf {params.output_dir}/panaroo_new/input/
 
         # Merge Panaroo graphs
 
         panaroo-merge -d {params.thresher_output}/panaroo/ {params.output_dir}/panaroo_new/ \
         -o {params.output_dir}/panaroo/ \
-        --threads {threads}
+        --threads {threads} \
+        > /dev/null 2>&1
 
         # Generate MSA using the merged graph
 
@@ -53,6 +55,6 @@ rule panaroo_new_full:
         --core_threshold {params.core_threshold} \
         --aligner mafft \
         --threads {threads} \
-        
+        > /dev/null 2>&1
         # Keep the panaroo_new directory for record
         """
