@@ -19,6 +19,10 @@ options:
   --ani_threshold ANI_THRESHOLD
                         Average Nucleotide Identity (ANI) exclusion threshold (default: 99.5).
                         Genomes with ANI below this value will be removed from the profiling analysis.
+  --cov_cutoff COV_CUTOFF
+                        Coverage cutoff for MGE inference.
+                        Genomic regions with coverage above this cutoff will be inferred as MGEs.
+                        Default is 0.7.
   --bakta_db_type BAKTA_DB_TYPE
                         Bakta database.
                         Available options: [full, light]
@@ -67,16 +71,20 @@ options:
 5. **WhatsGNU Database Path(--whatsgnu_db_path):**
 
     Path to an existing WhatsGNU database. If not provided, the database will be downloaded to `<OUTPUT>/whatsgnu/db`.
-6. **Threads(--threads / -t):**
+6. **Coverage Cutoff(--cov_cutoff):**
+
+    Coverage cutoff for MGE inference. Genomic regions with coverage above this cutoff will be inferred as MGEs.
+    Default is 0.7, which means genomic regions with coverage above 70% will be inferred as MGEs.
+7. **Threads(--threads / -t):**
 
     Number of threads to use (default is 1). It is highly recommended to increase the thread count using this option to improve performance, regardless of dataset size.
-7. **Prefix(--prefix):**
+8. **Prefix(--prefix):**
 
     Prefix for config file, output files, and analysis naming. If not provided, defaults to a timestamp in the format `YYYY_MM_DD_HHMMSS`.
-8. **Conda Prefix(--conda_prefix):**
+9. **Conda Prefix(--conda_prefix):**
 
     Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`.
-9. **Force Execution(--force):**
+10. **Force Execution(--force):**
 
     Bypass system compatibility checks (operating system and available RAM) and force execution of the pipeline. This may cause instability or failures.  
 

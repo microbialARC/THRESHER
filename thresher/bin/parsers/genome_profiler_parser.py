@@ -43,6 +43,15 @@ kp: Klebsiella pneumoniae"""
     )
 
     genome_profiler_parser.add_argument(
+        "--cov_cutoff",
+        type=float,
+        default=0.7,
+        help="""Coverage cutoff for MGE inference.
+Genomic regions with coverage above this cutoff will be inferred as MGEs.
+Default is 0.7."""
+    )
+
+    genome_profiler_parser.add_argument(
         "--ani_threshold",
         type=float,
         default=99.5,

@@ -51,10 +51,12 @@ suppressMessages(library(ggExtra))
 # Directly get the input from snakemake when run inside the pipeline
 # Path to the input genome assembly file
 input_genome_path <- snakemake@input[["fna_path"]]
-# Path to the gff file of the input genome assembly 
+# Path to the gff file of the input genome assembly
 gff_path <- snakemake@input[["gff3_path"]]
 # Path to directory where the output files will be saved
 output_dir <- snakemake@params[["output_dir"]]
+# Coverage cutoff for MGE inference
+cov_cutoff <- as.numeric(snakemake@params[["cov_cutoff"]])
 # Make directory if not exists
 if(!dir.exists(output_dir)){
   dir.create(output_dir,recursive = TRUE)
@@ -1165,7 +1167,7 @@ profiler <- function(input_genome_path,
                         position_coverage = position_coverage,
                         chr_bins = chr_bins,
                         min_mge_size = 100,
-                        cov_cutoff = 0.7,
+                        cov_cutoff = cov_cutoff,
                         output_dir = output_dir,
                         ncores = ncores)
     cat("Finished generating mges_df","\n")
@@ -1206,5 +1208,6 @@ profiler(input_genome_path = input_genome_path,
          output_dir = output_dir, 
          gff_path = gff_path,
          snp_dir = snp_dir,
+         cov_cutoff = cov_cutoff,
          ncores = ncores)
 

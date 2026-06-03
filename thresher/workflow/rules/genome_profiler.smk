@@ -8,6 +8,7 @@ rule genome_profiler:
         gff3_path = os.path.join(config["output"], "bakta_annotation",genome_name,f"{genome_name}.gff3"),
     params:
         snp_dir = os.path.join(config["output"], "mummer4","output"),
+        cov_cutoff = config["cov_cutoff"],
         output_dir = os.path.join(config["output"], "genome_profiler"),
         genome_name = genome_name,
     threads:

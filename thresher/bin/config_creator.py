@@ -156,6 +156,7 @@ def genome_profiler_config(args):
         'output': args.output,
         'top_genomes': args.top_genomes,
         'ani_threshold': args.ani_threshold,
+        'cov_cutoff': args.cov_cutoff,
         'bakta_db_type': args.bakta_db_type,
         'bakta_db_path': args.bakta_db_path,
         'whatsgnu_db_path': args.whatsgnu_db_path,

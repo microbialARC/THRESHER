@@ -982,6 +982,15 @@ def validate_genome_profiler(args):
         print("Warning: ani_threshold must be between 95 and 100 for reliable profiling.\n"
         "Using default threshold 99.5.")
         args.ani_threshold = 99.5
+
+    # Check cov_cutoff
+    if not args.cov_cutoff:
+        print("cov_cutoff not provided, using default 0.7")
+        args.cov_cutoff = 0.7
+    elif args.cov_cutoff < 0 or args.cov_cutoff > 1:
+        print("Warning: cov_cutoff must be between 0 and 1 for reliable profiling.\n"
+        "Using default cutoff 0.7.")
+        args.cov_cutoff = 0.7
     
     # Check conda prefix
     if not args.conda_prefix:
