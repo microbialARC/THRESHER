@@ -9,6 +9,7 @@ rule hierarchical_clustering:
         hc_groups = os.path.join(config["output"], "thresher", "input", "hierarchical_clustering_groups.RDS"),
         hc_groups_csv = os.path.join(config["output"], "thresher", "input", "hierarchical_clustering_groups_simplified.csv")
     params:
-        thresher_input_dir = os.path.join(config["output"], "thresher", "input")
+        thresher_input_dir = os.path.join(config["output"], "thresher", "input"),
+        singleton_threshold = config["singleton_threshold"]
     script:
         os.path.join(BASE_PATH,"scripts","hierarchical_clustering.R")

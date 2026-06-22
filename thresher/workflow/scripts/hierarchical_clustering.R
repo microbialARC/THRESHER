@@ -23,13 +23,18 @@ comprehensive_tree_path <- snakemake@input[["comprehensive_tree_path"]]
 study_snp_matrix_path <- snakemake@input[["study_snp_matrix_path"]]
 mlst_results_path <- snakemake@input[["mlst_results_path"]]
 output_dir <- snakemake@params[["thresher_input_dir"]]
+# The singleton threshold
+singleton_threshold <- snakemake@params[["singleton_threshold"]]
+singleton_threshold <- as.integer(singleton_threshold)
+
 system(paste0("mkdir -p ",output_dir))
 # Function for hierarchical clustering ----
 # Hierarchical Clustering ----
 #A CC-free way to group the study genomes in the everything-tree using the pairwise distances
 hierarchical_clustering <- function(comprehensive_tree_path,
                                     study_snp_matrix_path,
-                                    mlst_results_path){
+                                    mlst_results_path,
+                                    singleton_threshold){
   
   # read the SNP matrix of study genomes comparing to study genomes to perform the QC
   study_snp_matrix <- readRDS(study_snp_matrix_path)
@@ -201,10 +206,10 @@ hierarchical_clustering <- function(comprehensive_tree_path,
           (study_snp_matrix$query %in% group_genomes), ]
       
       # Look at each group to check the pair-wise SNP distance
-      # If the genome in the group has no link with other genomes within 1000 gsnps (can be changed)
+      # If the genome in the group has no link with other genomes within the singleton threshold (default 100 bp), it will be considered as a singleton and separated from the group
       # The genome is a singleton and will be separated from the group
       
-      if (min(group_study_snp_matrix$gsnp) >= 1000) {
+      if (min(group_study_snp_matrix$gsnp) >= singleton_threshold) {
         group_all_overlimit <- TRUE
         genomes_overlimit <- group_genomes
       } else {
@@ -213,7 +218,7 @@ hierarchical_clustering <- function(comprehensive_tree_path,
           genome_snps <- group_study_snp_matrix[
             group_study_snp_matrix$subject == genome |
               group_study_snp_matrix$query == genome, ]
-          if (min(genome_snps$gsnp) >= 1000) return(genome)
+          if (min(genome_snps$gsnp) >= singleton_threshold) return(genome)
         })))
       }
       
@@ -258,7 +263,8 @@ hierarchical_clustering <- function(comprehensive_tree_path,
 
 hierarchical_clustering_groups <- hierarchical_clustering(comprehensive_tree_path,
                                                           study_snp_matrix_path,
-                                                          mlst_results_path)
+                                                          mlst_results_path,
+                                                          singleton_threshold)
 
 # Export the output back to Snakemake
 saveRDS(hierarchical_clustering_groups[["full"]],
