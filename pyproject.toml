@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "thresher"
 version = "0.4.0-beta"
-description = "THRESHER: A toolkit for bacterial genome analysis including strain identification, genome profiling, and evolution simulation."
+description = "THRESHER: A framework that replaces fixed cutoffs with data-driven phylothresholds - the SNP thresholds corrected for phylogenetic topology and inferred directly from each dataset's genomic structure."
 readme = "README.md"
 authors = [
     {name = "Qianxuan(Sean) She", email = "sheq@chop.edu"},
