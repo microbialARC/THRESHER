@@ -14,8 +14,8 @@ rule snippy_input_new_full:
         tab_dir = os.path.join(config["output"], "snippy","tabs"),
         new_genome_path = new_genome_path_dict,
         original_genome_path = original_genome_path_dict,
-        new_global_genome_path = os.path.join(config["output"],"datasets_topgenomes"),
-        original_global_genome_path = os.path.join(config["thresher_output"],"datasets_topgenomes"),
+        new_public_genome_path = os.path.join(config["output"],"datasets_topgenomes"),
+        original_public_genome_path = os.path.join(config["thresher_output"],"datasets_topgenomes"),
         new_study_accession = new_genome_accession,
         original_study_accession = original_genome_accession
     threads:

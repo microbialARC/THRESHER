@@ -4,7 +4,7 @@ rule thresher_input_cladebreaker_off:
     input:
         hc_groups = os.path.join(config["thresher_output"], "thresher", "input", "hierarchical_clustering_groups.RDS"),
         study_snp_matrix =  os.path.join(config["thresher_output"],"mummer4_study", "study_snp_matrix.RDS"),
-        global_snp_matrix = os.path.join(config["thresher_output"],"mummer4_global", "global_snp_matrix.RDS"),
+        public_snp_matrix = os.path.join(config["thresher_output"],"mummer4_public", "public_snp_matrix.RDS"),
         iqtree_group_path = os.path.join(config["thresher_output"], "iqtree","group_tree","iqtree_group.txt")
     params:
         group_tree_dir = os.path.join(config["thresher_output"], "iqtree","group_tree"),

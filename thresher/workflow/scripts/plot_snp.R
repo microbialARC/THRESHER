@@ -10,12 +10,12 @@ output_path <- snakemake@params[["output_dir"]]
 # Make the directory if not existed
 system(paste0("mkdir -p ",output_path))
 study_matrix_path <- snakemake@input[["study_snp_matrix"]]
-global_matrix_path <- snakemake@input[["global_snp_matrix"]]
+public_matrix_path <- snakemake@input[["public_snp_matrix"]]
 
 # Function to visualize the gSNP distributions ----
 
 snp_dist_visual <- function(study_matrix_path,
-                            global_matrix_path,
+                            public_matrix_path,
                             output_path){
   ## Read and sort the SNP matrices ----
   
@@ -35,10 +35,10 @@ snp_dist_visual <- function(study_matrix_path,
   
   matrix <- rbind(
     process_matrix(study_matrix_path, "Study"),
-    process_matrix(global_matrix_path, "Global")
+    process_matrix(public_matrix_path, "Public")
   )
   matrix$category <- factor(matrix$category,
-                            levels = c("Study","Global"))
+                            levels = c("Study","Public"))
   ## generate the plots ----
   
   plot <- ggplot(matrix[matrix$gsnp <= 500,],
@@ -88,5 +88,5 @@ snp_dist_visual <- function(study_matrix_path,
 }
 # use the function
 snp_dist_visual(study_matrix_path,
-                global_matrix_path,
+                public_matrix_path,
                 output_path)

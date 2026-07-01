@@ -21,8 +21,8 @@ rule thresher_new_snps:
         new_discrepancy_rds = os.path.join(config["output"], "thresher", "output", "new_discrepancy.RDS"),
         new_discrepancy_strains_csv = os.path.join(config["output"], "thresher", "output", "new_discrepancy_strains.csv"),
         new_discrepancy_genomes_csv = os.path.join(config["output"], "thresher", "output", "new_discrepancy_genomes.csv"),
-        new_global_rds = os.path.join(config["output"], "thresher", "output", "new_global.RDS"),
-        new_global_strains_csv = os.path.join(config["output"], "thresher", "output", "new_global_strains.csv"),
-        new_global_genomes_csv = os.path.join(config["output"], "thresher", "output", "new_global_genomes.csv")
+        new_public_rds = os.path.join(config["output"], "thresher", "output", "new_public.RDS"),
+        new_public_strains_csv = os.path.join(config["output"], "thresher", "output", "new_public_strains.csv"),
+        new_public_genomes_csv = os.path.join(config["output"], "thresher", "output", "new_public_genomes.csv")
     script:
         os.path.join(BASE_PATH,"scripts","thresher_new_snps.R")

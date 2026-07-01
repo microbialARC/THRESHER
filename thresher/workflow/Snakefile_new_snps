@@ -46,9 +46,9 @@ rule all:
         os.path.join(config["output"], "thresher", "output", "new_discrepancy.RDS"),
         os.path.join(config["output"], "thresher", "output", "new_discrepancy_strains.csv"),
         os.path.join(config["output"], "thresher", "output", "new_discrepancy_genomes.csv"),
-        os.path.join(config["output"], "thresher", "output", "new_global.RDS"),
-        os.path.join(config["output"], "thresher", "output", "new_global_strains.csv"),
-        os.path.join(config["output"], "thresher", "output", "new_global_genomes.csv"),
+        os.path.join(config["output"], "thresher", "output", "new_public.RDS"),
+        os.path.join(config["output"], "thresher", "output", "new_public_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "new_public_genomes.csv"),
         # Clusters will be updated only when the previous analysis defined the transmission clusters
         [os.path.join(config["output"], "plots","ClusterPlots_new_snps.RDS")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
         [os.path.join(config["output"], "plots", "PersistencePlot_new_snps.pdf")] if os.path.exists(os.path.join(config["thresher_output"], "thresher", "output", "clusters_summary.RDS")) else [],
@@ -63,7 +63,7 @@ rule all:
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_plateau_strains.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_peak_strains.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_discrepancy_strains.csv")] if config["species"] == "sau" else [],
-        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_global_strains.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_public_strains.csv")] if config["species"] == "sau" else [],
         # MLST
         expand(os.path.join(config["output"], "mlst","raw","{genome_name}_mlst.csv"),genome_name=new_genome_path_dict.keys()),
         os.path.join(config["output"], "mlst","raw","mlst_raw.txt"),

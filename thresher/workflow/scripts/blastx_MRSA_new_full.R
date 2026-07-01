@@ -3,7 +3,7 @@ library(dplyr)
 # Function to determine MRSA
 analyze_blastx_output_new_full <- function(plateau_strains_rds_path,
                                            peak_strains_rds_path,
-                                           global_strains_rds_path,
+                                           public_strains_rds_path,
                                            discrepancy_strains_rds_path,
                                            thresher_output_dir,
                                            raw_dir,
@@ -106,7 +106,7 @@ analyze_blastx_output_new_full <- function(plateau_strains_rds_path,
   
   plateau_strains <- readRDS(plateau_strains_rds_path)[["strains"]]
   peak_strains <- readRDS(peak_strains_rds_path)[["strains"]]
-  global_strains <- readRDS(global_strains_rds_path)[["strains"]]
+  public_strains <- readRDS(public_strains_rds_path)[["strains"]]
   discrepancy_strains <- readRDS(discrepancy_strains_rds_path)[["strains"]]
   
   # Use the position to loop through the different strain compositions
@@ -115,7 +115,7 @@ analyze_blastx_output_new_full <- function(plateau_strains_rds_path,
   method_compositions <- list(
     list(endpoint = "plateau", composition = plateau_strains),
     list(endpoint = "peak", composition = peak_strains),
-    list(endpoint = "global", composition = global_strains),
+    list(endpoint = "public", composition = public_strains),
     list(endpoint = "discrepancy", composition = discrepancy_strains)
   )
   
@@ -149,14 +149,14 @@ raw_dir <- snakemake@params[["raw_dir"]]
 summary_dir <- snakemake@params[["summary_dir"]]
 plateau_strains_rds_path <- snakemake@input[["plateau_strains_rds"]]
 peak_strains_rds_path <- snakemake@input[["peak_strains_rds"]]
-global_strains_rds_path <- snakemake@input[["global_strains_rds"]]
+public_strains_rds_path <- snakemake@input[["public_strains_rds"]]
 discrepancy_strains_rds_path <- snakemake@input[["discrepancy_strains_rds"]]
 thresher_output_dir <- snakemake@params[["thresher_output"]]
 
 
 analyze_blastx_output_new_full(plateau_strains_rds_path = plateau_strains_rds_path,
                                peak_strains_rds_path = peak_strains_rds_path,
-                               global_strains_rds_path = global_strains_rds_path,
+                               public_strains_rds_path = public_strains_rds_path,
                                discrepancy_strains_rds_path = discrepancy_strains_rds_path,
                                thresher_output_dir = thresher_output_dir,
                                raw_dir = raw_dir,

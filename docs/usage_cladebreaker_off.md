@@ -1,6 +1,6 @@
-# Strain Identifier - Cladebreaker Off: Re-identify Strain Composition without Cladebreaker Corrections
+# THRESHER - Cladebreaker Off: Re-identify Strain Composition without Cladebreaker Corrections
 ```
-thresher strain_identifier cladebreaker-off -h
+thresher cladebreaker-off -h
 
 options:
   -h, --help            show this help message and exit
@@ -8,7 +8,7 @@ options:
                         Path to the existing THRESHER directory.
                                 The existing analysis directory should contain the previous analysis results.
   --output OUTPUT       Path to output directory.
-                                If not provided, defaults to thresher_strain_identifier_cladebreaker_off_<YYYY_MM_DD_HHMMSS> under the current working directory.
+                                If not provided, defaults to thresher_cladebreaker_off_<YYYY_MM_DD_HHMMSS> under the current working directory.
   --threshold_floor THRESHOLD_FLOOR
                         The floor of the range of SNP distances to search for the optimal phylothreshold.
                         Default is 5.
@@ -53,7 +53,7 @@ options:
 
 5. **Output Directory(--output):**
    
-   Path to the output directory. If not provided, defaults to `thresher_strain_identifier_cladebreaker_off_<YYYY_MM_DD_HHMMSS>` under the current working directory.
+   Path to the output directory. If not provided, defaults to `thresher_cladebreaker_off_<YYYY_MM_DD_HHMMSS>` under the current working directory.
 
 6. **Prefix(--prefix):**
 
@@ -77,9 +77,9 @@ options:
    - Discrepancy strains:
       - `thresher/output/discrepancy_strains.RDS`
       - `thresher/output/discrepancy_strains.csv`
-   - Global strains:
-      - `thresher/output/global_strains.RDS`
-      - `thresher/output/global_strains.csv`
+   - Public strains:
+      - `thresher/output/public_strains.RDS`
+      - `thresher/output/public_strains.csv`
    - Group-specific thresholds:
       - Plateau thresholds: `thresher/output/group_plateau.csv`
          - Columns included in the group-specific thresholds csv files:
@@ -94,20 +94,20 @@ options:
          - Columns included in the group-specific thresholds csv files:
          - group: Hierarchical clustering group ID
          - discrepancy: Phylothreshold determined for the group using the discrepancy endpoint method.
-      - Global thresholds: `thresher/output/group_global.csv`
+      - Public thresholds: `thresher/output/group_public.csv`
          - Columns included in the group-specific thresholds csv files:
          - group: Hierarchical clustering group ID
-         - global: Phylothreshold determined for the group using the global endpoint method.
+         - public: Phylothreshold determined for the group using the public endpoint method.
 
 2. **Sanity Check Plots:**
   - Plateau: `thresher/output/QC/plateau_qc_plot.pdf`
   - Peak: `thresher/output/QC/peak_qc_plot.pdf`
-  - Global: `thresher/output/QC/global_qc_plot.pdf`
+  - Public: `thresher/output/QC/public_qc_plot.pdf`
   - Discrepancy: `thresher/output/QC/discrepancy_qc_plot.pdf`
   - Figure descriptions:
     - X-axis: Phylogenetic Average Distance
 
-      The average phylogenetic distance between two strains, calculated by averaging the pairwise branch-length distances between all genomes in strain A and all genomes in strain B on the core genome phylogeny (comprehensive tree).
+      The average phylogenetic distance between two strains, calculated by averaging the pairwise branch-length distances between all genomes in strain A and all genomes in strain B on the core genome phylogeny.
 
     - Y-axis: gSNP Average Distance
     
@@ -129,7 +129,7 @@ options:
 
    - Plateau: `thresher/output/QC/plateau_qc_table.csv`
    - Peak: `thresher/output/QC/peak_qc_table.csv`
-   - Global: `thresher/output/QC/global_qc_table.csv`
+   - Public: `thresher/output/QC/public_qc_table.csv`
    - Discrepancy: `thresher/output/QC/discrepancy_qc_table.csv`
 
 4. **Multi-SNP-Threshold Plot:**
@@ -143,7 +143,7 @@ options:
 
     - Lower panel: 
       - Lines: The number of singletons, clones, and the discrepant genomes when the strain compositions determined by pairwise SNP distances mapped to the corresponding reference-based phylogenetic tree of the group.
-      - Annotations: The final phylothresholds determined by each endpoint method (plateau, peak, discrepancy, global) are indicated on the plot.
+      - Annotations: The final phylothresholds determined by each endpoint method (plateau, peak, discrepancy, public) are indicated on the plot.
 
 5.  **Strain Composition Visualizations:**
 
@@ -153,24 +153,24 @@ options:
       - Plateau: `plots/strain_compositions/plateau/plateau_strain_tree_snp.RDS`
       - Peak: `plots/strain_compositions/peak/peak_strain_tree_snp.RDS`
       - Discrepancy: `plots/strain_compositions/discrepancy/discrepancy_strain_tree_snp.RDS`
-      - Global: `plots/strain_compositions/global/global_strain_tree_snp.RDS`
+      - Public: `plots/strain_compositions/public/public_strain_tree_snp.RDS`
     - PDF files:
       - Plateau: `plots/strain_compositions/plateau/Group{Group_ID}_plateau_strain_composition.pdf`
       - Peak: `plots/strain_compositions/peak/Group{Group_ID}_peak_strain_composition.pdf`
       - Discrepancy: `plots/strain_compositions/discrepancy/Group{Group_ID}_discrepancy_strain_composition.pdf`
-      - Global: `plots/strain_compositions/global/Group{Group_ID}_global_strain_composition.pdf`
+      - Public: `plots/strain_compositions/public/Group{Group_ID}_public_strain_composition.pdf`
     - Figure descriptions:
       - **ML Phylogeny (left panel)**
         - Midpoint-rooted ML tree of the group
-        - **Tip points**: Blue circles = study genomes, Brown circles = global genomes (CladeBreaker)
+        - **Tip points**: Blue circles = study genomes, Brown circles = public genomes (CladeBreaker)
         - **Highlighted clades**: Genomes assigned to the same clone (strain with ≥2 genomes) are highlighted with a green rectangle and labeled with their strain ID (e.g., `1_1`)
         - **Scale bar**: Branch length in substitutions per site
         - **Optimal Phylothreshold**: The optimal phylothreshold determined by the selected endpoint method displayed at the top
       - **SNP Distance Heatmap (right panel)**
         - Rows aligned to phylogeny tip labels; columns show study genomes only
         - **White to blue gradient**: Pairwise SNP distances between study genomes
-        - **Grey cells**: Comparisons of study genomes to corresponding top global genomes. The color of these cells are greyed out.
-        The cells with no values indicate this study genome is not compared to the global genome(s) as the global genome(s) is/are not the top hit for this study genome in WhatsGNU analysis.
+        - **Grey cells**: Comparisons of study genomes to corresponding top public genomes. The color of these cells are greyed out.
+        The cells with no values indicate this study genome is not compared to the public genome(s) as the public genome(s) is/are not the top hit for this study genome in WhatsGNU analysis.
         - **Text color indicates SNP quality**:
           - Green = good quality (alignments meet coverage threshold)
           - Red = poor quality (low-coverage alignments, interpret with caution)

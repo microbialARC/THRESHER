@@ -49,14 +49,14 @@ rule blastx_mrsa_new_snps_results:
     input:
         blastx_mrsa = expand(os.path.join(config["output"],"blastx","mrsa","output","raw","{genome_name}_blastx_mrsa.tsv"), genome_name=new_genome_path_dict.keys()),
         plateau_strains_rds = os.path.join(config["output"],"thresher", "output", "new_plateau.RDS"),
-        global_strains_rds = os.path.join(config["output"], "thresher", "output", "new_global.RDS"),
+        public_strains_rds = os.path.join(config["output"], "thresher", "output", "new_public.RDS"),
         peak_strains_rds = os.path.join(config["output"],"thresher", "output",  "new_peak.RDS"),
         discrepancy_strains_rds = os.path.join(config["output"], "thresher", "output", "new_discrepancy.RDS")
     output:
         # The updated genome results are universal input for all endpoints
         updated_genome_results = os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_genomes.csv"),
         plateau_strain_results = os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_plateau_strains.csv"),
-        global_strain_results = os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_global_strains.csv"),
+        public_strain_results = os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_public_strains.csv"),
         peak_strain_results = os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_peak_strains.csv"),
         discrepancy_strain_results = os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_discrepancy_strains.csv")
     params:

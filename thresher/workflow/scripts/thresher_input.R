@@ -10,7 +10,7 @@ library(purrr)
 get_thresher_input <- function(hierarchical_clustering_groups_path,
                                group_tree_dir,
                                study_snp_matrix_path,
-                               study_global_snp_matrix_path,
+                               study_public_snp_matrix_path,
                                singleton_threshold,
                                threshold_floor,
                                threshold_ceiling,
@@ -25,8 +25,8 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                        readRDS(matrix_path)
                                      }))
   
-  ### Global SNP-distance matrix
-  global_snp_matrix <- readRDS(study_global_snp_matrix_path)
+  ### Public SNP-distance matrix
+  public_snp_matrix <- readRDS(study_public_snp_matrix_path)
 
   ### Read HC groups RDS
   hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
@@ -309,7 +309,7 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                          ))
                                                                                                      )
                                                                                                    }else{
-                                                                                                     # 2nd situation: cladebreaker(global) genomes were introduced (with or without discrepancy genomes)
+                                                                                                     # 2nd situation: cladebreaker(public) genomes were introduced (with or without discrepancy genomes)
                                                                                                      if(use_cladebreaker){
                                                                                                        # If use_cladebreaker is true, then the function will perform cladebreaker
                                                                                                        strain_clade_newick <- Subtree(group_tree_newick,
@@ -322,21 +322,21 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                        # We need to find the biggest clades in strain_clade_newick without being broken by breaker genomes
                                                                                                        # And the genomes in those biggest pure-study-genomes clades are from the same strains
                                                                                                        
-                                                                                                       # First, get the Global SNP distance matrix of the study genomes in strain_clade_newick and their closest global genomes(cladebreaker genomes)
+                                                                                                       # First, get the Public SNP distance matrix of the study genomes in strain_clade_newick and their closest public genomes(cladebreaker genomes)
                                                                                                        # Check the quality of the SNP distance
                                                                                                        strain_clade_total_genomes <- strain_clade_newick$tip.label
                                                                                                        
                                                                                                        strain_clade_study_genomes <- strain_clade_newick$tip.label[!grepl("GCA_|GCF_", strain_clade_total_genomes)]
                                                                                                        
-                                                                                                       strain_clade_global_genomes <- setdiff(strain_clade_total_genomes,
+                                                                                                       strain_clade_public_genomes <- setdiff(strain_clade_total_genomes,
                                                                                                                                               strain_clade_study_genomes)
                                                                                                        
-                                                                                                       strain_clade_global_snp_matrix <- global_snp_matrix[global_snp_matrix$subject %in% strain_clade_study_genomes &
-                                                                                                                                                             global_snp_matrix$query %in% strain_clade_global_genomes,]
+                                                                                                       strain_clade_public_snp_matrix <- public_snp_matrix[public_snp_matrix$subject %in% strain_clade_study_genomes &
+                                                                                                                                                             public_snp_matrix$query %in% strain_clade_public_genomes,]
 
-                                                                                                       # Before we determine the poor global genomes, we want to add a new safety check to exclude the poor study genomes
+                                                                                                       # Before we determine the poor public genomes, we want to add a new safety check to exclude the poor study genomes
                                                                                                        # If a study genome has poor quality of SNP distance with all the rest of the study genomes in the clade, then this study genome is considered "poor"
-                                                                                                       # And this genome will be excluded from the analysis to determine the poor global genomes and this study genome will be considered a singleton automatically
+                                                                                                       # And this genome will be excluded from the analysis to determine the poor public genomes and this study genome will be considered a singleton automatically
                                                                                                        # Again, this is a safety check and should not happen in most cases
                                                                                                        # Because we ask for a stringent quality check before the users put their genomes into the thresher strain identifier analysis at the first step
                                                                                                        strain_clade_study_genome_matrix <- group_snp_matrix[group_snp_matrix$subject %in% strain_clade_study_genomes & 
@@ -365,18 +365,18 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                        
                                                                                                        
                                                                                                        # Only consider the cladebreaker genomes valid if the quality of the SNP distance is good (snp_coverage >= 80%)
-                                                                                                       # As long as there is one "poor" record for the alignment between any "good" study genome and a cladebreaker(global) genome
-                                                                                                       # The cladebreaker(global) genome is considered "poor" and will be considered invalid for cladebreaking process
-                                                                                                       strain_clade_poor_global_genomes <- unique(strain_clade_global_snp_matrix$query[
-                                                                                                         strain_clade_global_snp_matrix$snp_quality == "poor" &
-                                                                                                           !(strain_clade_global_snp_matrix$subject %in% strain_clade_poor_study_genomes)
+                                                                                                       # As long as there is one "poor" record for the alignment between any "good" study genome and a cladebreaker(public) genome
+                                                                                                       # The cladebreaker(public) genome is considered "poor" and will be considered invalid for cladebreaking process
+                                                                                                       strain_clade_poor_public_genomes <- unique(strain_clade_public_snp_matrix$query[
+                                                                                                         strain_clade_public_snp_matrix$snp_quality == "poor" &
+                                                                                                           !(strain_clade_public_snp_matrix$subject %in% strain_clade_poor_study_genomes)
                                                                                                        ]
                                                                                                        )
                                                                                                        
-                                                                                                       # Normally this would not happen, where strain_clade_poor_global_genomes should be of length 0
+                                                                                                       # Normally this would not happen, where strain_clade_poor_public_genomes should be of length 0
                                                                                                        # Because at the step where panaroo generates the core-gene alignment 
                                                                                                        # Those study genomes with low coverage of core genes would have been excluded
-                                                                                                       # Thus the closest global genome of the rest should have good coverage
+                                                                                                       # Thus the closest public genome of the rest should have good coverage
                                                                                                        # But just in case, we still put this check here
                                                                                                        # Although in terms of coding efficiency this is not optimal. We could waste a few minutes here
                                                                                                        # But the biological meaning shown in the intuitive logic is more important here
@@ -389,14 +389,14 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                                                                                node)
                                                                                                                             
                                                                                                                             sub_strain_clade_total_genomes <- sub_strain_clade_newick$tip.label
-                                                                                                                            sub_strain_clade_global_genomes <- setdiff(grep("GCA_|GCF_",
+                                                                                                                            sub_strain_clade_public_genomes <- setdiff(grep("GCA_|GCF_",
                                                                                                                                                                             sub_strain_clade_total_genomes,
                                                                                                                                                                             value = TRUE),
-                                                                                                                                                                       strain_clade_poor_global_genomes)
+                                                                                                                                                                       strain_clade_poor_public_genomes)
                                                                                                                             
                                                                                                                             
                                                                                                                             # Check if this clade has only study genomes
-                                                                                                                            if(length(sub_strain_clade_global_genomes) == 0){
+                                                                                                                            if(length(sub_strain_clade_public_genomes) == 0){
                                                                                                                               # If there are only study genomes
                                                                                                                               # proceed to check if this is the biggest pure-study-genome clade (There are breaker genomes in the parent clade)
                                                                                                                               # Parent node:
@@ -418,10 +418,10 @@ get_thresher_input <- function(hierarchical_clustering_groups_path,
                                                                                                                                 parent_sub_strain_clade_newick <- Subtree(strain_clade_newick,
                                                                                                                                                                           parent_node)
                                                                                                                                 
-                                                                                                                                parent_sub_strain_clade_newick_global_genomes <- setdiff(grep("GCA_|GCF_",parent_sub_strain_clade_newick$tip.label,
+                                                                                                                                parent_sub_strain_clade_newick_public_genomes <- setdiff(grep("GCA_|GCF_",parent_sub_strain_clade_newick$tip.label,
                                                                                                                                                                                               value = TRUE),
-                                                                                                                                                                                         strain_clade_poor_global_genomes)
-                                                                                                                                if(length(parent_sub_strain_clade_newick_global_genomes) > 0){
+                                                                                                                                                                                         strain_clade_poor_public_genomes)
+                                                                                                                                if(length(parent_sub_strain_clade_newick_public_genomes) > 0){
                                                                                                                                   
                                                                                                                                   return(
                                                                                                                                     list(
@@ -706,7 +706,7 @@ ncores <- snakemake@threads
 hierarchical_clustering_groups_path <- snakemake@input[["hc_groups"]]
 group_tree_dir <- snakemake@params[["group_tree_dir"]]
 study_snp_matrix_path <- snakemake@input[["study_snp_matrix"]]
-study_global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
+study_public_snp_matrix_path <- snakemake@input[["public_snp_matrix"]]
 output_dir <- snakemake@params[["thresher_input_dir"]]
 # The floor and ceiling of SNP distances range to search for optimal phylothresholds
 threshold_floor <- snakemake@params[["threshold_floor"]]
@@ -728,7 +728,7 @@ setwd(dir = output_dir)
 thresher_input <- get_thresher_input(hierarchical_clustering_groups_path = hierarchical_clustering_groups_path,
                                      group_tree_dir = group_tree_dir,
                                      study_snp_matrix_path = study_snp_matrix_path,
-                                     study_global_snp_matrix_path = study_global_snp_matrix_path,
+                                     study_public_snp_matrix_path = study_public_snp_matrix_path,
                                      singleton_threshold = singleton_threshold,
                                      threshold_floor = threshold_floor,
                                      threshold_ceiling = threshold_ceiling,

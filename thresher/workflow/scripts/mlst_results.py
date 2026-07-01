@@ -5,7 +5,13 @@ import glob as glob
 #Import from snakemake
 species = snakemake.params.species
 metadata = pd.read_csv(snakemake.params.metadata, sep='\t', header=None)
-analysis_mode = snakemake.params.analysis_mode
+epi_mode = snakemake.params.epi_mode
+# Convert epi_mode to boolean if it is a string
+if isinstance(epi_mode, str):
+    epi_mode = epi_mode.strip().lower() in ("true")
+else:
+    epi_mode = bool(epi_mode)
+
 from thresher.bin.parse_genome_name import parse_genome_name
 
 # Parse MLST output manually to handle variable column counts
@@ -29,10 +35,10 @@ mlst_raw = pd.DataFrame(mlst_raw_rows, columns=['path', 'ST'])
 # Actually we just need genome_name and genome_path from metadata
 # But I leave the other columns in for now in case we need them later
 
-if analysis_mode == "lite":
+if not epi_mode:
     metadata = metadata[[0,1,2]]
     metadata.columns = ["genome_name", "accession", "genome_path"]
-elif analysis_mode == "full":
+else:
     metadata.columns = ["genome_name", "accession", "genome_path", "patient_id", "collection_date"]
 
 mlst_results = pd.DataFrame()

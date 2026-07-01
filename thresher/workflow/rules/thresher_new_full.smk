@@ -4,7 +4,7 @@ rule thresher_new_full:
     input:
         hc_groups = os.path.join(config["output"], "thresher", "input", "hierarchical_clustering_groups.RDS"),
         study_snp_matrix =  os.path.join(config["output"],"mummer4_study", "study_snp_matrix.RDS"),
-        global_snp_matrix = os.path.join(config["output"],"mummer4_global", "global_snp_matrix.RDS"),
+        public_snp_matrix = os.path.join(config["output"],"mummer4_public", "public_snp_matrix.RDS"),
         iqtree_group_path = os.path.join(config["output"], "iqtree","group_tree","iqtree_group.txt")
     params:
         thresher_output = config["thresher_output"],
@@ -25,8 +25,8 @@ rule thresher_new_full:
         updated_discrepancy_rds = os.path.join(config["output"], "thresher", "output", "discrepancy_strains.RDS"),
         updated_discrepancy_strains_csv = os.path.join(config["output"], "thresher", "output", "discrepancy_strains.csv"),
         updated_discrepancy_genomes_csv = os.path.join(config["output"], "thresher", "output", "updated_discrepancy_genomes.csv"),
-        updated_global_rds = os.path.join(config["output"], "thresher", "output", "global_strains.RDS"),
-        updated_global_strains_csv = os.path.join(config["output"], "thresher", "output", "global_strains.csv"),
-        updated_global_genomes_csv = os.path.join(config["output"], "thresher", "output", "updated_global_genomes.csv")
+        updated_public_rds = os.path.join(config["output"], "thresher", "output", "public_strains.RDS"),
+        updated_public_strains_csv = os.path.join(config["output"], "thresher", "output", "public_strains.csv"),
+        updated_public_genomes_csv = os.path.join(config["output"], "thresher", "output", "updated_public_genomes.csv")
     script:
         os.path.join(BASE_PATH,"scripts","thresher_new_full.R")

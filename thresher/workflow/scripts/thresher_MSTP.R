@@ -9,7 +9,7 @@ thresher_MSTP <- function(output_path,
                           thresher_input,
                           plateau_strains,
                           peak_strains,
-                          global_strains,
+                          public_strains,
                           discrepancy_strains){
   #Universal variables/setting
   line_color <- c("#C72373",
@@ -55,8 +55,8 @@ thresher_MSTP <- function(output_path,
       peak_pos <- as.integer(peak_strains$peaks$peak[peak_strains$peaks$group == group_id])
       # Discrepancy position
       discrepancy_pos <- as.integer(discrepancy_strains$discrepancy$discrepancy[discrepancy_strains$discrepancy$group == group_id])
-      # Global position
-      global_pos <- as.integer(global_strains$global$global[global_strains$global$group == group_id])
+      # Public position
+      public_pos <- as.integer(public_strains$public$public[public_strains$public$group == group_id])
       
       
       ### Main plot
@@ -99,10 +99,10 @@ thresher_MSTP <- function(output_path,
                  geom="label",
                  color="#C72575",
                  fill="#F0D1E2") + 
-        # The global
-        annotate(x=global_pos,
+        # The public
+        annotate(x=public_pos,
                  y=+Inf,
-                 label=paste0("Global: ",global_pos),
+                 label=paste0("Public: ",public_pos),
                  vjust=2,
                  geom="label",
                  color="#F2C100",
@@ -218,14 +218,14 @@ system(paste0("mkdir -p ",output_path))
 thresher_input <- readRDS(snakemake@input[["thresher_input"]])
 peak_strains <- readRDS(snakemake@input[["peak_strains_rds"]])
 plateau_strains <- readRDS(snakemake@input[["plateau_strains_rds"]])
-global_strains <- readRDS(snakemake@input[["global_strains_rds"]])
+public_strains <- readRDS(snakemake@input[["public_strains_rds"]])
 discrepancy_strains <- readRDS(snakemake@input[["discrepancy_strains_rds"]])
 
 combine_MSTPs <- thresher_MSTP(output_path,
                                thresher_input,
                                plateau_strains,
                                peak_strains,
-                               global_strains,
+                               public_strains,
                                discrepancy_strains)
 
 saveRDS(combine_MSTPs, 

@@ -1,26 +1,26 @@
-rule mummer4_global_cmd:
+rule mummer4_public_cmd:
     input:
         whatsgnu_output = [os.path.join(config["output"],"whatsgnu","whatsgnu_results",f"{genome}_WhatsGNU_topgenomes.txt") for genome in list(genome_path_dict.keys())],
         actual_download_topgenomes = os.path.join(config["output"],"datasets_topgenomes","actual_download_topgenomes.txt")
     output:
-        [os.path.join(config["output"],"mummer4_global","scripts",f"dnadiff_{genome}.sh") for genome in list(genome_path_dict.keys())]
+        [os.path.join(config["output"],"mummer4_public","scripts",f"dnadiff_{genome}.sh") for genome in list(genome_path_dict.keys())]
     params:
         study_accession = genome_accession,
         whatsgnu_output_dir = os.path.join(config["output"],"whatsgnu"),
-        global_genome_dir = os.path.join(config["output"],"datasets_topgenomes"),
+        public_genome_dir = os.path.join(config["output"],"datasets_topgenomes"),
         study_genome_dict = genome_path_dict,
-        script_path = os.path.join(config["output"],"mummer4_global","scripts"),
-        output_path = os.path.join(config["output"],"mummer4_global")
+        script_path = os.path.join(config["output"],"mummer4_public","scripts"),
+        output_path = os.path.join(config["output"],"mummer4_public")
     script:
         os.path.join(BASE_PATH,"scripts","sort_whatsgnu_output.py")
 
-rule mummer4_global_single:
+rule mummer4_public_single:
     conda:
         os.path.join(BASE_PATH,"envs/mummer4.yaml")
     input:
-        script = os.path.join(config["output"], "mummer4_global", "scripts", "dnadiff_{genome_name}.sh")
+        script = os.path.join(config["output"], "mummer4_public", "scripts", "dnadiff_{genome_name}.sh")
     output:
-        reports = os.path.join(config["output"], "mummer4_global","{genome_name}_concatenated.report")
+        reports = os.path.join(config["output"], "mummer4_public","{genome_name}_concatenated.report")
     params:
         output_dir = config["output"]
     shell:
@@ -29,11 +29,11 @@ rule mummer4_global_single:
         bash {input.script} > /dev/null 2>&1
         """
 
-rule mummer4_global_all:
+rule mummer4_public_all:
     input:
-        reports = expand(os.path.join(config["output"], "mummer4_global","{genome_name}_concatenated.report"), genome_name=genome_path_dict.keys())
+        reports = expand(os.path.join(config["output"], "mummer4_public","{genome_name}_concatenated.report"), genome_name=genome_path_dict.keys())
     output:
-        done = os.path.join(config["output"], "mummer4_global", ".mummer4_global_complete")
+        done = os.path.join(config["output"], "mummer4_public", ".mummer4_public_complete")
     shell:
         """
         touch {output.done}

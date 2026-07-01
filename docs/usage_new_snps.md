@@ -1,6 +1,6 @@
-# Strain Identifier - New SNPs: Update existing strain/transmission compositions with new genomes using predefined phylothresholds with previous endpoint method.
+# THRESHER- New SNPs: Update existing strain/transmission compositions with new genomes using predefined phylothresholds with previous endpoint method.
 ```
-thresher strain_identifier new-snps -h
+thresher new-snps -h
 options:
   -h, --help            show this help message and exit
   --original_metadata ORIGINAL_METADATA
@@ -13,11 +13,11 @@ options:
                         At least 1 new genome should be provided to perform new-snps analysis.
                         The description of the file format is the same as that for --original_metadata.
   --thresher_output THRESHER_OUTPUT
-                        Path to the existing THRESHER strain_identifier directory.
+                        Path to the existing THRESHER new-snps directory.
                         The existing analysis directory should contain the previous transmission cluster results.
-                        (analysis_mode should be 'full' in the prior run)
+                        (epi_mode should be 'True' in the prior run)
   --output OUTPUT       Path to output directory of new-snps analysis.
-                        If not provided, defaults to thresher_strain_identifier_new_snps_<YYYY_MM_DD_HHMMSS> under the current working directory.
+                        If not provided, defaults to thresher_new_snps_<YYYY_MM_DD_HHMMSS> under the current working directory.
   --species {sau,sepi,cdiff,kp}
                         Bacteria species.
                         Available options: [sau, sepi, cdiff, kp]
@@ -62,7 +62,7 @@ options:
     - Low-coverage alignments can produce artificially low SNP counts, as unaligned regions are not compared and potential variants in those regions go undetected. This can lead to falsely inflated genomic similarity between genomically distantly related genomes. The default threshold of 80% balances sensitivity with reliability.
 2. **Output Directory(--output):** 
 
-    Path to the output directory for the new-snps analysis. If not provided, defaults to `thresher_strain_identifier_new_snps_<YYYY_MM_DD_HHMMSS>` under the current working directory.
+    Path to the output directory for the new-snps analysis. If not provided, defaults to `thresher_new_snps_<YYYY_MM_DD_HHMMSS>` under the current working directory.
 3. **Thread Number(--threads / -t):**
 
     Number of threads to use for the analysis. Default is 1. It is highly recommended to increase the thread count using this option to improve performance, regardless of dataset size.
@@ -77,7 +77,7 @@ options:
 - Plateau: `thresher/output/new_plateau_genomes.csv`
 - Peak: `thresher/output/new_peak_genomes.csv`
 - Discrepancy: `thresher/output/new_discrepancy_genomes.csv`
-- Global: `thresher/output/new_global_genomes.csv`
+- Public: `thresher/output/new_public_genomes.csv`
 2. **Updated Strains:**
 - Plateau:
   - `thresher/output/new_plateau.RDS` (R object)
@@ -88,9 +88,9 @@ options:
 - Discrepancy:
   - `thresher/output/new_discrepancy.RDS` (R object)
   - `thresher/output/new_discrepancy_strains.csv`
-- Global:
-  - `thresher/output/new_global.RDS` (R object)
-  - `thresher/output/new_global_strains.csv`
+- Public:
+  - `thresher/output/new_public.RDS` (R object)
+  - `thresher/output/new_public_strains.csv`
 3. **Updated Clusters:**
 - RDS: `thresher/output/clusters_summary_new_snps.RDS`
 - CSV: `thresher/output/clusters_summary_new_snps.csv`

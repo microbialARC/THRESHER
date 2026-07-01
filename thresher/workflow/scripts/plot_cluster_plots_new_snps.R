@@ -104,8 +104,8 @@ new_plateau_strains_rds_path <- snakemake@input[["new_plateau_strains_rds"]]
 original_plateau_strains_rds_path <- snakemake@params[["original_plateau_strains_rds"]]
 new_discrepancy_strains_rds_path <- snakemake@input[["new_discrepancy_strains_rds"]]
 original_discrepancy_strains_rds_path <- snakemake@params[["original_discrepancy_strains_rds"]]
-new_global_strains_rds_path <- snakemake@input[["new_global_strains_rds"]]
-original_global_strains_rds_path <- snakemake@params[["original_global_strains_rds"]]
+new_public_strains_rds_path <- snakemake@input[["new_public_strains_rds"]]
+original_public_strains_rds_path <- snakemake@params[["original_public_strains_rds"]]
 # Input ----
 original_cluster_sum <- readRDS(file.path(thresher_output,"thresher","output","clusters_summary.RDS"))
 original_cluster_csv <- read.csv(file.path(thresher_output,"thresher","output","clusters_summary.csv"))
@@ -117,7 +117,7 @@ new_strains_rds <- switch(
   endpoint,
   "plateau" = readRDS(new_plateau_strains_rds_path),
   "peak" = readRDS(new_peak_strains_rds_path),
-  "global" = readRDS(new_global_strains_rds_path),
+  "public" = readRDS(new_public_strains_rds_path),
   "discrepancy" = readRDS(new_discrepancy_strains_rds_path)
 )
 
@@ -125,7 +125,7 @@ original_strains_rds <- switch(
   endpoint,
   "plateau" = readRDS(original_plateau_strains_rds_path),
   "peak" = readRDS(original_peak_strains_rds_path),
-  "global" = readRDS(original_global_strains_rds_path),
+  "public" = readRDS(original_public_strains_rds_path),
   "discrepancy" = readRDS(original_discrepancy_strains_rds_path)
 )
 

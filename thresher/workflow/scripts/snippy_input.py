@@ -7,7 +7,7 @@ hc_group_path = snakemake.input.hc_groups_csv
 genome_path = snakemake.params.genome_path
 study_accession = snakemake.params.study_accession
 study_accession.discard("new")
-global_genome_path = snakemake.params.global_genome_path
+public_genome_path = snakemake.params.public_genome_path
 whatsgnu_path = snakemake.input.whatsgnu_results
 assembly_scan_path = snakemake.input.assembly_scan_results
 tab_dir = snakemake.params.tab_dir
@@ -27,7 +27,7 @@ assembly_scan_path_dict = {os.path.basename(path_entry).replace('_assembly_scan.
 
 # Snippy groups with no less than 4 genomes
 # IQtree: It makes no sense to perform bootstrap with less than 4 sequences
-# The sequences include both study genomes and global genomes
+# The sequences include both study genomes and public genomes
 
 hc_group = pd.read_csv(hc_group_path)
 snippy_groups = sorted(hc_group['group'].value_counts().index.tolist())
@@ -35,7 +35,7 @@ snippy_groups = sorted(hc_group['group'].value_counts().index.tolist())
 # This iteration will find the genome with largest N50 as reference 
 # Create the tab files for each group
 # Used for creating the snippy-multi command
-# Only groups with total genome count (study + global) >=4 or group study genome more than 1 
+# Only groups with total genome count (study + public) >=4 or group study genome more than 1 
 # will have tab files created and be included in reference_dict
 reference_dict = {}
 for group in snippy_groups:
@@ -46,12 +46,12 @@ for group in snippy_groups:
         continue
     else:
         group_n50_dict = {}
-        group_global_genomes = set()
+        group_public_genomes = set()
         for genome in group_genomes:
             # N50 for each group genome
             assembly_scan = pd.read_csv(assembly_scan_path_dict[genome], sep='\t', header=None)
             group_n50_dict[genome] = int(assembly_scan[assembly_scan[1] == 'n50_contig_length'].iloc[0, 2])
-            # Introduce top3 global genomes from whatsgnu results for each group genome
+            # Introduce top3 public genomes from whatsgnu results for each group genome
             try:
                 whatsgnu = pd.read_csv(whatsgnu_path_dict[genome], sep='\t', skiprows=1, header=None)
             except pd.errors.EmptyDataError:
@@ -59,7 +59,7 @@ for group in snippy_groups:
                 print(f"WhatsGNU result for genome {genome} is empty. Skipping for this genome.")
                 continue
 
-            # Only keep the global genomes with GCA
+            # Only keep the public genomes with GCA
             whatsgnu = whatsgnu[whatsgnu[0].str.contains('GCA_')]
             if whatsgnu.empty:
                 # Skip if whatsgnu result is empty
@@ -87,12 +87,12 @@ for group in snippy_groups:
             # if none, take none
             top_genomes = list(extracted)[:3]
             
-            group_global_genomes.update(top_genomes)
+            group_public_genomes.update(top_genomes)
             if study_accession: 
-                group_global_genomes = group_global_genomes - study_accession
-        # If the count of global genomes and study genomes together is less than 4, skip
-        # This normally will not happen because each study genome brings in 3 global genomes
-        group_total_genomes_count = len(group_genomes) + len(group_global_genomes)
+                group_public_genomes = group_public_genomes - study_accession
+        # If the count of public genomes and study genomes together is less than 4, skip
+        # This normally will not happen because each study genome brings in 3 public genomes
+        group_total_genomes_count = len(group_genomes) + len(group_public_genomes)
 
         if group_total_genomes_count < 4:
             continue
@@ -105,8 +105,8 @@ for group in snippy_groups:
                 for genome in group_genomes:
                     if genome != reference:
                         f.write(f"{genome}\t{genome_path[genome]}\n")
-                for global_genome in group_global_genomes:
-                    f.write(f"{global_genome}\t{global_genome_path}/{global_genome}.fna\n")
+                for public_genome in group_public_genomes:
+                    f.write(f"{public_genome}\t{public_genome_path}/{public_genome}.fna\n")
 
 # Create the reference.txt file summarizing the reference genome for each group in analysis_groups
 

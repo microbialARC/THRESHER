@@ -1,6 +1,6 @@
-# Strain Identifier - New SNPs: Rerun the full pipeline to update the phylothresholds, and update strain/transmission compositions with new genomes.
+# THRESHER - New SNPs: Rerun the full pipeline to update the phylothresholds, and update strain/transmission compositions with new genomes.
 ```
-thresher strain_identifier new-full -h
+thresher new-full -h
 options:
   -h, --help            show this help message and exit
   --original_metadata ORIGINAL_METADATA
@@ -15,9 +15,9 @@ options:
   --thresher_output THRESHER_OUTPUT
                         Path to the existing THRESHER strain_identifier directory.
                         The existing analysis directory should contain the previous transmission cluster results.
-                        (analysis_mode should be 'full' in the prior run)
+                        (epi_mode should be 'True' in the prior run)
   --output OUTPUT       Path to output directory of new-full analysis.
-                        If not provided, defaults to thresher_strain_identifier_new_full_<YYYY_MM_DD_HHMMSS> under the current working directory.
+                        If not provided, defaults to thresher_new_full_<YYYY_MM_DD_HHMMSS> under the current working directory.
   --species {sau,sepi,cdiff,kp}
                         Bacteria species.
                         Available options: [sau, sepi, cdiff, kp]
@@ -80,11 +80,11 @@ options:
   --correction_bootstrap CORRECTION_BOOTSTRAP
                         Minimum bootstrap support threshold for applying phylogenetic corrections to strain composition (default: 0).
   --endpoint ENDPOINT   The endpoint method to use for determing clusters and making plots.
-                        Available Options: [plateau, peak, discrepancy, global]
+                        Available Options: [plateau, peak, discrepancy, public]
                         plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
                         peak: Phylothreshold set at the peak number of clones defined within the group.
                         discrepancy: Phylothreshold set at the point where the discrepancy is minimized within the group.
-                        global: Phylothreshold set at the first time a global genome is included in any strain within the group.
+                        public: Phylothreshold set at the first time a public genome is included in any strain within the group.
                         Default is plateau.
   --plateau_length PLATEAU_LENGTH
                         The plateau length for the plateau endpoint method.
@@ -118,7 +118,7 @@ options:
 
     - Path to the existing THRESHER strain_identifier directory.
     - The existing analysis directory should contain the previous transmission cluster results.
-    - (analysis_mode should be 'full' in the prior run)
+    - (epi_mode should be 'True' in the prior run)
 
 4. **Species(--species):**
     - Indicate the species being analyzed. Currently supported species include:
@@ -186,11 +186,11 @@ options:
     - Higher thresholds enforce stricter corrections but may reduce the number of corrections applied, particularly in trees with lower overall bootstrap support. The default of 0 applies all possible corrections regardless of bootstrap support, which may be appropriate for small genome groups where high bootstrap values are difficult to achieve. Adjust based on your bootstrap method and resampling depth.
 - **Endpoint Method(--endpoint):**
     - The endpoint method to use for determing clusters and making plots.
-    - Available Options: `plateau`, `peak`, `discrepancy`, `global`
+    - Available Options: `plateau`, `peak`, `discrepancy`, `public`
         - `plateau` : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
         - `peak`: Phylothreshold set at the peak number of clones defined within the group.
         - `discrepancy`: Phylothreshold set at the point where the discrepancy is minimized within the group.
-        - `global`: Phylothreshold set at the first time a global genome is included in any strain within the group.
+        - `public`: Phylothreshold set at the first time a public genome is included in any strain within the group.
     - Default is `plateau`.
 - **Plateau Length(--plateau_length):**
     - The plateau length for the plateau endpoint method.

@@ -5,7 +5,7 @@ rule plot_cluster_plots:
         mrsa_results = [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_strains.csv")] if config["species"] == "sau" else [],
         peak_strains_rds = os.path.join(config["output"], "thresher", "output",  "peak_strains.RDS"),
         plateau_strains_rds = os.path.join(config["output"], "thresher", "output",  "plateau_strains.RDS"),
-        global_strains_rds = os.path.join(config["output"],  "thresher", "output", "global_strains.RDS"),
+        public_strains_rds = os.path.join(config["output"],  "thresher", "output", "public_strains.RDS"),
         discrepancy_strains_rds = os.path.join(config["output"],  "thresher", "output", "discrepancy_strains.RDS"),
         mlst_results = os.path.join(config["output"], "mlst","summary","mlst_results.csv")
     output:

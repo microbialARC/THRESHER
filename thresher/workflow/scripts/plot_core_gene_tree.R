@@ -1,10 +1,10 @@
-# Function to visualize the comprehensive-tree annotated with HC groups and MLST ----
-comprehensive_tree_visual <- function(comprehensive_tree_path,
-                                      hc_groups_path,
-                                      mlst_path,
-                                      genome_species,
-                                      output_dir,
-                                      ncores){
+# Function to visualize the core-gene tree annotated with HC groups and MLST ----
+core_gene_tree_visual <- function(core_gene_tree_path,
+                                  hc_groups_path,
+                                  mlst_path,
+                                  genome_species,
+                                  output_dir,
+                                  ncores){
   setwd(dir = output_dir)
   # Libraries
   library(ggplot2)
@@ -18,11 +18,11 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
   library(parallel)
   
   # read the tree
-  comprehensive_tree <- ape::read.tree(comprehensive_tree_path)
+  core_gene_tree <- ape::read.tree(core_gene_tree_path)
   # mid-point rooting of the tree
-  comprehensive_tree <- phytools::midpoint_root(comprehensive_tree)
+  core_gene_tree <- phytools::midpoint_root(core_gene_tree)
   # pre-order the tree
-  comprehensive_tree <- Preorder(comprehensive_tree)
+  core_gene_tree <- Preorder(core_gene_tree)
   # Read HC groups 
   hc_group_df <- read.csv(hc_groups_path,
                         sep = ",",
@@ -30,7 +30,7 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
   # Read MLST
   mlst_df <- read.csv(mlst_path,sep = "\t",header = TRUE)
   # Find the node of the HC groups
-  all_nodes <- (length(comprehensive_tree$tip.label) + 1):(length(comprehensive_tree$tip.label) + comprehensive_tree$Nnode)
+  all_nodes <- (length(core_gene_tree$tip.label) + 1):(length(core_gene_tree$tip.label) + core_gene_tree$Nnode)
   
   hc_groups_node <- do.call(rbind,
                             mclapply(sort(unique(hc_group_df$group)),
@@ -44,16 +44,16 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
                                          group_node <- unlist(sapply(all_nodes,
                                                                      function(node){
                                                                        
-                                                                       sub_comprehensive_tree <- Subtree(comprehensive_tree,node)
+                                                                       sub_core_gene_tree <- Subtree(core_gene_tree,node)
                                                                        
-                                                                       if(identical(sort(sub_comprehensive_tree$tip.label),
+                                                                       if(identical(sort(sub_core_gene_tree$tip.label),
                                                                                     sort(group_genome))){
                                                                          return(node)
                                                                        }
                                                                      }))
                                        }else{
                                          
-                                         group_node <- which(comprehensive_tree$tip.label == group_genome)
+                                         group_node <- which(core_gene_tree$tip.label == group_genome)
                                          
                                        }
                                        
@@ -106,7 +106,7 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
                          levels = c(mlst_levels, "Unassigned"))
 
   # Size-adaptive parameters based on number of tips
-  n_tips <- length(comprehensive_tree$tip.label)
+  n_tips <- length(core_gene_tree$tip.label)
   # PDF dimensions: scale with sqrt(n_tips) so size grows but doesn't explode.
   pdf_size <- max(7.5, min(40, 7.5 * sqrt(n_tips / 100)))
   pdf_width <- pdf_size
@@ -122,7 +122,7 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
 
   # Visualize the tree with ggtree
   
-  circular_tree <- ggtree(comprehensive_tree,
+  circular_tree <- ggtree(core_gene_tree,
                           aes(color = as.numeric(label),
                               subset = !isTip & !is.na(as.numeric(label))),
                           layout = "fan",
@@ -195,29 +195,29 @@ comprehensive_tree_visual <- function(comprehensive_tree_path,
     )
     
   # Export circular tree annotated with MLST
-  pdf(file=snakemake@output[["comprehensive_tree_mlst_pdf"]],
+  pdf(file=snakemake@output[["core_gene_tree_mlst_pdf"]],
       width=pdf_width,
       height=pdf_height)
   print(circular_tree_MLST)
   dev.off()
   
   saveRDS(circular_tree_MLST,
-          snakemake@output[["comprehensive_tree_mlst_rds"]])
+          snakemake@output[["core_gene_tree_mlst_rds"]])
  
   # Export circular tree annotated with HC group
-  pdf(file=snakemake@output[["comprehensive_tree_group_pdf"]],
+  pdf(file=snakemake@output[["core_gene_tree_group_pdf"]],
       width=pdf_width,
       height=pdf_height)
   print(circular_tree_group)
   dev.off()
   
   saveRDS(circular_tree_group,
-          snakemake@output[["comprehensive_tree_group_rds"]])
+          snakemake@output[["core_gene_tree_group_rds"]])
   
 }
 
 # Import from Snakemake
-comprehensive_tree_path <- snakemake@input[["contree"]]
+core_gene_tree_path <- snakemake@input[["contree"]]
 hc_groups_path <- snakemake@input[["hc_groups"]]
 mlst_path <- snakemake@input[["mlst_results"]]
 genome_species = snakemake@params[["genome_species"]]
@@ -228,7 +228,7 @@ if(!dir.exists(output_dir)){
   dir.create(output_dir,recursive = TRUE)
   }
 # Execute the function
-comprehensive_tree_visual(comprehensive_tree_path,
+core_gene_tree_visual(core_gene_tree_path,
                           hc_groups_path,
                           mlst_path,
                           genome_species,

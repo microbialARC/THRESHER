@@ -100,7 +100,7 @@ original_mlst_results_path <- snakemake@params[["original_mlst_results"]]
 peak_strains_rds_path <- snakemake@input[["peak_strains_rds"]]
 plateau_strains_rds_path <- snakemake@input[["plateau_strains_rds"]]
 discrepancy_strains_rds_path <- snakemake@input[["discrepancy_strains_rds"]]
-global_strains_rds_path <- snakemake@input[["global_strains_rds"]]
+public_strains_rds_path <- snakemake@input[["public_strains_rds"]]
 
 # Input ----
 original_cluster_sum <- readRDS(file.path(thresher_output,"thresher","output","clusters_summary.RDS"))
@@ -113,7 +113,7 @@ strains_rds <- switch(
   endpoint,
   "plateau" = readRDS(plateau_strains_rds_path),
   "peak" = readRDS(peak_strains_rds_path),
-  "global" = readRDS(global_strains_rds_path),
+  "public" = readRDS(public_strains_rds_path),
   "discrepancy" = readRDS(discrepancy_strains_rds_path)
 )
 # Combine original and new metadata

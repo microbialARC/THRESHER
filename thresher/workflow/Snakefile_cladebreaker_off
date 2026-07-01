@@ -13,27 +13,27 @@ rule all:
         os.path.join(config["output"], "thresher", "output", "peak_strains.csv"),
         os.path.join(config["output"], "thresher", "output", "discrepancy_strains.RDS"),
         os.path.join(config["output"], "thresher", "output", "discrepancy_strains.csv"),
-        os.path.join(config["output"], "thresher", "output", "global_strains.RDS"),
-        os.path.join(config["output"], "thresher", "output", "global_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "public_strains.RDS"),
+        os.path.join(config["output"], "thresher", "output", "public_strains.csv"),
         os.path.join(config["output"], "thresher", "output", "group_plateau.csv"),
         os.path.join(config["output"], "thresher", "output", "group_peak.csv"),
         os.path.join(config["output"], "thresher", "output", "group_discrepancy.csv"),
-        os.path.join(config["output"], "thresher", "output", "group_global.csv"),
+        os.path.join(config["output"], "thresher", "output", "group_public.csv"),
         # Multi-SNP-Threshold Plot
         os.path.join(config["output"], "thresher", "output", "MSTP","MSTP.RDS"),
         # Strain Composition indicated by Tree + SNP Heatmap for four endpoint methods
         os.path.join(config["output"], "plots", "strain_compositions","plateau","plateau_strain_tree_snp.RDS"),
         os.path.join(config["output"], "plots", "strain_compositions","peak","peak_strain_tree_snp.RDS"),
         os.path.join(config["output"], "plots", "strain_compositions","discrepancy","discrepancy_strain_tree_snp.RDS"),
-        os.path.join(config["output"], "plots", "strain_compositions","global","global_strain_tree_snp.RDS"),
+        os.path.join(config["output"], "plots", "strain_compositions","public","public_strain_tree_snp.RDS"),
         # Thresher QC
         os.path.join(config["output"], "thresher", "output", "QC", "plateau_qc_plot.pdf"),
         os.path.join(config["output"], "thresher", "output", "QC", "peak_qc_plot.pdf"),
-        os.path.join(config["output"], "thresher", "output", "QC", "global_qc_plot.pdf"),
+        os.path.join(config["output"], "thresher", "output", "QC", "public_qc_plot.pdf"),
         os.path.join(config["output"], "thresher", "output", "QC", "discrepancy_qc_plot.pdf"),
         os.path.join(config["output"], "thresher", "output", "QC", "plateau_qc_table.csv"),
         os.path.join(config["output"], "thresher", "output", "QC", "peak_qc_table.csv"),
-        os.path.join(config["output"], "thresher", "output", "QC", "global_qc_table.csv"),
+        os.path.join(config["output"], "thresher", "output", "QC", "public_qc_table.csv"),
         os.path.join(config["output"], "thresher", "output", "QC", "discrepancy_qc_table.csv")
 
 include: os.path.join(BASE_PATH, "rules", "thresher_input_cladebreaker_off.smk")

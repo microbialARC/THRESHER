@@ -43,9 +43,9 @@ get_strain_compositions_plot <- function(endpoint_method,
                                          plateau_strains_rds_path,
                                          peak_strains_rds_path,
                                          discrepancy_strains_rds_path,
-                                         global_strains_rds_path,
+                                         public_strains_rds_path,
                                          study_snp_matrix_path,
-                                         global_snp_matrix_path,
+                                         public_snp_matrix_path,
                                          group_tree_path,
                                          use_cladebreaker,
                                          output_dir){
@@ -58,9 +58,9 @@ get_strain_compositions_plot <- function(endpoint_method,
   setwd(dir = plot_export_dir)
   
   
-  # Combining Study and Global SNP Matrix 
+  # Combining Study and Public SNP Matrix 
   combined_snp_matrix <- rbind(readRDS(study_snp_matrix_path),
-                               readRDS(global_snp_matrix_path))
+                               readRDS(public_snp_matrix_path))
   
   
   # thresher strain depending on the endpoint method
@@ -70,7 +70,7 @@ get_strain_compositions_plot <- function(endpoint_method,
     "plateau" = plateau_strains_rds_path,
     "peak" = peak_strains_rds_path,
     "discrepancy" = discrepancy_strains_rds_path,
-    "global" = global_strains_rds_path
+    "public" = public_strains_rds_path
   )
   
   thresher_strain <- readRDS(thresher_strain_path)
@@ -91,10 +91,10 @@ get_strain_compositions_plot <- function(endpoint_method,
       select(group,discrepancy) %>%
       rename(group = group,
              phylothreshold = discrepancy),
-    "global" = thresher_strain$global %>% 
-      select(group,global) %>%
+    "public" = thresher_strain$public %>% 
+      select(group,public) %>%
       rename(group = group,
-             phylothreshold = global)
+             phylothreshold = public)
   )
 
   # Get the paths to the tree of each HC group
@@ -128,9 +128,9 @@ get_strain_compositions_plot <- function(endpoint_method,
     thresher_clones <- names(which(table(thresher_strain_df$strain_id[thresher_strain_df$genome %in% group_total_genomes]) > 1))
     
     # Generate annotation data frame mapping phylogenetic tree nodes to THRESHER-identified strains
-    # When use_cladebreaker is TRUE, strain compositions exclude global genomes (cladebreakers)
-    # reflecting the hypothesis of hyper-local transmission where global genomes should not be considered the same strain
-    # with local strains. When FALSE, global genomes are included in strain composition,
+    # When use_cladebreaker is TRUE, strain compositions exclude public genomes (cladebreakers)
+    # reflecting the hypothesis of hyper-local transmission where public genomes should not be considered the same strain
+    # with local strains. When FALSE, public genomes are included in strain composition,
     # allowing for the situation where the genomes deposited at NCBI GenBank could also be the same strain with study genomes
     
     group_tree_annotation_df <- do.call(rbind,
@@ -145,7 +145,7 @@ get_strain_compositions_plot <- function(endpoint_method,
                                                                         node_genomes <- if(use_cladebreaker){
                                                                           node_entry$genomes
                                                                         }else if(!use_cladebreaker){
-                                                                          # Exclude global genomes from node only when use_cladebreaker is FALSE
+                                                                          # Exclude public genomes from node only when use_cladebreaker is FALSE
                                                                           node_entry$genomes[!grepl("GCA_|GCF_", node_entry$genomes)]
                                                                         }
                                                                         
@@ -176,7 +176,7 @@ get_strain_compositions_plot <- function(endpoint_method,
       
       if(!use_cladebreaker){
         # If cladebreaker is not used 
-        # The same strain could be mapped to multiple nodes due to global genomes inclusion
+        # The same strain could be mapped to multiple nodes due to public genomes inclusion
         # So we pick the node with least genomes
         group_tree_annotation_df <- group_tree_annotation_df %>%
           group_by(strain_id) %>%
@@ -244,11 +244,11 @@ get_strain_compositions_plot <- function(endpoint_method,
                   as_ylab = TRUE,
                   align = TRUE) +
       geom_tippoint(aes(color = ifelse(grepl("GCA_", label),
-                                       "Global",
+                                       "Public",
                                        "Study")),
                     size = tippoint_size,
                     alpha = 1) +
-      scale_color_manual(values = c("Global" = "#786452", "Study" = "#41b6e6")) +
+      scale_color_manual(values = c("Public" = "#786452", "Study" = "#41b6e6")) +
       labs(color = "Genome Category") +
       # Add phylothreshold annotation
       annotate("text",
@@ -324,8 +324,8 @@ get_strain_compositions_plot <- function(endpoint_method,
     # Create the SNP distance heatmap
     
     # Get the dataframe for making the heatmap 
-    # In the heatmap, the snp distance between study genomes and the global genomes are not shown
-    # because in the hypothesis we are not considering study and global genomes are not the same strain in hyper local transmission 
+    # In the heatmap, the snp distance between study genomes and the public genomes are not shown
+    # because in the hypothesis we are not considering study and public genomes are not the same strain in hyper local transmission 
     
     group_tree_snp_matrix <- combined_snp_matrix %>%
       filter(
@@ -385,32 +385,32 @@ get_strain_compositions_plot <- function(endpoint_method,
         row_genome = factor(row_genome, levels = rev(all_tip_order))
       )
     
-    # Another SNP matrix containing study genomes compared to each of their top 3 global genomes
-    global_heatmap_df <- do.call(rbind,
+    # Another SNP matrix containing study genomes compared to each of their top 3 public genomes
+    public_heatmap_df <- do.call(rbind,
                                  lapply(study_tip_order,
                                         function(genome_entry){
                                           
-                                          global_genome_entry <- grep("GCA_|GCF",group_tree_snp_matrix$query[
+                                          public_genome_entry <- grep("GCA_|GCF",group_tree_snp_matrix$query[
                                             group_tree_snp_matrix$subject == genome_entry
                                           ],
                                           value = TRUE)
 
-                                          # If there is no global genome entry, return NULL
-                                          if(length(global_genome_entry) == 0){
+                                          # If there is no public genome entry, return NULL
+                                          if(length(public_genome_entry) == 0){
                                             return(NULL)
                                           }else{
                                             return(
                                               data.frame(
                                             column_genome = genome_entry,
-                                            row_genome = global_genome_entry,
-                                            gsnp = sapply(global_genome_entry,
+                                            row_genome = public_genome_entry,
+                                            gsnp = sapply(public_genome_entry,
                                                           function(row_genome_entry){
                                                             group_tree_snp_matrix$gsnp[
                                                               group_tree_snp_matrix$subject == genome_entry &
                                                                 group_tree_snp_matrix$query == row_genome_entry
                                                             ]
                                                           }),
-                                            snp_quality = sapply(global_genome_entry,
+                                            snp_quality = sapply(public_genome_entry,
                                                                  function(row_genome_entry){
                                                                    group_tree_snp_matrix$snp_quality[
                                                                      group_tree_snp_matrix$subject == genome_entry &
@@ -425,7 +425,7 @@ get_strain_compositions_plot <- function(endpoint_method,
                                           
                                         }))
     
-    global_heatmap_df <- global_heatmap_df %>%
+    public_heatmap_df <- public_heatmap_df %>%
       mutate(
         column_genome = factor(column_genome, levels = study_tip_order),
         row_genome = factor(row_genome, levels = rev(all_tip_order))
@@ -442,8 +442,8 @@ get_strain_compositions_plot <- function(endpoint_method,
                 size = snp_text_size,
                 fontface = "bold",
                 show.legend = TRUE) +
-      # Text of study genomes compared to their top global genomes (cladebreaker)
-      geom_text(data = global_heatmap_df,
+      # Text of study genomes compared to their top public genomes (cladebreaker)
+      geom_text(data = public_heatmap_df,
                 aes(x = column_genome,
                     y = row_genome,
                     label = gsnp,
@@ -504,12 +504,12 @@ get_strain_compositions_plot <- function(endpoint_method,
 plateau_strains_rds_path <- snakemake@input[["plateau_strains_rds"]]
 peak_strains_rds_path <- snakemake@input[["peak_strains_rds"]]
 discrepancy_strains_rds_path <- snakemake@input[["discrepancy_strains_rds"]]
-global_strains_rds_path <- snakemake@input[["global_strains_rds"]]
+public_strains_rds_path <- snakemake@input[["public_strains_rds"]]
 # Paths to ML trees of different groups
 group_tree_path <- snakemake@input[["iqtree_group_path"]]
-# Paths to study and global SNP matrices
+# Paths to study and public SNP matrices
 study_snp_matrix_path <- snakemake@input[["study_snp_matrix"]]
-global_snp_matrix_path <- snakemake@input[["global_snp_matrix"]]
+public_snp_matrix_path <- snakemake@input[["public_snp_matrix"]]
 # Whether or not to perfrom cladebreaker
 use_cladebreaker <- snakemake@params[["use_cladebreaker"]]
 use_cladebreaker <- as.logical(use_cladebreaker)
@@ -523,9 +523,9 @@ plateau_plots_rds <- get_strain_compositions_plot(
   plateau_strains_rds_path = plateau_strains_rds_path,
   peak_strains_rds_path = peak_strains_rds_path,
   discrepancy_strains_rds_path = discrepancy_strains_rds_path,
-  global_strains_rds_path = global_strains_rds_path,
+  public_strains_rds_path = public_strains_rds_path,
   study_snp_matrix_path = study_snp_matrix_path,
-  global_snp_matrix_path = global_snp_matrix_path,
+  public_snp_matrix_path = public_snp_matrix_path,
   group_tree_path = group_tree_path,
   use_cladebreaker = use_cladebreaker,
   output_dir = output_dir
@@ -540,9 +540,9 @@ peak_plots_rds <- get_strain_compositions_plot(
   plateau_strains_rds_path = plateau_strains_rds_path,
   peak_strains_rds_path = peak_strains_rds_path,
   discrepancy_strains_rds_path = discrepancy_strains_rds_path,
-  global_strains_rds_path = global_strains_rds_path,
+  public_strains_rds_path = public_strains_rds_path,
   study_snp_matrix_path = study_snp_matrix_path,
-  global_snp_matrix_path = global_snp_matrix_path,
+  public_snp_matrix_path = public_snp_matrix_path,
   group_tree_path = group_tree_path,
   use_cladebreaker = use_cladebreaker,
   output_dir = output_dir
@@ -557,9 +557,9 @@ discrepancy_plots_rds <- get_strain_compositions_plot(
   plateau_strains_rds_path = plateau_strains_rds_path,
   peak_strains_rds_path = peak_strains_rds_path,
   discrepancy_strains_rds_path = discrepancy_strains_rds_path,
-  global_strains_rds_path = global_strains_rds_path,
+  public_strains_rds_path = public_strains_rds_path,
   study_snp_matrix_path = study_snp_matrix_path,
-  global_snp_matrix_path = global_snp_matrix_path,
+  public_snp_matrix_path = public_snp_matrix_path,
   group_tree_path = group_tree_path,
   use_cladebreaker = use_cladebreaker,
   output_dir = output_dir
@@ -568,19 +568,19 @@ discrepancy_plots_rds <- get_strain_compositions_plot(
 saveRDS(discrepancy_plots_rds,
         file = file.path(output_dir,"discrepancy","discrepancy_strain_tree_snp.RDS"))
 
-# Global
-global_plots_rds <- get_strain_compositions_plot(
-  endpoint_method = "global",
+# Public
+public_plots_rds <- get_strain_compositions_plot(
+  endpoint_method = "public",
   plateau_strains_rds_path = plateau_strains_rds_path,
   peak_strains_rds_path = peak_strains_rds_path,
   discrepancy_strains_rds_path = discrepancy_strains_rds_path,
-  global_strains_rds_path = global_strains_rds_path,
+  public_strains_rds_path = public_strains_rds_path,
   study_snp_matrix_path = study_snp_matrix_path,
-  global_snp_matrix_path = global_snp_matrix_path,
+  public_snp_matrix_path = public_snp_matrix_path,
   group_tree_path = group_tree_path,
   use_cladebreaker = use_cladebreaker,
   output_dir = output_dir
 )
 
-saveRDS(global_plots_rds,
-        file = file.path(output_dir,"global","global_strain_tree_snp.RDS"))
+saveRDS(public_plots_rds,
+        file = file.path(output_dir,"public","public_strain_tree_snp.RDS"))

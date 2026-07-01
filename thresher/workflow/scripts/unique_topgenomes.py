@@ -32,7 +32,7 @@ for genome_entry in unique_topgenomes:
 unique_topgenomes = extracted
 # Make unique_topgenomes unique
 unique_topgenomes = set(unique_topgenomes)
-# Remove the study genomes when they are present in the global genome database
+# Remove the study genomes when they are present in the public genome database
 study_accession.discard("new")
 if study_accession:
     unique_topgenomes = unique_topgenomes - study_accession

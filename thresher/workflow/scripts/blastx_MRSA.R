@@ -113,7 +113,7 @@ raw_dir <- snakemake@params[["raw_dir"]]
 summary_dir <- snakemake@params[["summary_dir"]]
 plateau_strains_rds_path <- snakemake@input[["plateau_strains_rds"]]
 peak_strains_rds_path <- snakemake@input[["peak_strains_rds"]]
-global_strains_rds_path <- snakemake@input[["global_strains_rds"]]
+public_strains_rds_path <- snakemake@input[["public_strains_rds"]]
 discrepancy_strains_rds_path <- snakemake@input[["discrepancy_strains_rds"]]
 
 endpoint <- snakemake@params[["endpoint"]]
@@ -122,8 +122,8 @@ if(endpoint == "plateau"){
   strains <- readRDS(plateau_strains_rds_path)[["strains"]]
 }else if(endpoint == "peak"){
   strains <- readRDS(peak_strains_rds_path)[["strains"]]
-}else if(endpoint == "global"){
-  strains <- readRDS(global_strains_rds_path)[["strains"]]
+}else if(endpoint == "public"){
+  strains <- readRDS(public_strains_rds_path)[["strains"]]
 }else if(endpoint == "discrepancy"){
   strains <- readRDS(discrepancy_strains_rds_path)[["strains"]]
 }

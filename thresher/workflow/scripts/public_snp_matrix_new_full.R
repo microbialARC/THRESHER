@@ -15,8 +15,8 @@ parse_genome_name <- function(original_name) {
   }
   trimws(parsed_name, whitespace = "_")
 } 
-# Function to summarize concatenated report and update the global snps matrix
-update_global_snp_matrix <- function(output_list,
+# Function to summarize concatenated report and update the public snps matrix
+update_public_snp_matrix <- function(output_list,
                                      metadata,
                                      original_snp_matrix_path,
                                      actual_download_topgenomes_path,
@@ -49,9 +49,9 @@ update_global_snp_matrix <- function(output_list,
                                      reference_genome_path <- strsplit(ori_output_df$V1[4*n-3],
                                                                        split = " ")[[1]][1]
                                      
-                                     # If the genome was downloaded to datasets_topgenomes, it is a global genome
+                                     # If the genome was downloaded to datasets_topgenomes, it is a public genome
                                      reference_genome_name <- if(grepl("GCA_",reference_genome_path) && grepl("datasets_topgenomes",reference_genome_path)){
-                                       # If reference is global genome, use the base name without extension
+                                       # If reference is public genome, use the base name without extension
                                        tools::file_path_sans_ext(basename(reference_genome_path))
                                        
                                      }else{
@@ -64,10 +64,10 @@ update_global_snp_matrix <- function(output_list,
                                      #query
                                      query_genome_path <- strsplit(ori_output_df$V1[4*n-3],
                                                                    split = " ")[[1]][2]
-                                     # If the genome was downloaded to datasets_topgenomes, it is a global genome
+                                     # If the genome was downloaded to datasets_topgenomes, it is a public genome
 
                                      query_genome_name <- if(grepl("GCA_",query_genome_path) && grepl("datasets_topgenomes",query_genome_path)){
-                                       # If reference is global genome, use the base name without extension
+                                       # If reference is public genome, use the base name without extension
                                        tools::file_path_sans_ext(basename(query_genome_path))
                                        
                                      }else{
@@ -108,8 +108,8 @@ update_global_snp_matrix <- function(output_list,
   sum_snp_df <- unique(sum_snp_df)
   
   ## Remove redundancy and calculate the mean ----
-  # Unlike the study_snp_matrix, in the global_snp_matrix, the reference is always the study genome
-  # While the query is always the global genome
+  # Unlike the study_snp_matrix, in the public_snp_matrix, the reference is always the study genome
+  # While the query is always the public genome
   # Thus there is a different way to create the dataframe without redundancy
   unique_comparisons <- do.call(rbind,
                                 lapply(whatsgnu_list,
@@ -150,7 +150,7 @@ update_global_snp_matrix <- function(output_list,
                                          }
                                        }))
   
-  # Only keep those global genomes that are actually downloaded
+  # Only keep those public genomes that are actually downloaded
   actual_download_topgenomes <- unique(readLines(actual_download_topgenomes_path))
   unique_comparisons <- unique_comparisons[unique_comparisons$query %in% actual_download_topgenomes,]
   
@@ -190,14 +190,14 @@ update_global_snp_matrix <- function(output_list,
                                         },
                                         mc.cores = ncores))
   
-  ## Update the original SNP matrix to get the updated global SNP matrix using new_full mode  ----
+  ## Update the original SNP matrix to get the updated public SNP matrix using new_full mode  ----
   original_snp_matrix <- readRDS(original_snp_matrix_path)
   
-  global_snp_martix_new <- rbind(sum_snp_df_unique,
+  public_snp_martix_new <- rbind(sum_snp_df_unique,
                                  original_snp_matrix)
   
   # Return the matrix 
-  return(global_snp_martix_new)
+  return(public_snp_martix_new)
   
 }
 
@@ -235,8 +235,8 @@ actual_download_topgenomes_path <- snakemake@input[["actual_download_topgenomes"
 
 ncores <- snakemake@threads
 
-# Execute the function to get updated global_snp_matrix
-global_snp_martix_new <- update_global_snp_matrix(output_list = output_list,
+# Execute the function to get updated public_snp_matrix
+public_snp_martix_new <- update_public_snp_matrix(output_list = output_list,
                                                   metadata = metadata,
                                                   original_snp_matrix_path = original_snp_matrix_path,
                                                   actual_download_topgenomes_path = actual_download_topgenomes_path,
@@ -245,6 +245,6 @@ global_snp_martix_new <- update_global_snp_matrix(output_list = output_list,
                                                   ncores = ncores)
 
 # Save the matrix in RDS format
-saveRDS(global_snp_martix_new,
-        snakemake@output[["global_snp_matrix_new"]])
+saveRDS(public_snp_martix_new,
+        snakemake@output[["public_snp_matrix_new"]])
 

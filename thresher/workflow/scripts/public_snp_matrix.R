@@ -77,9 +77,9 @@ concatenate_output <- function(i){
       #reference
       reference_genome_path <- strsplit(ori_output_df$V1[4*n-3],
                                         split = " ")[[1]][1]
-      # If the genome was downloaded to datasets_topgenomes, it is a global genome
+      # If the genome was downloaded to datasets_topgenomes, it is a public genome
       reference_genome_name <- if(grepl("GCA_",reference_genome_path) && grepl("datasets_topgenomes",reference_genome_path)){
-        # If reference is global genome, use the base name without extension
+        # If reference is public genome, use the base name without extension
         tools::file_path_sans_ext(basename(reference_genome_path))
         
       }else{
@@ -92,9 +92,9 @@ concatenate_output <- function(i){
       #query
       query_genome_path <- strsplit(ori_output_df$V1[4*n-3],
                                     split = " ")[[1]][2]
-      # If the genome was downloaded to datasets_topgenomes, it is a global genome
+      # If the genome was downloaded to datasets_topgenomes, it is a public genome
       query_genome_name <- if(grepl("GCA_",query_genome_path) && grepl("datasets_topgenomes",query_genome_path)){
-        # If reference is global genome, use the base name without extension
+        # If reference is public genome, use the base name without extension
         tools::file_path_sans_ext(basename(query_genome_path))
         
       }else{
@@ -183,7 +183,7 @@ unique_comparisons <- do.call(rbind,
                                        }
                                      }))
 
-# Only keep those global genomes that are actually downloaded
+# Only keep those public genomes that are actually downloaded
 unique_comparisons <- unique_comparisons[unique_comparisons$query %in% actual_download_topgenomes,]
 
 #now calculate the snp distance mean(SNPa,SNPb)
@@ -235,4 +235,4 @@ stopCluster(cl)
 rm(cl)
 
 saveRDS(sum_snp_df_unique,
-        snakemake@output[["global_snp_matrix"]])
+        snakemake@output[["public_snp_matrix"]])

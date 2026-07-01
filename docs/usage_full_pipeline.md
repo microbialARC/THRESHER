@@ -1,6 +1,6 @@
-# Strain Identifier - Full Pipeline: Run the complete analysis pipeline from scratch.
+# THRESHER - Full Pipeline: Run the complete analysis pipeline from scratch.
 ```
-thresher strain_identifier full-pipeline -h
+thresher full -h
 
 options:
   -h, --help            show this help message and exit
@@ -10,7 +10,7 @@ options:
                         5 columns: genome_name, genome_accession, genome_path, patient_id, collection_date
                         At least 4 genomes should be provided to perform the analysis.
   -o OUTPUT, --output OUTPUT
-                        Path to output directory. If not provided, defaults to thresher_strain_identifier_output_<YYYY_MM_DD_HHMMSS> under the current working directory.
+                        Path to output directory. If not provided, defaults to thresher_full_output_<YYYY_MM_DD_HHMMSS> under the current working directory.
   --species {sau,sepi,cdiff,kp}
                         Bacteria species.
                         Available options: [sau, sepi, cdiff, kp]
@@ -18,12 +18,13 @@ options:
                         sepi: Staphylococcus epidermidis
                         cdiff: Clostridium difficile
                         kp: Klebsiella pneumoniae
-  --analysis_mode ANALYSIS_MODE
-                        Whether to make cluster plots and persistence plot.
-                        Available Options: [full, lite]
-                        full: Determine strains, clusters and make plots.
-                        lite: Determine strains without determing clusters and making plots.
-                        Default is full
+  --epi_mode [True, False]
+                        Whether to perform epidemiological analysis.
+                        Available Options: [True, False]
+                        True: Determine strains, clusters and make plots.
+                        False: Determine strains without determing clusters and making plots.
+                        Default is True
+                        
   --whatsgnu_db_path WHATSGNU_DB_PATH
                         The path to the existing WhatsGNU database.
                         If provided, the WhatsGNU database will not be downloaded.
@@ -79,11 +80,11 @@ options:
                         The SNP distance threshold above which every genome in the group is considered a singleton.
                         Default is 100.
   --endpoint ENDPOINT   The endpoint method to use for determing clusters and making plots.
-                        Available Options: [plateau, peak, discrepancy, global]
+                        Available Options: [plateau, peak, discrepancy, public]
                         plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
                         peak: Phylothreshold set at the peak number of clones defined within the group.
                         discrepancy: Phylothreshold set at the point where the discrepancy is minimized within the group.
-                        global: Phylothreshold set at the first time a global genome is included in any strain within the group.
+                        public: Phylothreshold set at the first time a public genome is included in any strain within the group.
                         Default is plateau.
   --plateau_length PLATEAU_LENGTH
                         The plateau length for the plateau endpoint method. Default is 15.
@@ -127,11 +128,13 @@ options:
 
 ## Optional Input
 1. **Output Directory(--output):**
-   - Path to the output directory. If not provided, defaults to `thresher_strain_identifier_output_<YYYY_MM_DD_HHMMSS>` under the current working directory.
-2. **Analysis Mode(--analysis_mode):**
-   - Choose between `full` (default) and `lite` modes.
-   - `full`: Determines strains, clusters, and generates plots.
-   - `lite`: Determines strains without determining clusters or generating plots.
+   - Path to the output directory. If not provided, defaults to `thresher_full_output_<YYYY_MM_DD_HHMMSS>` under the current working directory.
+2. **Epidemiological Mode(--epi_mode):**
+   - Choose between `True` (default) and `False` modes.
+   - `True`: Determines strains, clusters, and generates plots.
+   - `False`: Determines strains without determining clusters or generating plots.
+   
+   This mode is only enabled when the input metadata file contains patient ID and collection date columns. If these columns are missing, the pipeline will automatically switch to `False` mode, regardless of the user's selection.
 3. **WhatsGNU Database Path(--whatsgnu_db_path):**
     - Path to an existing WhatsGNU database. If not provided, the database will be downloaded
       to `<OUTPUT>/whatsgnu/db`.
@@ -166,11 +169,11 @@ options:
     - Minimum bootstrap support required to apply phylogenetic corrections to SNP strain composition (default: 0). Nodes with bootstrap values below this threshold are excluded from correction, except for the root node which is always retained.
     - Higher thresholds enforce stricter corrections but may reduce the number of corrections applied, particularly in trees with lower overall bootstrap support. The default of 0 applies all possible corrections regardless of bootstrap support, which may be appropriate for small genome groups where high bootstrap values are difficult to achieve. Adjust based on your bootstrap method and resampling depth.
 13. **Endpoint Method(--endpoint):**
-    - Choose the endpoint method for determining clusters and generating plots. Options include `plateau` (default), `peak`, `discrepancy`, and `global`.
+    - Choose the endpoint method for determining clusters and generating plots. Options include `plateau` (default), `peak`, `discrepancy`, and `public`.
     - `plateau`: Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group.
     - `peak`: Phylothreshold set at the peak number of clones defined within the group.
     - `discrepancy`: Phylothreshold set at the point where the discrepancy is minimized within the group.
-    - `global`: Phylothreshold set at the first time a global genome is included in any strain within the group.
+    - `public`: Phylothreshold set at the first time a public genome is included in any strain within the group.
 14. **Plateau Length(--plateau_length):**
     - Specify the plateau length for the plateau endpoint method (default is 15). Only used when the endpoint method is `plateau`.
 15. **Threads(--threads / -t):**
@@ -219,14 +222,14 @@ options:
 
 6. **Pair-wise comparison using Mummer4:**
   - Study concatenated reports: `mummer4_study/{genome_name}_concatenated.report`
-  - Global concatenated reports: `mummer4_global/{genome_name}_concatenated.report`
-  - Global SNP matrix: `mummer4_global/global_snp_matrix.RDS`
+  - public concatenated reports: `mummer4_public/{genome_name}_concatenated.report`
+  - public SNP matrix: `mummer4_public/public_snp_matrix.RDS`
   - Study SNP matrix: `mummer4_study/study_snp_matrix.RDS`
 
 7. **WhatsGNU:**
   - `whatsgnu/{genome_name}/{genome_name}_WhatsGNU_topgenomes.txt`
 
-8. **Global genomes downloaded using Datasets:**
+8. **Public genomes downloaded using Datasets:**
   - `datasets_topgenomes/`
 
 9. **Pan-genome analysis using Panaroo:**
@@ -237,8 +240,8 @@ options:
   - Snippy core-genome alignments: `snippy/output/cleaned_aln/`
 
 11. **IQTree:**
-  - Comprehensive tree:
-    - `iqtree/comprehensive_tree/`
+  - Core gene tree:
+    - `iqtree/core_gene_tree/`
   - Group trees:
     - `iqtree/group_tree/`
 
@@ -267,9 +270,9 @@ The strain composition files generated by all 4 endpoint methods contain the fol
   - Discrepancy strains:
     - `thresher/output/discrepancy_strains.RDS`
     - `thresher/output/discrepancy_strains.csv`
-  - Global strains:
-    - `thresher/output/global_strains.RDS`
-    - `thresher/output/global_strains.csv`
+  - Public strains:
+    - `thresher/output/public_strains.RDS`
+    - `thresher/output/public_strains.csv`
   - Group-specific thresholds:
     - Plateau thresholds: `thresher/output/group_plateau.csv`
       - Columns included in the group-specific thresholds csv files:
@@ -284,20 +287,20 @@ The strain composition files generated by all 4 endpoint methods contain the fol
       - Columns included in the group-specific thresholds csv files:
         - group: Hierarchical clustering group ID
         - discrepancy: Phylothreshold determined for the group using the discrepancy endpoint method.
-    - Global thresholds: `thresher/output/group_global.csv`
+    - Public thresholds: `thresher/output/group_public.csv`
       - Columns included in the group-specific thresholds csv files:
         - group: Hierarchical clustering group ID
-        - global: Phylothreshold determined for the group using the global endpoint method.
+        - public: Phylothreshold determined for the group using the public endpoint method.
 
 14. **Sanity Check Plots:**
   - Plateau: `thresher/output/QC/plateau_qc_plot.pdf`
   - Peak: `thresher/output/QC/peak_qc_plot.pdf`
-  - Global: `thresher/output/QC/global_qc_plot.pdf`
+  - Public: `thresher/output/QC/public_qc_plot.pdf`
   - Discrepancy: `thresher/output/QC/discrepancy_qc_plot.pdf`
   - Figure descriptions:
     - X-axis: Phylogenetic Average Distance
 
-      The average phylogenetic distance between two strains, calculated by averaging the pairwise branch-length distances between all genomes in strain A and all genomes in strain B on the core genome phylogeny (comprehensive tree).
+      The average phylogenetic distance between two strains, calculated by averaging the pairwise branch-length distances between all genomes in strain A and all genomes in strain B on the core genome phylogeny (core_gene tree).
 
     - Y-axis: gSNP Average Distance
     
@@ -319,7 +322,7 @@ The strain composition files generated by all 4 endpoint methods contain the fol
 
    - Plateau: `thresher/output/QC/plateau_qc_table.csv`
    - Peak: `thresher/output/QC/peak_qc_table.csv`
-   - Global: `thresher/output/QC/global_qc_table.csv`
+   - Public: `thresher/output/QC/public_qc_table.csv`
    - Discrepancy: `thresher/output/QC/discrepancy_qc_table.csv`
 
 16. **Multi-SNP-Threshold Plot:**
@@ -333,39 +336,39 @@ The strain composition files generated by all 4 endpoint methods contain the fol
 
     - Lower panel: 
       - Lines: The number of singletons, clones, and the discrepant genomes when the strain compositions determined by pairwise SNP distances mapped to the corresponding reference-based phylogenetic tree of the group.
-      - Annotations: The final phylothresholds determined by each endpoint method (plateau, peak, discrepancy, global) are indicated on the plot.
+      - Annotations: The final phylothresholds determined by each endpoint method (plateau, peak, discrepancy, public) are indicated on the plot.
 
 17. **Visualization:**
-  - Core-gene comprehensive tree annotated with hierarchical clustering groups: 
-    - `plots/comprehensive_tree_group.pdf`
-    - `plots/comprehensive_tree_group.RDS`(R object)
-  - Core-gene comprehensive tree annotated with MLST:
-    - `plots/comprehensive_tree_mlst.pdf`
-    - `plots/comprehensive_tree_mlst.RDS`(R object)
+  - Core-gene tree annotated with hierarchical clustering groups: 
+    - `plots/core_gene_tree_group.pdf`
+    - `plots/core_gene_tree_group.RDS`(R object)
+  - Core-gene tree annotated with MLST:
+    - `plots/core_gene_tree_mlst.pdf`
+    - `plots/core_gene_tree_mlst.RDS`(R object)
   - SNP distance: `plots/SNP_Distance.pdf`
   - Strain compositions visualized with ML Phylogeny and SNP distance Heatmap of each hirarchical group for four endpoint methods:
     - RDS files:
       - Plateau: `plots/strain_compositions/plateau/plateau_strain_tree_snp.RDS`
       - Peak: `plots/strain_compositions/peak/peak_strain_tree_snp.RDS`
       - Discrepancy: `plots/strain_compositions/discrepancy/discrepancy_strain_tree_snp.RDS`
-      - Global: `plots/strain_compositions/global/global_strain_tree_snp.RDS`
+      - Public: `plots/strain_compositions/public/public_strain_tree_snp.RDS`
     - PDF files:
       - Plateau: `plots/strain_compositions/plateau/Group{Group_ID}_plateau_strain_composition.pdf`
       - Peak: `plots/strain_compositions/peak/Group{Group_ID}_peak_strain_composition.pdf`
       - Discrepancy: `plots/strain_compositions/discrepancy/Group{Group_ID}_discrepancy_strain_composition.pdf`
-      - Global: `plots/strain_compositions/global/Group{Group_ID}_global_strain_composition.pdf`
+      - Public: `plots/strain_compositions/public/Group{Group_ID}_public_strain_composition.pdf`
     - Figure descriptions:
       - **ML Phylogeny (left panel)**
         - Midpoint-rooted ML tree of the group
-        - **Tip points**: Blue circles = study genomes, Brown circles = global genomes (CladeBreaker)
+        - **Tip points**: Blue circles = study genomes, Brown circles = public genomes (CladeBreaker)
         - **Highlighted clades**: Genomes assigned to the same clone (strain with ≥2 genomes) are highlighted with a green rectangle and labeled with their strain ID (e.g., `1_1`)
         - **Scale bar**: Branch length in substitutions per site
         - **Optimal Phylothreshold**: The optimal phylothreshold determined by the selected endpoint method displayed at the top
       - **SNP Distance Heatmap (right panel)**
         - Rows aligned to phylogeny tip labels; columns show study genomes only
         - **White to blue gradient**: Pairwise SNP distances between study genomes
-        - **Grey cells**: Comparisons of study genomes to corresponding top global genomes. The color of these cells are greyed out.
-        The cells with no values indicate this study genome is not compared to the global genome(s) as the global genome(s) is/are not the top hit for this study genome in WhatsGNU analysis.
+        - **Grey cells**: Comparisons of study genomes to corresponding top public genomes. The color of these cells are greyed out.
+        The cells with no values indicate this study genome is not compared to the public genome(s) as the public genome(s) is/are not the top hit for this study genome in WhatsGNU analysis.
         - **Text color indicates SNP quality**:
           - Green = good quality (alignments meet coverage threshold)
           - Red = poor quality (low-coverage alignments, interpret with caution)

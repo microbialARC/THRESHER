@@ -48,7 +48,7 @@ rule all:
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_plateau_strains.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_peak_strains.csv")] if config["species"] == "sau" else [],
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_discrepancy_strains.csv")] if config["species"] == "sau" else [],
-        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_global_strains.csv")] if config["species"] == "sau" else [],
+        [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_public_strains.csv")] if config["species"] == "sau" else [],
         # MLST
         expand(os.path.join(config["output"], "mlst","raw","{genome_name}_mlst.csv"),genome_name=new_genome_path_dict.keys()),
         os.path.join(config["output"], "mlst","raw","mlst_raw.csv"),
@@ -62,11 +62,11 @@ rule all:
         # Mummer4
         expand(os.path.join(config["output"], "mummer4_study", "scripts", "dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys()),
         expand(os.path.join(config["output"], "mummer4_study","{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys()),
-        expand(os.path.join(config["output"], "mummer4_global", "scripts", "dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys()),
-        expand(os.path.join(config["output"], "mummer4_global","{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys()),
+        expand(os.path.join(config["output"], "mummer4_public", "scripts", "dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys()),
+        expand(os.path.join(config["output"], "mummer4_public","{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys()),
         os.path.join(config["output"], "mummer4_study", ".mummer4_study_complete"),
-        os.path.join(config["output"], "mummer4_global", ".mummer4_global_complete"),
-        os.path.join(config["output"], "mummer4_global", "global_snp_matrix.RDS"),
+        os.path.join(config["output"], "mummer4_public", ".mummer4_public_complete"),
+        os.path.join(config["output"], "mummer4_public", "public_snp_matrix.RDS"),
         os.path.join(config["output"], "mummer4_study", "study_snp_matrix.RDS"),
          # WhatsGNU
         expand(os.path.join(config["output"], "whatsgnu","whatsgnu_results","{genome_name}_WhatsGNU_topgenomes.txt"),genome_name=new_genome_path_dict.keys()),
@@ -80,8 +80,8 @@ rule all:
         os.path.join(config["output"], "panaroo_new","final_graph.gml"),
         os.path.join(config["output"], "panaroo","core_gene_alignment_filtered.aln"),
          # IQTree
-        os.path.join(config["output"], "iqtree","comprehensive_tree","comprehensive_tree.treefile"),
-        os.path.join(config["output"], "iqtree","comprehensive_tree","comprehensive_tree.contree"),
+        os.path.join(config["output"], "iqtree","core_gene_tree","core_gene_tree.treefile"),
+        os.path.join(config["output"], "iqtree","core_gene_tree","core_gene_tree.contree"),
         os.path.join(config["output"], "iqtree","group_tree","iqtree_group.txt"),
         # Snippy
         os.path.join(config["output"], "snippy","scripts","snippy_multi.sh"),
@@ -97,18 +97,18 @@ rule all:
         os.path.join(config["output"], "thresher", "output", "peak_strains.csv"),
         os.path.join(config["output"], "thresher", "output", "discrepancy_strains.RDS"),
         os.path.join(config["output"], "thresher", "output", "discrepancy_strains.csv"),
-        os.path.join(config["output"], "thresher", "output", "global_strains.RDS"),
-        os.path.join(config["output"], "thresher", "output", "global_strains.csv"),
+        os.path.join(config["output"], "thresher", "output", "public_strains.RDS"),
+        os.path.join(config["output"], "thresher", "output", "public_strains.csv"),
         os.path.join(config["output"], "thresher", "output", "group_plateau.csv"),
         os.path.join(config["output"], "thresher", "output", "group_peak.csv"),
         os.path.join(config["output"], "thresher", "output", "group_discrepancy.csv"),
-        os.path.join(config["output"], "thresher", "output", "group_global.csv"),
+        os.path.join(config["output"], "thresher", "output", "group_public.csv"),
         # Plots & Summaries
-        # Visualization of the comprehensive tree
-        os.path.join(config["output"], "plots", "comprehensive_tree_mlst.pdf"),
-        os.path.join(config["output"], "plots","comprehensive_tree_mlst.RDS"),
-        os.path.join(config["output"], "plots", "comprehensive_tree_group.pdf"),
-        os.path.join(config["output"], "plots","comprehensive_tree_group.RDS"),
+        # Visualization of the core_gene tree
+        os.path.join(config["output"], "plots", "core_gene_tree_mlst.pdf"),
+        os.path.join(config["output"], "plots","core_gene_tree_mlst.RDS"),
+        os.path.join(config["output"], "plots", "core_gene_tree_group.pdf"),
+        os.path.join(config["output"], "plots","core_gene_tree_group.RDS"),
         # SNP Distance Plot
         os.path.join(config["output"], "plots", "SNP_Distance.pdf"),
         # Multi-SNP-Threshold Plot
@@ -120,11 +120,11 @@ rule all:
         # Thresher QC
         os.path.join(config["output"], "thresher", "output", "QC", "plateau_qc_plot.pdf"),
         os.path.join(config["output"], "thresher", "output", "QC", "peak_qc_plot.pdf"),
-        os.path.join(config["output"], "thresher", "output", "QC", "global_qc_plot.pdf"),
+        os.path.join(config["output"], "thresher", "output", "QC", "public_qc_plot.pdf"),
         os.path.join(config["output"], "thresher", "output", "QC", "discrepancy_qc_plot.pdf"),
         os.path.join(config["output"], "thresher", "output", "QC", "plateau_qc_table.csv"),
         os.path.join(config["output"], "thresher", "output", "QC", "peak_qc_table.csv"),
-        os.path.join(config["output"], "thresher", "output", "QC", "global_qc_table.csv"),
+        os.path.join(config["output"], "thresher", "output", "QC", "public_qc_table.csv"),
         os.path.join(config["output"], "thresher", "output", "QC", "discrepancy_qc_table.csv")
 
 
@@ -141,22 +141,22 @@ include: os.path.join(BASE_PATH,"rules","mummer4_study_new_full.smk")
 include: os.path.join(BASE_PATH,"rules","whatsgnu_new_full.smk")
 include: os.path.join(BASE_PATH,"rules","unique_topgenomes_new_full.smk")
 include: os.path.join(BASE_PATH,"rules","datasets_topgenomes.smk")
-include: os.path.join(BASE_PATH,"rules","mummer4_global_new_full.smk")
-include: os.path.join(BASE_PATH,"rules","iqtree_comprehensive.smk")
+include: os.path.join(BASE_PATH,"rules","mummer4_public_new_full.smk")
+include: os.path.join(BASE_PATH,"rules","iqtree_core_gene.smk")
 include: os.path.join(BASE_PATH,"rules","iqtree_groups.smk")
-include: os.path.join(BASE_PATH,"rules","plot_comprehensive_tree.smk")
+include: os.path.join(BASE_PATH,"rules","plot_core_gene_tree.smk")
 include: os.path.join(BASE_PATH,"rules","hierarchical_clustering.smk")
 include: os.path.join(BASE_PATH,"rules","snp_matrix_new_full.smk")
 include: os.path.join(BASE_PATH,"rules","snippy_input_new_full.smk")
 include: os.path.join(BASE_PATH,"rules","snippy_groups.smk")
 include: os.path.join(BASE_PATH,"rules","plot_snp.smk")
 include: os.path.join(BASE_PATH,"rules","thresher_input.smk")
-# The following thresher rules(plateau, peak, discrepancy, global) are included the same way as thresher full_pipeline
+# The following thresher rules(plateau, peak, discrepancy, public) are included the same way as thresher full_pipeline
 # Another new rule/script will be applied in this workflow to indicate the changes between new and original results
 include: os.path.join(BASE_PATH,"rules","thresher_plateau.smk")
 include: os.path.join(BASE_PATH,"rules","thresher_peak.smk")
 include: os.path.join(BASE_PATH,"rules","thresher_discrepancy.smk")
-include: os.path.join(BASE_PATH,"rules","thresher_global.smk")
+include: os.path.join(BASE_PATH,"rules","thresher_public.smk")
 include: os.path.join(BASE_PATH,"rules","thresher_MSTP.smk")
 include: os.path.join(BASE_PATH,"rules","thresher_QC.smk")
 if os.path.exists(os.path.join(config["thresher_output"],"blastx","mrsa")):

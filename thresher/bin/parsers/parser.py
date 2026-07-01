@@ -1,39 +1,25 @@
-"""Parser for strain_identifier command"""
+"""Parser for THRESHER command"""
 import argparse
 import os
-# The parser for the overall strain_identifier command
-def add_strain_identifier_parser(subparsers):
+# The parser for the overall thresher command
+def add_thresher_parser(subparsers):
+    """Attach the thresher modes directly to the top-level subparsers."""
+    _add_full_pipeline_parser(subparsers)
+    _add_cladebreaker_off_parser(subparsers)
+    _add_redo_endpoint_parser(subparsers)
+    _add_new_snps_parser(subparsers)
+    _add_new_full_parser(subparsers)
 
-    strain_identifier_parser = subparsers.add_parser(
-        "strain_identifier",
-        formatter_class=argparse.RawTextHelpFormatter,
-        help="Determines strains/transmission clusters using phylothresholds.",
-        usage="thresher strain_identifier {full-pipeline,cladebreaker-off,redo-endpoint,new-snps,new-full}"
-    )
-    
-    # subparsers for modes within strain_identifier
-    strain_identifier_mode = strain_identifier_parser.add_subparsers(
-        dest="mode",
-        required=True,
-        help="Modes of Strain Identifier",
-        metavar=""
-    )
-
-    _add_full_pipeline_parser(strain_identifier_mode)
-    _add_cladebreaker_off_parser(strain_identifier_mode)
-    _add_redo_endpoint_parser(strain_identifier_mode)
-    _add_new_snps_parser(strain_identifier_mode)
-    _add_new_full_parser(strain_identifier_mode)
 # The parser for the full-pipeline mode
-def _add_full_pipeline_parser(strain_identifier_mode):
+def _add_full_pipeline_parser(subparsers):
     """
-    Add full-pipeline parser to the strain_identifier subparsers
+    Add full-pipeline parser to the  subparsers
     """
 
-    full_parser = strain_identifier_mode.add_parser(
-        "full-pipeline",
+    full_parser = subparsers.add_parser(
+        "full",
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Run the full strain identification analysis",
+        help="Run the complete analysis from genome assemblies with no prior THRESHER output.",
     )
 
 
@@ -52,7 +38,7 @@ At least 4 genomes should be provided to perform the analysis."""
         "-o",
         "--output",
         required=False,
-        help = "Path to output directory. If not provided, defaults to thresher_strain_identifier_output_<YYYY_MM_DD_HHMMSS> under the current working directory."
+        help = "Path to output directory. If not provided, defaults to thresher_output_<YYYY_MM_DD_HHMMSS> under the current working directory."
     )
 
     full_parser.add_argument(
@@ -69,15 +55,16 @@ kp: Klebsiella pneumoniae"""
     )
 
     full_parser.add_argument(
-        "--analysis_mode",
+        "--epi_mode",
         required=False,
-        default="full",
-        choices=["full", "lite"],
-        help="""Whether to make cluster plots and persistence plot.
-Available Options: [full, lite]
-full: Determine strains, clusters and make plots.
-lite: Determine strains without determing clusters and making plots.
-Default is full"""
+        type = bool,
+        default=True,
+        choices=[True, False],
+        help="""Whether to perform epidemiological analysis.
+Available Options: [True, False]
+True: Determine strains, clusters and make plots.
+False: Determine strains without determing clusters and making plots.
+Default is True"""
     )
 
     full_parser.add_argument(
@@ -220,13 +207,13 @@ Default is True.""")
         "--endpoint",
         required=False,
         default= "plateau",
-        choices=["plateau", "peak", "discrepancy", "global"],
+        choices=["plateau", "peak", "discrepancy", "public"],
         help="""The endpoint method to use for determing clusters and making plots.
-Available Options: [plateau, peak, discrepancy, global]
+Available Options: [plateau, peak, discrepancy, public]
 plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
 peak: Phylothreshold set at the peak number of clones defined within the group.
 discrepancy: Phylothreshold set at the point where the discrepancy is minimized within the group.
-global: Phylothreshold set at the first time a global genome is included in any strain within the group.
+public: Phylothreshold set at the first time a public genome is included in any strain within the group.
 Default is plateau."""
     )
 
@@ -267,12 +254,12 @@ Only used when endpoint method is 'plateau'."""
 This may cause instability or failures."""
     )
 # The parser for the redo-endpoint mode
-def _add_redo_endpoint_parser(strain_identifier_mode):
+def _add_redo_endpoint_parser(subparsers):
     """Add redo-endpoint subparser"""
-    redo_parser = strain_identifier_mode.add_parser(
+    redo_parser = subparsers.add_parser(
         "redo-endpoint",
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Redo endpoint determination with new endpoint method and remake plots",
+        help="Revisit the endpoint choice without rerunning the core algorithm.",
     )
 
     redo_parser.add_argument(
@@ -280,7 +267,7 @@ def _add_redo_endpoint_parser(strain_identifier_mode):
         type=str,
         required=True,
         help="""Path to the original input file used for the THRESHER full-pipeline.
-The file must be tab-delimited and contain 5 columns becuase the full-pipeline mode requires patient ID and collection date information.
+The file must be tab-delimited and contain 5 columns because the full-pipeline mode requires patient ID and collection date information.
 5 columns: genome_name, genome_accession, genome_path, patient_id, collection_date."""
     )
 
@@ -297,20 +284,20 @@ The existing analysis directory should contain the previous analysis results."""
         type=str,
         required=False,
         help = """Path to output directory.
-If not provided, defaults to thresher_strain_identifier_redo_endpoint_<YYYY_MM_DD_HHMMSS> under the current working directory."""
+If not provided, defaults to thresher_redo_endpoint_<YYYY_MM_DD_HHMMSS> under the current working directory."""
         )
         
     redo_parser.add_argument(
         "--endpoint",
         required=False,
         default= "plateau",
-        choices=["plateau", "peak", "discrepancy", "global"],
+        choices=["plateau", "peak", "discrepancy", "public"],
         help="""The endpoint method to use for determing clusters and making plots.
-Available Options: [plateau, peak, discrepancy, global]
+Available Options: [plateau, peak, discrepancy, public]
 plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
 peak: Phylothreshold set at the peak number of clones defined within the group.
 discrepancy: Phylothreshold set at the point where the discrepancy is minimized within the group.
-global: Phylothreshold set at the first time a global genome is included in any strain within the group.
+public: Phylothreshold set at the first time a public genome is included in any strain within the group.
 Default is plateau."""
     )
 
@@ -326,14 +313,13 @@ Default is plateau."""
         help = "Directory for conda environments needed for this analysis. If not provided, defaults to OUTPUT/conda_envs_<YYYY_MM_DD_HHMMSS>"
     )
 # The parser for the new-snps mode
-def _add_new_snps_parser(strain_identifier_mode):
+def _add_new_snps_parser(subparsers):
     """Add new-snps subparser"""
-    new_snps_parser = strain_identifier_mode.add_parser(
+    new_snps_parser = subparsers.add_parser(
         "new-snps",
         formatter_class=argparse.RawTextHelpFormatter,
         help=(
-            "Add new genomes to an existing strain compositions using only SNP phylothresholds.\n"
-            "Updates strain compositions for all endpoint methods and assigns new genomes to existing clusters if applicable."
+            "Add new genomes by reusing the previously inferred phylothresholds."
         ),
     )
 
@@ -360,9 +346,9 @@ The description of the file format is the same as that for --original_metadata."
         "--thresher_output",
         type=str,
         required=True,
-        help="""Path to the existing THRESHER strain_identifier directory.
+        help="""Path to the existing THRESHER directory.
 The existing analysis directory should contain the previous transmission cluster results.
-(analysis_mode should be 'full' in the prior run)"""
+(epi_mode should be 'True' in the prior run)"""
     )
 
     new_snps_parser.add_argument(
@@ -370,7 +356,7 @@ The existing analysis directory should contain the previous transmission cluster
         type=str,
         required=False,
         help = """Path to output directory of new-snps analysis.
-If not provided, defaults to thresher_strain_identifier_new_snps_<YYYY_MM_DD_HHMMSS> under the current working directory."""
+If not provided, defaults to thresher_new_snps_<YYYY_MM_DD_HHMMSS> under the current working directory."""
         )
     
     new_snps_parser.add_argument(
@@ -416,13 +402,13 @@ SNP distance below this threshold are excluded. Default: 80."""
         help = "Directory for conda environments needed for this analysis. If not provided, defaults to <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>"
     )
 # The parser for the new-full mode
-def _add_new_full_parser(strain_identifier_mode):
+def _add_new_full_parser(subparsers):
     """Add new-full subparser"""
     
-    new_full_parser = strain_identifier_mode.add_parser(
+    new_full_parser = subparsers.add_parser(
         "new-full",
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Run the full strain_identifier analysis with new genomes added to existing strain/cluster compositions",
+        help="Add new genomes and re-derive the phylothresholds from the combined dataset."
     )
 
     new_full_parser.add_argument(
@@ -448,9 +434,9 @@ The description of the file format is the same as that for --original_metadata."
         "--thresher_output",
         type=str,
         required=True,
-        help="""Path to the existing THRESHER strain_identifier directory.
+        help="""Path to the existing THRESHER directory.
 The existing analysis directory should contain the previous transmission cluster results.
-(analysis_mode should be 'full' in the prior run)"""
+(epi_mode should be 'True' in the prior run)"""
     )
 
     new_full_parser.add_argument(
@@ -458,7 +444,7 @@ The existing analysis directory should contain the previous transmission cluster
         type=str,
         required=False,
         help = """Path to output directory of new-full analysis.
-If not provided, defaults to thresher_strain_identifier_new_full_<YYYY_MM_DD_HHMMSS> under the current working directory."""
+If not provided, defaults to thresher_new_full_<YYYY_MM_DD_HHMMSS> under the current working directory."""
         )
     
     new_full_parser.add_argument(
@@ -613,13 +599,13 @@ Default is True.""")
         "--endpoint",
         required=False,
         default= "plateau",
-        choices=["plateau", "peak", "discrepancy", "global"],
+        choices=["plateau", "peak", "discrepancy", "public"],
         help="""The endpoint method to use for determing clusters and making plots.
-Available Options: [plateau, peak, discrepancy, global]
+Available Options: [plateau, peak, discrepancy, public]
 plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
 peak: Phylothreshold set at the peak number of clones defined within the group.
 discrepancy: Phylothreshold set at the point where the discrepancy is minimized within the group.
-global: Phylothreshold set at the first time a global genome is included in any strain within the group.
+public: Phylothreshold set at first time a public genome is included in any strain within the group.
 Default is plateau."""
     )
 
@@ -661,12 +647,12 @@ Only used when endpoint method is 'plateau'. Default is 15"""
 This may cause instability or failures."""
     )
 # The parser for cladebreaker-off mode
-def _add_cladebreaker_off_parser(strain_identifier_mode):
+def _add_cladebreaker_off_parser(subparsers):
     """Add cladebreaker-off subparser"""
-    cladebreaker_off_parser = strain_identifier_mode.add_parser(
+    cladebreaker_off_parser = subparsers.add_parser(
         "cladebreaker-off",
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Turn off Cladebreaker using established Thresher results and redo strain composition and plots.",
+        help="Re-run identification with the CladeBreaker step disabled, allowing public genomes to cluster with study genomes.",
     )
 
     cladebreaker_off_parser.add_argument(
@@ -681,7 +667,7 @@ The existing analysis directory should contain the previous analysis results."""
         type=str,
         required=True,
         help="""Path to output directory.
-If not provided, defaults to thresher_strain_identifier_cladebreaker_off_<YYYY_MM_DD_HHMMSS> under the current working directory.""")
+If not provided, defaults to thresher_cladebreaker_off_<YYYY_MM_DD_HHMMSS> under the current working directory.""")
     
     cladebreaker_off_parser.add_argument(
         "--threshold_floor",

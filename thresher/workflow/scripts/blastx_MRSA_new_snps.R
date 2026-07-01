@@ -3,7 +3,7 @@ library(dplyr)
 # Function to determine MRSA
 analyze_blastx_output_new_snps <- function(plateau_strains_rds_path,
                                            peak_strains_rds_path,
-                                           global_strains_rds_path,
+                                           public_strains_rds_path,
                                            discrepancy_strains_rds_path,
                                            thresher_output_dir,
                                            raw_dir,
@@ -106,7 +106,7 @@ analyze_blastx_output_new_snps <- function(plateau_strains_rds_path,
 
   updated_plateau_strains <- readRDS(plateau_strains_rds_path)[["updated_strain_compositions"]]
   updated_peak_strains <- readRDS(peak_strains_rds_path)[["updated_strain_compositions"]]
-  updated_global_strains <- readRDS(global_strains_rds_path)[["updated_strain_compositions"]]
+  updated_public_strains <- readRDS(public_strains_rds_path)[["updated_strain_compositions"]]
   updated_discrepancy_strains <- readRDS(discrepancy_strains_rds_path)[["updated_strain_compositions"]]
   # Use the position to loop through the different strain compositions
   # and get endpoint method
@@ -114,7 +114,7 @@ analyze_blastx_output_new_snps <- function(plateau_strains_rds_path,
   method_compositions <- list(
   list(endpoint = "plateau", composition = updated_plateau_strains),
   list(endpoint = "peak", composition = updated_peak_strains),
-  list(endpoint = "global", composition = updated_global_strains),
+  list(endpoint = "public", composition = updated_public_strains),
   list(endpoint = "discrepancy", composition = updated_discrepancy_strains)
 )
 
@@ -148,14 +148,14 @@ raw_dir <- snakemake@params[["raw_dir"]]
 summary_dir <- snakemake@params[["summary_dir"]]
 plateau_strains_rds_path <- snakemake@input[["plateau_strains_rds"]]
 peak_strains_rds_path <- snakemake@input[["peak_strains_rds"]]
-global_strains_rds_path <- snakemake@input[["global_strains_rds"]]
+public_strains_rds_path <- snakemake@input[["public_strains_rds"]]
 discrepancy_strains_rds_path <- snakemake@input[["discrepancy_strains_rds"]]
 thresher_output_dir <- snakemake@params[["thresher_output"]]
 
 
 analyze_blastx_output_new_snps(plateau_strains_rds_path = plateau_strains_rds_path,
                                peak_strains_rds_path = peak_strains_rds_path,
-                               global_strains_rds_path = global_strains_rds_path,
+                               public_strains_rds_path = public_strains_rds_path,
                                discrepancy_strains_rds_path = discrepancy_strains_rds_path,
                                thresher_output_dir = thresher_output_dir,
                                raw_dir = raw_dir,

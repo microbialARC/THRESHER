@@ -331,8 +331,8 @@ update_thresher_new_snps <- function(new_metadata_path,
   plateau_strains <- readRDS(file.path(thresher_output_dir,"thresher","output","plateau_strains.RDS"))
   ## Peak strains ----
   peak_strains <- readRDS(file.path(thresher_output_dir,"thresher","output","peak_strains.RDS"))
-  ## Global strains ----
-  global_strains <- readRDS(file.path(thresher_output_dir,"thresher","output","global_strains.RDS"))
+  ## Public strains ----
+  public_strains <- readRDS(file.path(thresher_output_dir,"thresher","output","public_strains.RDS"))
   ## Discrepancy strains ----
   discrepancy_strains <- readRDS(file.path(thresher_output_dir,"thresher","output","discrepancy_strains.RDS"))
   
@@ -349,10 +349,10 @@ update_thresher_new_snps <- function(new_metadata_path,
                                      group_thresholds = peak_strains$peaks,
                                      new_genomes = new_metadata$V1,
                                      new_snp_matrix = new_snp_matrix)
-  ## Global strains ----
-  new_global_strains <- update_strains(strain_compositions = global_strains$strains,
-                                       endpoint = "global",
-                                       group_thresholds = global_strains$global,
+  ## Public strains ----
+  new_public_strains <- update_strains(strain_compositions = public_strains$strains,
+                                       endpoint = "public",
+                                       group_thresholds = public_strains$public,
                                        new_genomes = new_metadata$V1,
                                        new_snp_matrix = new_snp_matrix)
   
@@ -367,7 +367,7 @@ update_thresher_new_snps <- function(new_metadata_path,
     list(
       new_plateau_strains = new_plateau_strains,
       new_peak_strains = new_peak_strains,
-      new_global_strains = new_global_strains,
+      new_public_strains = new_public_strains,
       new_discrepancy_strains = new_discrepancy_strains
     )
   )
@@ -399,7 +399,7 @@ export_new_strain(endpoint = "plateau",
                   new_strain = new_thresher_strains$new_plateau_strains)
 export_new_strain(endpoint = "peak",
                   new_strain = new_thresher_strains$new_peak_strains)
-export_new_strain(endpoint = "global",
-                  new_strain = new_thresher_strains$new_global_strains)
+export_new_strain(endpoint = "public",
+                  new_strain = new_thresher_strains$new_public_strains)
 export_new_strain(endpoint = "discrepancy",
                   new_strain = new_thresher_strains$new_discrepancy_strains)

@@ -29,7 +29,7 @@ rule mlst_results:
         mlst_results = os.path.join(config["output"], "mlst","summary","mlst_results.csv")
     params:
         species = config["species"],
-        analysis_mode = config["mode"],
+        epi_mode = config["epi_mode"],
         metadata = config["metadata"],
         mlst_sau_db = os.path.join(BASE_PATH,"db/mlst/Sau_mlst.txt"),
         mlst_cdiff_db = os.path.join(BASE_PATH,"db/mlst/Cdiff_mlst.txt"),

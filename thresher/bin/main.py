@@ -2,7 +2,7 @@
 """THRESHER Main Entry
 This script creates the configuration files and executes the Snakemake workflow.
 """
-VERSION = "0.3.1-beta"
+VERSION = "0.4.0-beta"
 # Import standard libraries and custom modules
 import argparse
 import os
@@ -13,46 +13,35 @@ import traceback
 import subprocess
 # import shutil to get terminal size for centering text
 import shutil
-
 # Import modules for parsers
-from thresher.bin.parsers.strain_identifier_parser import add_strain_identifier_parser
-from thresher.bin.parsers.genome_profiler_parser import add_genome_profiler_parser
-from thresher.bin.parsers.evo_simulator_parser import add_evo_simulator_parser
-
+from thresher.bin.parsers.parser import add_thresher_parser
 # Import input validators
 from thresher.bin.args_validator import (
     validate_function,
-    validate_strain_identifier_full,
-    validate_strain_identifier_redo_endpoint,
-    validate_strain_identifier_new_snps,
-    validate_strain_identifier_new_full,
-    validate_strain_identifier_cladebreaker_off,
-    validate_genome_profiler,
-    validate_evo_simulator,
+    validate_full,
+    validate_redo_endpoint,
+    validate_new_snps,
+    validate_new_full,
+    validate_cladebreaker_off,
     ValidationError
 )
 
 # Import config creator
 from thresher.bin.config_creator import (
-    strain_identifier_full_config,
-    strain_identifier_redo_endpoint_config,
-    strain_identifier_new_snps_config,
-    strain_identifier_new_full_config,
-    strain_identifier_cladebreaker_off_config,
-    genome_profiler_config,
-    evo_simulator_config
+    full_config,
+    redo_endpoint_config,
+    new_snps_config,
+    new_full_config,
+    cladebreaker_off_config
 )
 
 def build_parser():
-    """Build the main argument parser with all subcommands"""
+    """Build the main argument parser with all THRESHER modes as top-level subcommands."""
     description = f"""
-Main functions:
-1. Strain Identifier
-2. Genome Profiler
-3. Evolution Simulator
+THRESHER: Determine strains and transmission clusters with data-driven phylothresholds
 
 Usage:
-    thresher <positional arguments>
+  thresher <mode> [options]
 """
 
     parser = argparse.ArgumentParser(
@@ -72,13 +61,14 @@ Usage:
     subparsers = parser.add_subparsers(
         dest="command",
         required=True,
-        help="Available functions"
+        metavar="<mode>",
+        help="THRESHER mode to run"
     )
 
-    # Add command parsers
-    add_strain_identifier_parser(subparsers)
-    add_genome_profiler_parser(subparsers)
-    add_evo_simulator_parser(subparsers)
+    # Attach the mode parsers directly to the top-level subparsers
+    # (full, cladebreaker-off, redo-endpoint, new-snps, new-full). There is no longer
+    # an intermediate "strain_identifier" subcommand compared to version 0.3.1-beta and earlier.
+    add_thresher_parser(subparsers)
 
     return parser
 
@@ -113,7 +103,7 @@ def check_ram(term_width,
         print("Thresher quitting...")
         return 1
     else:
-        print(f"Detected RAM: \033[92m{int(ram_gb)} GB\033[0m. Proceeding...")
+        print(f"Detected RAM: \033[92m{int(ram_gb)} GB\033[0m.")
         return 0
     
 
@@ -242,38 +232,13 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    # Print the mode and function being executed
-    if args.command == "strain_identifier":
-        print(f"Function: {args.command} Mode: {args.mode}".center(term_width))
-    elif args.command in ["genome_profiler","evo_simulator"]:
-        print(f"Function: {args.command}".center(term_width))
+    print(f"THRESHER Mode: {args.command}".center(term_width))
 
-    # Check the OS and RAM for strain_identifier function and full-pipeline and new-full modes
+    # Check the OS and RAM for full and new-full modes
     # This tool can only run on Linux for now
     # Windows and MacOS are not supported due to dependency issues
-    
-    # If the strain_identifier mode, full-pipeline or new-full, check RAM and OS
-    if args.command == "strain_identifier" and args.mode in ["full-pipeline","new-full"]:
-        if not args.force:
-            # Check OS and abort early on failure
-            if (check_os_rc := check_os(term_width)):
-                return check_os_rc
-            # Check if RAM is enough (at least 40 GB for WhatsGNU database loading)
-            # This is required for WhatsGNU database loading
-            # the number is highlighted in red for visibility
-            if (check_ram_rc := check_ram(term_width, 40)):
-                return check_ram_rc
-            print(f"RAM check passed for Function: {args.command} Mode: {args.mode}. Proceeding...")
 
-        elif args.force:
-            # This elif might seem redundant but it reminds me to handle the --force flag specifically for strain_identifier full-pipeline and new-full modes
-            print()
-            print("=" * term_width)
-            print("Bypassing OS and RAM checks".center(term_width))
-            print("=" * term_width)
-            print(f"\033[93m--force flag set: skipping OS and RAM checks for function: {args.command} mode: {args.mode}.\nProceeding may lead to WhatsGNU-related and other dependency errors during execution.\033[0m")
-    elif args.command == "genome_profiler":
-        # For genome_profiler, check OS and RAM
+    if args.command in ["full", "new-full"]:
         if not args.force:
             # Check OS and abort early on failure
             if (check_os_rc := check_os(term_width)):
@@ -281,23 +246,14 @@ def main():
             # Check if RAM is enough (at least 40 GB for WhatsGNU database loading)
             if (check_ram_rc := check_ram(term_width, 40)):
                 return check_ram_rc
-            print(f"RAM check passed for Function: {args.command}. Proceeding...")
+            print(f"RAM check passed for THRESHER Mode: {args.command}. Proceeding...")
         elif args.force:
             print()
             print("=" * term_width)
             print("Bypassing OS and RAM checks".center(term_width))
             print("=" * term_width)
-            print(f"\033[93m--force flag set: skipping OS and RAM checks for function: {args.command}.\nProceeding may lead to dependency errors during execution.\033[0m")
-    elif args.command == "evo_simulator":
-        # For evo_simulator, only check OS
-        if not args.force:
-            if (check_os_rc := check_os(term_width)):
-                return check_os_rc
-        elif args.force:
-            print()
-            print("=" * term_width)
-            print("Bypassing OS check. Proceeding...".center(term_width))
-            print("=" * term_width)
+            print(f"\033[93m--force flag set: skipping OS and RAM checks for THRESHER Mode: {args.command}.\nProceeding may lead to WhatsGNU-related and other dependency errors during execution.\033[0m")
+
     # Validate function arguments
     print()
     print("=" * term_width)
@@ -313,47 +269,30 @@ def main():
     config_path = None
     snakefile = None
     try:
-        # Route to appropriate function parser
-        if args.command == "strain_identifier":
-            if args.mode == "full-pipeline":
-                validate_strain_identifier_full(args)
-                config_path = strain_identifier_full_config(args)
-                snakefile = "Snakefile_strain_identifier_full"
-            elif args.mode == "redo-endpoint":
-                validate_strain_identifier_redo_endpoint(args)
-                config_path = strain_identifier_redo_endpoint_config(args)
-                snakefile = "Snakefile_strain_identifier_redo_endpoint"
-                # only use 1 thread for redo-endpoint mode
-                args.threads = 1
-            elif args.mode == "new-snps":
-                validate_strain_identifier_new_snps(args)
-                config_path = strain_identifier_new_snps_config(args)
-                snakefile = "Snakefile_strain_identifier_new_snps"
-            elif args.mode == "new-full":
-                validate_strain_identifier_new_full(args)
-                config_path = strain_identifier_new_full_config(args)
-                snakefile = "Snakefile_strain_identifier_new_full"
-            elif args.mode == "cladebreaker-off":
-                validate_strain_identifier_cladebreaker_off(args)
-                config_path = strain_identifier_cladebreaker_off_config(args)
-                snakefile = "Snakefile_strain_identifier_cladebreaker_off"
-            else:
-                raise ValidationError(f"Unknown Strain Identifier mode: {args.mode}")
-            
-        elif args.command == "genome_profiler":
-            validate_genome_profiler(args)
-            config_path = genome_profiler_config(args)
-            snakefile = "Snakefile_genome_profiler"
-
-        elif args.command == "evo_simulator":
-            # if preset mode, validate preset-specific args
-            validate_evo_simulator(args)
-            config_path = evo_simulator_config(args)
-            snakefile = "Snakefile_evo_simulator"
-            # evo_simulator only uses 1 thread
-            args.threads = 1  
+        if args.command == "full":
+            validate_full(args)
+            config_path = full_config(args)
+            snakefile = "Snakefile_full"
+        elif args.command == "redo-endpoint":
+            validate_redo_endpoint(args)
+            config_path = redo_endpoint_config(args)
+            snakefile = "Snakefile_redo_endpoint"
+            # only use 1 thread for redo-endpoint mode
+            args.threads = 1
+        elif args.command == "new-snps":
+            validate_new_snps(args)
+            config_path = new_snps_config(args)
+            snakefile = "Snakefile_new_snps"
+        elif args.command == "new-full":
+            validate_new_full(args)
+            config_path = new_full_config(args)
+            snakefile = "Snakefile_new_full"
+        elif args.command == "cladebreaker-off":
+            validate_cladebreaker_off(args)
+            config_path = cladebreaker_off_config(args)
+            snakefile = "Snakefile_cladebreaker_off"
         else:
-            raise ValidationError(f"Unknown function: {args.command}")
+            raise ValidationError(f"Unknown THRESHER Mode: {args.command}")
             
         # Ensure config path and snakefile are set
         if config_path is None or snakefile is None:
@@ -381,25 +320,18 @@ def main():
 
         # Print completion message based on return code
         if returncode == 0:
-            if args.command == "strain_identifier":
-                print()
-                print("=" * term_width)
-                print(f"THRESHER function: {args.command} mode:{args.mode} completed successfully!".center(term_width))
-                print("=" * term_width)
-                print()
-            else:
-                print()
-                print("=" * term_width)
-                print(f"THRESHER function: {args.command} completed successfully!".center(term_width))
-                print("=" * term_width)
-                print()
+            print()
+            print("=" * term_width)
+            print(f"THRESHER Mode: {args.command} completed successfully!".center(term_width))
+            print("=" * term_width)
+            print()
         else:
             print()
             print("=" * term_width)
-            print(f"THRESHER pipeline failed with return code {returncode}".center(term_width))
+            print(f"THRESHER Mode: {args.command} failed with return code {returncode}".center(term_width))
             print("=" * term_width)
             print()
-        
+
         return returncode
     
     # Handle exceptions and print error messages for debugging purposes

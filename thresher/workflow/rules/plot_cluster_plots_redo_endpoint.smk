@@ -4,7 +4,7 @@ rule plot_cluster_plots_redo_endpoint:
     input:
         peak_strains_rds = os.path.join(config["thresher_output"], "thresher", "output",  "peak_strains.RDS"),
         plateau_strains_rds = os.path.join(config["thresher_output"], "thresher", "output",  "plateau_strains.RDS"),
-        global_strains_rds = os.path.join(config["thresher_output"],  "thresher", "output", "global_strains.RDS"),
+        public_strains_rds = os.path.join(config["thresher_output"],  "thresher", "output", "public_strains.RDS"),
         discrepancy_strains_rds = os.path.join(config["thresher_output"],  "thresher", "output", "discrepancy_strains.RDS"),
         mlst_results = os.path.join(config["thresher_output"], "mlst","summary","mlst_results.csv")
     output:

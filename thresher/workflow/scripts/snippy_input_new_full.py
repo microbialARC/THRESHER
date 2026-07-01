@@ -18,10 +18,10 @@ new_study_accession.discard("new")
 original_study_accession = snakemake.params.original_study_accession
 original_study_accession.discard("new")
 study_accession = new_study_accession | original_study_accession
-# the global genome path is the path to the directory containing all global genomes used in the analysis
+# the public genome path is the path to the directory containing all public genomes used in the analysis
 # so no need to merge the two paths here
-new_global_genome_path = snakemake.params.new_global_genome_path
-original_global_genome_path = snakemake.params.original_global_genome_path
+new_public_genome_path = snakemake.params.new_public_genome_path
+original_public_genome_path = snakemake.params.original_public_genome_path
 actual_download_topgenomes_path = snakemake.input.actual_download_topgenomes
 with open(actual_download_topgenomes_path, 'r') as f:
     actual_download_topgenomes = set(line.strip() for line in f if line.strip())
@@ -48,7 +48,7 @@ assembly_scan_path_dict = {os.path.basename(path_entry).replace('_assembly_scan.
 
 # Snippy groups with no less than 4 genomes
 # IQtree: It makes no sense to perform bootstrap with less than 4 sequences
-# The sequences include both study genomes and global genomes
+# The sequences include both study genomes and public genomes
 
 hc_group = pd.read_csv(hc_group_path)
 snippy_groups = sorted(hc_group['group'].value_counts().index.tolist())
@@ -56,7 +56,7 @@ snippy_groups = sorted(hc_group['group'].value_counts().index.tolist())
 # This iteration will find the genome with largest N50 as reference 
 # Create the tab files for each group
 # Used for creating the snippy-multi command
-# Only groups with total genome count (study + global) >=4 or more than 1 study genome will have tab files created and be included in reference_dict
+# Only groups with total genome count (study + public) >=4 or more than 1 study genome will have tab files created and be included in reference_dict
 reference_dict = {}
 
 for group in snippy_groups:
@@ -66,14 +66,14 @@ for group in snippy_groups:
         continue
     else:
         group_n50_dict = {}
-        group_global_genomes = set()
+        group_public_genomes = set()
         for genome in group_genomes:
             # N50 for each group genome
             assembly_scan = pd.read_csv(assembly_scan_path_dict[genome], sep='\t', header=None)
             group_n50_dict[genome] = int(assembly_scan[assembly_scan[1] == 'n50_contig_length'].iloc[0, 2])
-            # Introduce top3 global genomes from whatsgnu results for each group genome
+            # Introduce top3 public genomes from whatsgnu results for each group genome
             whatsgnu = pd.read_csv(whatsgnu_path_dict[genome], sep='\t', skiprows=1, header=None)
-            # Only keep the global genomes with GCA
+            # Only keep the public genomes with GCA
             whatsgnu = whatsgnu[whatsgnu[0].str.contains('GCA_')]
             whatsgnu_genomes = set(whatsgnu[0].unique())
             # Because for some whatsgnu database, the genome name may contain different naming styles
@@ -96,12 +96,12 @@ for group in snippy_groups:
             # If less than 3, take all
             # if none, take none
             top_genomes = list(extracted)[:3]
-            group_global_genomes.update(top_genomes)
+            group_public_genomes.update(top_genomes)
             if study_accession: 
-                group_global_genomes = group_global_genomes - study_accession
-        # If the count of global genomes and study genomes together is less than 4, skip
+                group_public_genomes = group_public_genomes - study_accession
+        # If the count of public genomes and study genomes together is less than 4, skip
         # Or if there is only 1 study genome in the group, skip
-        group_total_genomes_count = len(group_genomes) + len(group_global_genomes)
+        group_total_genomes_count = len(group_genomes) + len(group_public_genomes)
         if group_total_genomes_count < 4:
             continue
         else:
@@ -112,22 +112,22 @@ for group in snippy_groups:
                 for genome in group_genomes:
                     if genome != reference:
                         f.write(f"{genome}\t{genome_path[genome]}\n")
-                for global_genome in group_global_genomes:
-                    # Search the global genomes in both new and original whatsgnu paths
+                for public_genome in group_public_genomes:
+                    # Search the public genomes in both new and original whatsgnu paths
                     # new first, then original
                     # If not found in either, raise error
 
                     # I guess there must be a more elegant way to do this, which I will implement in the future if I think of one
                     # but for now I am trying to get stuff working asap, and this works
                     # so...
-                    putative_new_path = f"{new_global_genome_path}/{global_genome}.fna"
-                    putative_original_path = f"{original_global_genome_path}/{global_genome}.fna"
+                    putative_new_path = f"{new_public_genome_path}/{public_genome}.fna"
+                    putative_original_path = f"{original_public_genome_path}/{public_genome}.fna"
                     if os.path.exists(putative_new_path):
-                        f.write(f"{global_genome}\t{new_global_genome_path}/{global_genome}.fna\n")
+                        f.write(f"{public_genome}\t{new_public_genome_path}/{public_genome}.fna\n")
                     elif os.path.exists(putative_original_path):
-                        f.write(f"{global_genome}\t{original_global_genome_path}/{global_genome}.fna\n")
+                        f.write(f"{public_genome}\t{original_public_genome_path}/{public_genome}.fna\n")
                     else:
-                        raise FileNotFoundError(f"Global genome {global_genome} not found in either {new_global_genome_path} or {original_global_genome_path}")
+                        raise FileNotFoundError(f"Public genome {public_genome} not found in either {new_public_genome_path} or {original_public_genome_path}")
                 
 # Create the reference.txt file summarizing the reference genome for each group in analysis_groups
 with open(f'{tab_dir}/snippy_reference.txt', 'w') as f:

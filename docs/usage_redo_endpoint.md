@@ -1,12 +1,12 @@
-# Strain Identifier - Redo Endpoint: Only rerun the final endpoint analysis using existing intermediate files.
+# THRESHER Redo Endpoint: Only rerun the final endpoint analysis using existing intermediate files.
 ```
-thresher strain_identifier redo-endpoint -h
+thresher redo-endpoint -h
 
 options:
   -h, --help            show this help message and exit
   --original_metadata ORIGINAL_METADATA
                         Path to the original input file used for the THRESHER full-pipeline.
-                        The file must be tab-delimited and contain 5 columns becuase the full-pipeline mode requires patient ID and collection date information.
+                        The file must be tab-delimited and contain 5 columns because the full-pipeline mode requires patient ID and collection date information.
                         5 columns: genome_name, genome_accession, genome_path, patient_id, collection_date.
   --thresher_output THRESHER_OUTPUT
                         Path to the existing THRESHER directory.
@@ -14,11 +14,11 @@ options:
   --output OUTPUT       Path to output directory.
                         If not provided, defaults to thresher_strain_identifier_redo_endpoint_<YYYY_MM_DD_HHMMSS> under the current working directory.
   --endpoint ENDPOINT   The endpoint method to use for determing clusters and making plots.
-                        Available Options: [plateau, peak, discrepancy, global]
+                        Available Options: [plateau, peak, discrepancy, public]
                         plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
                         peak: Phylothreshold set at the peak number of clones defined within the group.
                         discrepancy: Phylothreshold set at the point where the discrepancy is minimized within the group.
-                        global: Phylothreshold set at the first time a global genome is included in any strain within the group.
+                        public: Phylothreshold set at the first time a public genome is included in any strain within the group.
                         Default is plateau.
   --prefix PREFIX       Prefix for config files. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
   --conda_prefix CONDA_PREFIX
@@ -38,7 +38,7 @@ options:
    - plateau
    - peak
    - discrepancy
-   - global
+   - public
 
 ## Optional Input
 1. **Output Directory(--output):**

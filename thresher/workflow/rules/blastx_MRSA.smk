@@ -50,7 +50,7 @@ rule blastx_mrsa_results:
     input:
         blastx_mrsa = expand(os.path.join(config["output"],"blastx","mrsa","output","raw","{genome_name}_blastx_mrsa.tsv"), genome_name=genome_path_dict.keys()),
         plateau_strains_rds = os.path.join(config["output"],"thresher", "output", "plateau_strains.RDS"),
-        global_strains_rds = os.path.join(config["output"], "thresher", "output", "global_strains.RDS"),
+        public_strains_rds = os.path.join(config["output"], "thresher", "output", "public_strains.RDS"),
         peak_strains_rds = os.path.join(config["output"],"thresher", "output",  "peak_strains.RDS"),
         discrepancy_strains_rds = os.path.join(config["output"], "thresher", "output", "discrepancy_strains.RDS")
     output:

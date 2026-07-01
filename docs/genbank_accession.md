@@ -1,6 +1,6 @@
 # GenBank Accessions
 
-Before running THRESHER, check whether input genome assemblies already exist in public databases. If they do, THRESHER will exclude the public versions of the input genomes from the "global genomes" used in downstream analyses. This exclusion is required for two features: the global endpoint method and the `--use_cladebreaker` option. CladeBreaker assumes your strains are circulating locally rather than globally and is enabled by default; to disable it, use `--use_cladebreaker False`.
+Before running THRESHER, check whether input genome assemblies already exist in public databases. If they do, THRESHER will exclude the public versions of the input genomes from the "public genomes" used in downstream analyses. This exclusion is required for two features: the public endpoint method and the `--use_cladebreaker` option. CladeBreaker assumes your strains are circulating locally rather than globally and is enabled by default; to disable it, use `--use_cladebreaker False`.
 
 ## Option 1: No GenBank Accession
 
