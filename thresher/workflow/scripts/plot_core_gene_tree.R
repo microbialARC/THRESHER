@@ -29,6 +29,11 @@ core_gene_tree_visual <- function(core_gene_tree_path,
                         header = TRUE)
   # Read MLST
   mlst_df <- read.csv(mlst_path,sep = "\t",header = TRUE)
+  # This should not happen; temporary patch to avoid glitched MLST clade
+  # visualization for C. difficile (strips "nan"/".0" clade-label artifacts).
+  if (genome_species == "cdiff") {
+    mlst_df$MLST <- gsub(".0", "", gsub("Cladenan", "Unassigned", mlst_df$MLST), fixed = TRUE)
+  }
   # Find the node of the HC groups
   all_nodes <- (length(core_gene_tree$tip.label) + 1):(length(core_gene_tree$tip.label) + core_gene_tree$Nnode)
   
