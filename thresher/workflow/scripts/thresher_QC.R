@@ -120,7 +120,7 @@ thresher_qc <- function(method_strain_path,
         show.legend = FALSE
       ) + 
       labs(x = "Phylogenetic Average Distance",
-           y = "gSNP Average Distance") +
+           y = "SNP Average Distance") +
       geom_hline(yintercept = 100,
                  color = "#829724",
                  linetype='dotted',
