@@ -26,15 +26,25 @@ get_public_strains <- function(thresher_input,
     # Find genomes in the group
     group_genomes <- unlist(sapply(hierarchical_clustering_groups, \(x) x$genomes[x$hc_group == group_id]))
     group_public_snp_matrix <- public_snp_matrix[public_snp_matrix$subject %in% group_genomes,]
-    
-    # Steps to determine the public cutoff for the group:
-    # For each study genome, find the minimum SNP distance to any public genome as the public threshold for the group.
-    # Since the definition of public is the smallest SNP distance of any study genome in the group to a public genome
-    public_cutoff <- if(round(min(group_public_snp_matrix$gsnp)) >= threshold_ceiling) threshold_ceiling else round(min(group_public_snp_matrix$gsnp))
-    # and then we want to ensure that the public cutoff is not below the largest cutoff among study genomes in the group
-    public_cutoff <- if(public_cutoff < min(sapply(group_input, `[[`, "cutoff"))) min(sapply(group_input, `[[`, "cutoff")) else public_cutoff
-    # However, we also want to ensure that the public cutoff does not exceed the threshold ceiling
-    public_cutoff <- if(public_cutoff > threshold_ceiling) threshold_ceiling else public_cutoff
+    # Exclude the poor quality public-study SNPs 
+    # As we believe that only good quality public-study SNPs reflect the true genetic relationship between study and public genomes
+    # Only good quality public-study SNPs are considered as the evidence for determining the public phylothreshold
+    group_public_snp_matrix <- group_public_snp_matrix[group_public_snp_matrix$quality == "good",]
+
+    # If no remaining good quality public-study SNPs, set the public cutoff to the threshold ceiling
+    if(nrow(group_public_snp_matrix) == 0){
+      public_cutoff <- threshold_ceiling
+    }else{
+      # If there are remaining good quality public-study SNPs, determine the public cutoff based on them
+      # Steps to determine the public cutoff for the group:
+      # For each study genome, find the minimum SNP distance to any public genome as the public threshold for the group.
+      # Since the definition of public is the smallest SNP distance of any study genome in the group to a public genome
+      public_cutoff <- if(round(min(group_public_snp_matrix$gsnp)) >= threshold_ceiling) threshold_ceiling else round(min(group_public_snp_matrix$gsnp))
+      # and then we want to ensure that the public cutoff is not below the largest cutoff among study genomes in the group
+      public_cutoff <- if(public_cutoff < min(sapply(group_input, `[[`, "cutoff"))) min(sapply(group_input, `[[`, "cutoff")) else public_cutoff
+      # However, we also want to ensure that the public cutoff does not exceed the threshold ceiling
+      public_cutoff <- if(public_cutoff > threshold_ceiling) threshold_ceiling else public_cutoff
+    }
     
     # (Optional): If there is only 1 composition in the group 
     # That is, the smallest SNP distance among study genomes in the group is above the singleton threshold
