@@ -3,6 +3,7 @@
 #for example, when A is reference and B is query, snp = x. When B is reference and A is query, snp = y. 
 #snp = (a+b)/2
 library(dplyr)
+library(data.table)
 library(parallel)
 # Helper function ----
 # Replace any non-alphanumeric characters (except dash/underscore) with underscore in the first column
@@ -117,54 +118,39 @@ unique_comparisons <- sum_snp_df %>%
            query)
 
 #now calculate the snp distance mean(SNPa,SNPb)
-cl <- makeCluster(detectCores())
-#export the data needed for the parallel process
-clusterExport(cl,
-              c("sum_snp_df",
-                "unique_comparisons",
-                "snp_coverage_threshold"),
-              envir = environment())
 
-remove_redundancy <- function(i){
-  # If the both percentages are above the snp_coverage_threshold, the snp_quality is "good", else "poor"
-  AlignedBases_reference_entry <- sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$subject[i] &
-                                      sum_snp_df$query == unique_comparisons$query[i]]
-  
-  AlignedBases_reference_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_reference_entry))
-  
-  
-  AlignedBases_query_entry <- sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$query[i] &
-                                                                  sum_snp_df$query == unique_comparisons$subject[i]]
-  
-  AlignedBases_query_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_query_entry))
-  
-  snp_quality_entry <- if(AlignedBases_reference_pct >= snp_coverage_threshold &
-                           AlignedBases_query_pct >= snp_coverage_threshold){
-    "good"
-  } else {
-    "poor"
-  }
-    
-  return(data.frame(subject = unique_comparisons$subject[i],
-                    query = unique_comparisons$query[i],
-                    snp = mean(c(sum_snp_df$snp[sum_snp_df$reference==unique_comparisons$subject[i] & sum_snp_df$query == unique_comparisons$query[i]],
-                                 sum_snp_df$snp[sum_snp_df$reference==unique_comparisons$query[i] & sum_snp_df$query == unique_comparisons$subject[i]])),
-                    gsnp = mean(c(sum_snp_df$gsnp[sum_snp_df$reference==unique_comparisons$subject[i] & sum_snp_df$query == unique_comparisons$query[i]],
-                                  sum_snp_df$gsnp[sum_snp_df$reference==unique_comparisons$query[i] & sum_snp_df$query == unique_comparisons$subject[i]])),
-                    AlignedBases_reference = AlignedBases_reference_entry,
-                    AlignedBases_query = AlignedBases_query_entry,
-                    snp_quality = snp_quality_entry
-                    ))
-  
-}
+sum_snp_dt <- as.data.table(sum_snp_df)
 
-sum_snp_df_unique <- do.call(rbind,
-                             parLapplyLB(cl,
-                                         seq_len(nrow(unique_comparisons)),
-                                         remove_redundancy))
-stopCluster(cl)
-rm(cl)
-gc()
+# Row number in sum_snp_dt for each comparison, in each direction (NA if that direction is absent)
+# In `on`, the left side is the sum_snp_dt column, and the right side is the unique_comparisons column
+forward_idx <- sum_snp_dt[unique_comparisons,
+                          on = .(reference = subject, query = query),
+                          which = TRUE, mult = "first"]
+reverse_idx <- sum_snp_dt[unique_comparisons,
+                          on = .(reference = query, query = subject),
+                          which = TRUE, mult = "first"]
+
+AlignedBases_reference_entry <- sum_snp_dt$AlignedBases_reference[forward_idx]
+AlignedBases_query_entry     <- sum_snp_dt$AlignedBases_reference[reverse_idx]
+
+# Pull the percentage out of entries like "2812345(98.76%)"
+AlignedBases_reference_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_reference_entry))
+AlignedBases_query_pct     <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_query_entry))
+
+# If both percentages are above the snp_coverage_threshold, the snp_quality is "good", else "poor"
+snp_quality <- ifelse(!is.na(AlignedBases_reference_pct) & AlignedBases_reference_pct >= snp_coverage_threshold &
+                        !is.na(AlignedBases_query_pct) & AlignedBases_query_pct >= snp_coverage_threshold,
+                      "good", "poor")
+
+sum_snp_df_unique <- data.frame(
+  subject = unique_comparisons$subject,
+  query   = unique_comparisons$query,
+  snp     = rowMeans(cbind(sum_snp_dt$snp[forward_idx],  sum_snp_dt$snp[reverse_idx]),  na.rm = TRUE),
+  gsnp    = rowMeans(cbind(sum_snp_dt$gsnp[forward_idx], sum_snp_dt$gsnp[reverse_idx]), na.rm = TRUE),
+  AlignedBases_reference = AlignedBases_reference_entry,
+  AlignedBases_query     = AlignedBases_query_entry,
+  snp_quality            = snp_quality
+)
 
 saveRDS(sum_snp_df_unique,
         snakemake@output[[1]])

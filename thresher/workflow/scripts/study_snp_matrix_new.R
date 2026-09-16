@@ -118,51 +118,49 @@ update_study_snp_matrix <- function(output_list,
   
   #now calculate the snp distance mean(SNPa,SNPb)
   
-  sum_snp_df_unique <- do.call(rbind,
-                               mclapply(seq_len(nrow(unique_comparisons)),
-                                        function(row_entry){
-                                          # If the both percentages are above the snp_coverage_threshold, the snp_quality is "good", else "poor"
-                                          AlignedBases_reference_entry <- sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$subject[row_entry] &
-                                                                              sum_snp_df$query == unique_comparisons$query[row_entry]]
-                                          
-                                          AlignedBases_reference_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_reference_entry))
-                                          
-                                          AlignedBases_query_entry <- sum_snp_df$AlignedBases_reference[sum_snp_df$reference == unique_comparisons$query[row_entry] &
-                                                                                                         sum_snp_df$query == unique_comparisons$subject[row_entry]]
-                                          
-                                          AlignedBases_query_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_query_entry))
-                                          
-                                          snp_quality_entry <- if(AlignedBases_reference_pct >= snp_coverage_threshold &
-                                                                  AlignedBases_query_pct >= snp_coverage_threshold){
-                                            "good"
-                                          } else {
-                                            "poor"
-                                          }
-                                                                                                         
-                                          return(data.table(subject = unique_comparisons$subject[row_entry],
-                                                            query = unique_comparisons$query[row_entry],
-                                                            snp = mean(c(sum_snp_df$snp[sum_snp_df$reference==unique_comparisons$subject[row_entry] & sum_snp_df$query == unique_comparisons$query[row_entry]],
-                                                                         sum_snp_df$snp[sum_snp_df$reference==unique_comparisons$query[row_entry] & sum_snp_df$query == unique_comparisons$subject[row_entry]])),
-                                                            gsnp = mean(c(sum_snp_df$gsnp[sum_snp_df$reference==unique_comparisons$subject[row_entry] & sum_snp_df$query == unique_comparisons$query[row_entry]],
-                                                                          sum_snp_df$gsnp[sum_snp_df$reference==unique_comparisons$query[row_entry] & sum_snp_df$query == unique_comparisons$subject[row_entry]])),
-                                                            AlignedBases_reference = AlignedBases_reference_entry,
-                                                            AlignedBases_query = AlignedBases_query_entry,
-                                                            snp_quality = snp_quality_entry))
-                                          
-                                          
-                                        },
-                                        mc.cores = ncores))
+  sum_snp_dt <- as.data.table(sum_snp_df)
+  
+  # Row number in sum_snp_dt for each comparison, in each direction (NA if that direction is absent)
+  # In `on`, the left side is the sum_snp_dt column, and the right side is the unique_comparisons column
+  forward_idx <- sum_snp_dt[unique_comparisons,
+                            on = .(reference = subject, query = query),
+                            which = TRUE, mult = "first"]
+  reverse_idx <- sum_snp_dt[unique_comparisons,
+                            on = .(reference = query, query = subject),
+                            which = TRUE, mult = "first"]
+  
+  AlignedBases_reference_entry <- sum_snp_dt$AlignedBases_reference[forward_idx]
+  AlignedBases_query_entry     <- sum_snp_dt$AlignedBases_reference[reverse_idx]
+  
+  # Pull the percentage out of entries like "2812345(98.76%)"
+  AlignedBases_reference_pct <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_reference_entry))
+  AlignedBases_query_pct     <- as.numeric(gsub(".*\\((.*)%\\).*", "\\1", AlignedBases_query_entry))
+  
+  # If both percentages are above the snp_coverage_threshold, the snp_quality is "good", else "poor"
+  snp_quality <- ifelse(!is.na(AlignedBases_reference_pct) & AlignedBases_reference_pct >= snp_coverage_threshold &
+                          !is.na(AlignedBases_query_pct) & AlignedBases_query_pct >= snp_coverage_threshold,
+                        "good", "poor")
+  
+  sum_snp_df_unique <- data.frame(
+    subject = unique_comparisons$subject,
+    query   = unique_comparisons$query,
+    snp     = rowMeans(cbind(sum_snp_dt$snp[forward_idx],  sum_snp_dt$snp[reverse_idx]),  na.rm = TRUE),
+    gsnp    = rowMeans(cbind(sum_snp_dt$gsnp[forward_idx], sum_snp_dt$gsnp[reverse_idx]), na.rm = TRUE),
+    AlignedBases_reference = AlignedBases_reference_entry,
+    AlignedBases_query     = AlignedBases_query_entry,
+    snp_quality            = snp_quality
+  )
   
   ## Update the original SNP matrix to get the updated study SNP matrix using new_snps and new_full mode  ----
   
   original_snp_matrix <- readRDS(original_snp_matrix_path)
   
-  study_snp_martix_new <- rbind(sum_snp_df_unique,
-                               original_snp_matrix)
+  study_snp_matrix_new <- rbind(sum_snp_df_unique,
+                                original_snp_matrix)
   
   # Return the matrix 
   
-  return(study_snp_martix_new)
+  return(study_snp_matrix_new)
   
 }
 
