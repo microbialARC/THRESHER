@@ -335,107 +335,56 @@ get_strain_compositions_plot <- function(endpoint_method,
     all_tip_order <- tree_data %>% filter(isTip) %>% arrange(y) %>% pull(label)
     study_tip_order <- all_tip_order[!grepl("GCA_|GCF_",all_tip_order)]
     
+    # Study-study pairs in both directions. If a pair appears more than once,
+    # keep the earliest row
+    study_pairs <- group_tree_snp_matrix %>%
+      filter(subject %in% study_tip_order & query %in% study_tip_order) %>%
+      mutate(.row = row_number())
     
-    heatmap_df <- do.call(rbind,
-                          lapply(study_tip_order,
-                                 function(genome_entry){
-                                   
-                                   data.frame(
-                                     column_genome = genome_entry,
-                                     row_genome = all_tip_order,
-                                     gsnp = sapply(all_tip_order,
-                                                   function(row_genome_entry){
-                                                     if (row_genome_entry == genome_entry) {
-                                                       0
-                                                     } else if (grepl("GCA_|GCF_", row_genome_entry)) {
-                                                       NA_real_
-                                                     } else {
-                                                       snp_value <- group_tree_snp_matrix$gsnp[
-                                                         (group_tree_snp_matrix$subject == genome_entry &
-                                                            group_tree_snp_matrix$query == row_genome_entry) |
-                                                           (group_tree_snp_matrix$subject == row_genome_entry &
-                                                              group_tree_snp_matrix$query == genome_entry)
-                                                       ]
-                                                       if (length(snp_value) == 0) NA_real_ else snp_value[1]
-                                                     }
-                                                   }),
-                                     snp_quality = sapply(all_tip_order,
-                                                          function(row_genome_entry){
-                                                            if (row_genome_entry == genome_entry) {
-                                                              "good"
-                                                            } else if (grepl("GCA_|GCF_", row_genome_entry)) {
-                                                              NA_character_
-                                                            } else {
-                                                              snp_quality <- group_tree_snp_matrix$snp_quality[
-                                                                (group_tree_snp_matrix$subject == genome_entry &
-                                                                   group_tree_snp_matrix$query == row_genome_entry) |
-                                                                  (group_tree_snp_matrix$subject == row_genome_entry &
-                                                                     group_tree_snp_matrix$query == genome_entry)
-                                                              ]
-                                                              if (length(snp_quality) == 0) NA_character_ else snp_quality[1]
-                                                            }
-                                                          })
-                                   )
-                                 }))
+    snp_lookup <- bind_rows(
+      study_pairs %>% select(.row, column_genome = subject, row_genome = query, gsnp, snp_quality),
+      study_pairs %>% select(.row, column_genome = query, row_genome = subject, gsnp, snp_quality)
+    ) %>%
+      arrange(.row) %>%
+      distinct(column_genome, row_genome, .keep_all = TRUE) %>%
+      mutate(gsnp = as.numeric(gsnp),
+             snp_quality = as.character(snp_quality)) %>%
+      select(-.row)
     
-    
-    heatmap_df <- heatmap_df %>%
+    # Full study genome dataframe in tree order
+    # public genome rows are not in the lookup, so they stay NA
+    heatmap_df <- tidyr::expand_grid(column_genome = study_tip_order,
+                                     row_genome = all_tip_order) %>%
+      left_join(snp_lookup, by = c("column_genome", "row_genome")) %>%
       mutate(
+        is_self = column_genome == row_genome,
+        gsnp = if_else(is_self, 0, gsnp),
+        snp_quality = if_else(is_self, "good", snp_quality),
         column_genome = factor(column_genome, levels = study_tip_order),
         row_genome = factor(row_genome, levels = rev(all_tip_order))
-      )
+      ) %>%
+      select(-is_self) %>%
+      as.data.frame()
     
     # Another SNP matrix containing study genomes compared to each of their top 3 public genomes
-    public_heatmap_df <- do.call(rbind,
-                                 lapply(study_tip_order,
-                                        function(genome_entry){
-                                          
-                                          public_genome_entry <- grep("GCA_|GCF",group_tree_snp_matrix$query[
-                                            group_tree_snp_matrix$subject == genome_entry
-                                          ],
-                                          value = TRUE)
-
-                                          # If there is no public genome entry, return NULL
-                                          if(length(public_genome_entry) == 0){
-                                            return(NULL)
-                                          }else{
-                                            return(
-                                              data.frame(
-                                            column_genome = genome_entry,
-                                            row_genome = public_genome_entry,
-                                            gsnp = sapply(public_genome_entry,
-                                                          function(row_genome_entry){
-                                                            group_tree_snp_matrix$gsnp[
-                                                              group_tree_snp_matrix$subject == genome_entry &
-                                                                group_tree_snp_matrix$query == row_genome_entry
-                                                            ]
-                                                          }),
-                                            snp_quality = sapply(public_genome_entry,
-                                                                 function(row_genome_entry){
-                                                                   group_tree_snp_matrix$snp_quality[
-                                                                     group_tree_snp_matrix$subject == genome_entry &
-                                                                       group_tree_snp_matrix$query == row_genome_entry
-                                                                   ]
-                                                                 })
-                                            
-                                          )
-                                            )
-                                          }
-                                          
-                                          
-                                        }))
-    
-    public_heatmap_df <- public_heatmap_df %>%
+    public_heatmap_df <- group_tree_snp_matrix %>%
+      filter(subject %in% study_tip_order & grepl("GCA_|GCF_", query)) %>%
+      arrange(match(subject, study_tip_order)) %>%
+      select(column_genome = subject, row_genome = query, gsnp, snp_quality) %>%
       mutate(
         column_genome = factor(column_genome, levels = study_tip_order),
         row_genome = factor(row_genome, levels = rev(all_tip_order))
-      )
+      ) %>%
+      as.data.frame()
     
+    
+    # Visualization of SNP Heatmap
     snp_heatmap <- ggplot(heatmap_df,
                           aes(x = column_genome,
                               y = row_genome,
                               fill = gsnp)) +
-      geom_tile(color = "black", linewidth = 0.5) +
+      # Transparent tile for better visualization
+      geom_tile(color = "transparent", linewidth = 0) +
       # Text of study genomes compared to other study genomes
       geom_text(aes(label = ifelse(is.na(gsnp), "", as.character(gsnp)),
                     color = snp_quality),
