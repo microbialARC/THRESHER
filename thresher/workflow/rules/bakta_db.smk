@@ -1,3 +1,5 @@
+from thresher.bin.args_validator import AMRFINDER_DB_VERSION, AMRFINDER_DB_FORMAT
+
 rule bakta_db:
     conda:
         os.path.join(BASE_PATH,"envs/bakta.yaml")
@@ -6,8 +8,8 @@ rule bakta_db:
         bakta_db_type = config["bakta_db_type"],
         bakta_db_path = config["bakta_db_path"],
         # Hardcoded AMRFinderPlus database version to ensure compatibility
-        amrfinder_db_version = "2025-07-16.1",
-        amrfinder_db_format = "4.0"
+        amrfinder_db_version = AMRFINDER_DB_VERSION,
+        amrfinder_db_format = AMRFINDER_DB_FORMAT
     output:
         os.path.join(config["output"],"bakta_db","bakta.db")
     shell:

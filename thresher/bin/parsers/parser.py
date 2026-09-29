@@ -91,7 +91,7 @@ Default is full"""
         type=str,
         help="""The path of the directory where the existing Bakta database locates.
 If provided, the Bakta database will not be downloaded.
-If not provided, defaults to <OUTPUT>/bakta/db""",
+If not provided, defaults to <OUTPUT>/bakta_db""",
     )
 
     full_parser.add_argument(
@@ -484,7 +484,7 @@ Default is full"""
         type=str,
         help="""The path of the directory where the existing Bakta database locates.
 If provided, the Bakta database will not be downloaded.
-If not provided, defaults to <OUTPUT>/bakta/db""",
+If not provided, defaults to <OUTPUT>/bakta_db""",
     )
 
     new_full_parser.add_argument(

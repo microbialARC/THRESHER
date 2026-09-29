@@ -2,8 +2,7 @@ name: mummer4
 channels:
  - bioconda
  - conda-forge
- - defaults
- - r
+ - nodefaults
 dependencies:
  - mummer4 =4.0.0rc1
  - perl-bioperl =1.7.2

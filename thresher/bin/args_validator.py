@@ -10,6 +10,65 @@ class ValidationError(Exception):
     """Validation error"""
     pass
 
+# Pinned AMRFinderPlus database release inside the Bakta database.
+# rules/bakta_db.smk imports these two values, so change them only here, and together with
+# the ncbi-amrfinderplus version pinned in envs/bakta.yaml.
+AMRFINDER_DB_VERSION = "2025-07-16.1"
+AMRFINDER_DB_FORMAT = "4.0"
+
+def validate_bakta_db(args):
+    """Validate --bakta_db_path and --bakta_db_type for the modes that run Bakta (full, new-full).
+
+    A Bakta database that THRESHER downloads is pinned to AMRFINDER_DB_VERSION by rules/bakta_db.smk.
+    A provided Bakta database is used as-is, so its AMRFinderPlus database must already be that release.
+    """
+    default_db_dir = os.path.join(args.output, "bakta_db")
+
+    if not args.bakta_db_path:
+        print(f"Bakta database path not provided. Bakta database will be downloaded to {default_db_dir}")
+        args.bakta_db_path = "None"
+    else:
+        args.bakta_db_path = os.path.abspath(args.bakta_db_path)
+        bakta_db_file = os.path.join(args.bakta_db_path, "bakta.db")
+        if not os.path.exists(bakta_db_file):
+            print(f"Bakta database file not found in the provided bakta_db_path: {bakta_db_file}")
+            print(f"Bakta database will be downloaded to {default_db_dir}")
+            args.bakta_db_path = "None"
+        else:
+            print(f"Bakta database file found at: {bakta_db_file}")
+            # Bakta runs AMRFinderPlus with --database <bakta_db>/amrfinderplus-db/latest
+            amrfinder_db_root = os.path.join(args.bakta_db_path, "amrfinderplus-db")
+            amrfinder_version_file = os.path.join(amrfinder_db_root, "latest", "version.txt")
+            if os.path.isfile(amrfinder_version_file):
+                with open(amrfinder_version_file) as version_handle:
+                    amrfinder_db_version_found = version_handle.read().strip()
+                amrfinder_db_problem = f"contains AMRFinderPlus database {amrfinder_db_version_found}"
+            else:
+                amrfinder_db_version_found = None
+                amrfinder_db_problem = f"has no AMRFinderPlus database ({amrfinder_version_file} not found)"
+
+            if amrfinder_db_version_found != AMRFINDER_DB_VERSION:
+                release_url = ("https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/"
+                               f"{AMRFINDER_DB_FORMAT}/{AMRFINDER_DB_VERSION}/")
+                release_dir = os.path.join(amrfinder_db_root, AMRFINDER_DB_VERSION)
+                raise ValidationError(
+                    f"The provided Bakta database {amrfinder_db_problem}, "
+                    f"but THRESHER requires AMRFinderPlus database {AMRFINDER_DB_VERSION} (format {AMRFINDER_DB_FORMAT}).\n"
+                    "Either omit --bakta_db_path so THRESHER downloads a Bakta database with the pinned release, "
+                    f"or install the pinned release into {amrfinder_db_root} (amrfinder_index comes with AMRFinderPlus):\n"
+                    f"  wget -r -l1 -np -nd -e robots=off -R 'index.html*' -P {release_dir} {release_url}\n"
+                    f"  amrfinder_index {release_dir}\n"
+                    f"  ln -sfn {AMRFINDER_DB_VERSION} {os.path.join(amrfinder_db_root, 'latest')}"
+                )
+            print(f"AMRFinderPlus database in the provided Bakta database: {amrfinder_db_version_found} (matches the pinned release)")
+
+    if not args.bakta_db_type:
+        print("Bakta database type not provided, using default 'full'")
+        args.bakta_db_type = "full"
+    elif args.bakta_db_type not in {"full", "light"}:
+        print("Unsupported Bakta database type, using default 'full'")
+        args.bakta_db_type = "full"
+
 # Validate the function argument
 def validate_function(args):
     """Validate the function argument"""
@@ -135,26 +194,8 @@ def validate_full(args):
         else:
             print(f"WhatsGNU database file found at: {args.whatsgnu_db_path}")
 
-    # Check bakta_db_path and bakta_db_type
-    if not args.bakta_db_path:
-        print(f"Bakta database path not provided. Bakta database will be downloaded to {args.output}/bakta/db")
-        args.bakta_db_path = "None"
-    elif args.bakta_db_path:
-        # Check if bakta.db exists in the provided bakta_db_path
-        bakta_db_file = os.path.join(args.bakta_db_path, "bakta.db")
-        if not os.path.exists(bakta_db_file):
-            print(f"Bakta database file not found in the provided bakta_db_path: {bakta_db_file}")
-            print(f"Bakta database will be downloaded to {args.output}/bakta/db")
-            args.bakta_db_path = "None"
-        else:
-            print(f"Bakta database file found at: {bakta_db_file}")
-
-    if not args.bakta_db_type:
-        print("Bakta database type not provided, using default 'full'")
-        args.bakta_db_type = "full"
-    elif args.bakta_db_type not in {"full", "light"}:
-        print("Unsupported Bakta database type, using default 'full'")
-        args.bakta_db_type = "full"
+    # Check bakta_db_path, bakta_db_type and the AMRFinderPlus database inside a provided Bakta database
+    validate_bakta_db(args)
 
     # SNP coverage threshold
     if not args.snp_coverage_threshold:
@@ -675,25 +716,8 @@ def validate_new_full(args):
         else:
             print(f"WhatsGNU database file found at: {args.whatsgnu_db_path}")
 
-    # Check bakta_db_path and bakta_db_type
-    if not args.bakta_db_path:
-        print(f"Bakta database path not provided. Bakta database will be downloaded to {args.output}/bakta/db")
-        if not args.bakta_db_type:
-            print("Bakta database type not provided, using default 'full'")
-            args.bakta_db_type = "full"
-    elif args.bakta_db_path:
-        # Check if bakta.db exists in the provided bakta_db_path
-        bakta_db_file = os.path.join(args.bakta_db_path, "bakta.db")
-        if not os.path.exists(bakta_db_file):
-            print(f"Bakta database file not found in the provided bakta_db_path: {bakta_db_file}")
-            print(f"Bakta database will be downloaded to Bakta database will be downloaded to {args.output}/bakta/db")
-            args.bakta_db_path = "None"
-        else:
-            print(f"Bakta database file found at: {bakta_db_file}")
-
-    if args.bakta_db_type not in {"full", "light"}:
-        print("Unsupported Bakta database type, using default 'full'")
-        args.bakta_db_type = "full"
+    # Check bakta_db_path, bakta_db_type and the AMRFinderPlus database inside a provided Bakta database
+    validate_bakta_db(args)
     
     # Check the existing THRESHER directory
     if not args.thresher_output or not os.path.exists(args.thresher_output):

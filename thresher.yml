@@ -2,7 +2,7 @@ name: thresher
 channels:
   - conda-forge
   - bioconda
-  - defaults
+  - nodefaults
 dependencies:
     - python = 3.12
     - pandas = 2.2.3

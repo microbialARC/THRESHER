@@ -1,8 +1,7 @@
 name: datasets_topgenomes
 channels:
  - conda-forge
- - defaults
- - r
+ - nodefaults
 dependencies:
  - conda-forge::ncbi-datasets-cli=18.9.0
  - conda-forge::parallel

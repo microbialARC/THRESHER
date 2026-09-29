@@ -1,12 +1,13 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=62.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "thresher"
-version = "0.4.0-beta"
+version = "0.4.1"
 description = "THRESHER: A framework that replaces fixed cutoffs with data-driven phylothresholds - the SNP thresholds corrected for phylogenetic topology and inferred directly from each dataset's genomic structure."
 readme = "README.md"
+requires-python = ">=3.11"
 authors = [
     {name = "Qianxuan(Sean) She", email = "sheq@chop.edu"},
     {name = "Paul J Planet", email = "planetp@chop.edu"},

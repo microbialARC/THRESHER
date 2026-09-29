@@ -36,7 +36,7 @@ options:
   --bakta_db_path BAKTA_DB_PATH
                         The path of the directory where the existing Bakta database locates.
                         If provided, the Bakta database will not be downloaded.
-                        If not provided, defaults to <OUTPUT>/bakta/db
+                        If not provided, defaults to <OUTPUT>/bakta_db
   --snp_coverage_threshold SNP_COVERAGE_THRESHOLD
                         Minimum alignment coverage (0-100) required for pairwise SNP distances to be included in analysis.
                         Low-coverage alignments can yield unreliable SNP count.

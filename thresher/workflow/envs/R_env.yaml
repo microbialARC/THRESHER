@@ -2,7 +2,7 @@ name: R_env
 channels:
  - conda-forge
  - bioconda
- - defaults
+ - nodefaults
 dependencies:
  - conda-forge::r-base>=4.4.0
  - conda-forge::r-treetools>=1.12.0

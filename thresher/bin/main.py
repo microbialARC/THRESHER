@@ -2,7 +2,15 @@
 """THRESHER Main Entry
 This script creates the configuration files and executes the Snakemake workflow.
 """
-VERSION = "0.4.0-beta"
+
+# Version is read from the installed package metadata; pyproject.toml is the single source of truth
+from importlib import metadata
+try:
+    VERSION = metadata.version("thresher")
+except metadata.PackageNotFoundError:
+    # If not found, set version to "unknown"
+    VERSION = "unknown" 
+
 # Import standard libraries and custom modules
 import argparse
 import os
