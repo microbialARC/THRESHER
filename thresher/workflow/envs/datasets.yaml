@@ -5,3 +5,6 @@ channels:
  - r
 dependencies:
  - conda-forge::ncbi-datasets-cli=18.9.0
+ - conda-forge::parallel
+ - conda-forge::unzip=6.0
+ 

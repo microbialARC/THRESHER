@@ -14,7 +14,6 @@ rule dataset_topgenomes:
         # No // in the file containing paths to the scripts otherwise there would be error!!!
         sed -i 's#//#/#g' {params.output_dir}/scripts/script_list.txt
         # Run the scripts in parallel using GNU parallel
-        module load parallel
         parallel --silent --jobs {threads} bash :::: {params.output_dir}/scripts/script_list.txt
         # Get the list of actually downloaded public genomes
         rm -rf {params.output_dir}/scripts
