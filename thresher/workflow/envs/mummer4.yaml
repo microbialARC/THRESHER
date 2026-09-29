@@ -1,6 +1,7 @@
 name: mummer4
 channels:
  - bioconda
+ - conda-forge
  - defaults
  - r
 dependencies:
