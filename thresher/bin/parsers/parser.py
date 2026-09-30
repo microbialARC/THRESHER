@@ -1,6 +1,7 @@
 """Parser for THRESHER command"""
 import argparse
 import os
+from thresher.bin.as_bool import as_bool
 # The parser for the overall thresher command
 def add_thresher_parser(subparsers):
     """Attach the thresher modes directly to the top-level subparsers."""
@@ -57,7 +58,7 @@ kp: Klebsiella pneumoniae"""
     full_parser.add_argument(
         "--epi_mode",
         required=False,
-        type = bool,
+        type = as_bool,
         default=True,
         choices=[True, False],
         help="""Whether to perform epidemiological analysis.
@@ -196,7 +197,7 @@ Default is 100."""
     full_parser.add_argument(
         "--use_cladebreaker",
         required=False,
-        type=bool,
+        type=as_bool,
         default=True,
         choices=[True, False],
         help="""Use CladeBreaker to restrain the strain composition.
@@ -588,7 +589,7 @@ Default is 100."""
     new_full_parser.add_argument(
         "--use_cladebreaker",
         required=False,
-        type=bool,
+        type=as_bool,
         default=True,
         choices=[True, False],
         help="""Use CladeBreaker to restrain the strain composition.
