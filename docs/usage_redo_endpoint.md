@@ -4,10 +4,9 @@ thresher redo-endpoint -h
 
 options:
   -h, --help            show this help message and exit
-  --original_metadata ORIGINAL_METADATA
-                        Path to the original input file used for the THRESHER full-pipeline.
-                        The file must be tab-delimited and contain 5 columns because the full-pipeline mode requires patient ID and collection date information.
-                        5 columns: genome_name, genome_accession, genome_path, patient_id, collection_date.
+   --original_metadata ORIGINAL_METADATA
+                        Path to the original input file used for the THRESHER full run.
+                        The file must be tab-delimited and contain 5 columns because redo-endpoint requires patient ID and collection date information.
   --thresher_output THRESHER_OUTPUT
                         Path to the existing THRESHER directory.
                         The existing analysis directory should contain the previous analysis results.
@@ -22,15 +21,15 @@ options:
                         Default is plateau.
   --prefix PREFIX       Prefix for config files. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
   --conda_prefix CONDA_PREFIX
-                        Directory for conda environments needed for this analysis. If not provided, defaults to OUTPUT/conda_envs
+                        Directory for conda environments needed for this analysis. If not provided, defaults to <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>
 ```
 ## Required Input
 1. **Original Metadata File(--original_metadata):**
 
-   Path to the original input file used for the THRESHER full-pipeline.
+   Path to the original input file used for the THRESHER redo-endpoint.
 2. **Existing THRESHER Output Directory(--thresher_output):**
    
-   Path to the existing THRESHER directory containing previous analysis results.
+   Path to the original input file used for the THRESHER full run.
 
 3. **Endpoint Method(--endpoint):**
    
@@ -43,7 +42,7 @@ options:
 ## Optional Input
 1. **Output Directory(--output):**
    
-   Path to the output directory. If not provided, defaults to `thresher_strain_identifier_redo_endpoint_<YYYY_MM_DD_HHMMSS>` under the current working directory.
+   Path to the output directory. If not provided, defaults to `thresher_redo_endpoint_<YYYY_MM_DD_HHMMSS>` under the current working directory.
 
 2. **Prefix(--prefix):**
 
@@ -51,7 +50,7 @@ options:
 
 3. **Conda Environment Directory(--conda_prefix):**
 
-    Directory for conda environments needed for this analysis. If not provided, defaults to `OUTPUT/conda_envs`. You can reuse the conda environments from previous THRESHER runs to save time and disk space.
+    Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`. You can reuse the conda environments from previous THRESHER runs to save time and disk space.
 
 ## Output
 1. **Config Files:**

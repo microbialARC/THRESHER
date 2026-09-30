@@ -39,7 +39,7 @@ At least 4 genomes should be provided to perform the analysis."""
         "-o",
         "--output",
         required=False,
-        help = "Path to output directory. If not provided, defaults to thresher_output_<YYYY_MM_DD_HHMMSS> under the current working directory."
+        help = "Path to output directory. If not provided, defaults to thresher_full_output_<YYYY_MM_DD_HHMMSS> under the current working directory."
     )
 
     full_parser.add_argument(
@@ -51,7 +51,7 @@ At least 4 genomes should be provided to perform the analysis."""
 Available options: [sau, sepi, cdiff, kp]
 sau: Staphylococcus aureus
 sepi: Staphylococcus epidermidis
-cdiff: Clostridium difficile
+cdiff: Clostridioides difficile
 kp: Klebsiella pneumoniae"""
     )
 
@@ -267,8 +267,8 @@ def _add_redo_endpoint_parser(subparsers):
         "--original_metadata",
         type=str,
         required=True,
-        help="""Path to the original input file used for the THRESHER full-pipeline.
-The file must be tab-delimited and contain 5 columns because the full-pipeline mode requires patient ID and collection date information.
+        help="""Path to the original input file used for the THRESHER redo-endpoint.
+The file must be tab-delimited and contain 5 columns because the redo-endpoint mode requires patient ID and collection date information.
 5 columns: genome_name, genome_accession, genome_path, patient_id, collection_date."""
     )
 
@@ -369,7 +369,7 @@ If not provided, defaults to thresher_new_snps_<YYYY_MM_DD_HHMMSS> under the cur
 Available options: [sau, sepi, cdiff, kp]
 sau: Staphylococcus aureus
 sepi: Staphylococcus epidermidis
-cdiff: Clostridium difficile
+cdiff: Clostridioides difficile
 kp: Klebsiella pneumoniae"""
     )
 
@@ -457,7 +457,7 @@ If not provided, defaults to thresher_new_full_<YYYY_MM_DD_HHMMSS> under the cur
 Available options: [sau, sepi, cdiff, kp]
 sau: Staphylococcus aureus
 sepi: Staphylococcus epidermidis
-cdiff: Clostridium difficile
+cdiff: Clostridioides difficile
 kp: Klebsiella pneumoniae"""
     )
 

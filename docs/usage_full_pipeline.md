@@ -104,19 +104,18 @@ options:
    - All genome assemblies must belong to the same species; otherwise, Panaroo will fail to generate a core genome alignment due to insufficient shared core genes, and the pipeline will terminate at this step.
 
 2. **Input Metadata(--metadata):**
-   - Path to a tab-delimited text file containing at least three columns (for lite mode) with no header. For full mode, additional columns are required.
-   - Columns:
-     - **Column 1:** Genome name (required for both lite and full modes).
-     - **Column 2:** GenBank accession number (required for both lite and full modes). If unavailable, use "new" (all lowercase).
+    - Path to a tab-delimited text file with no header, containing at least three columns. Epidemiological analysis (`--epi_mode True`) also requires columns 4 and 5.
+    - Columns:
+      - **Column 1:** Genome name (always required).
+      - **Column 2:** GenBank accession number (always required). If unavailable, use "new" (all lowercase).
       
         How do I know the Genbank accession for my genomes? See the [Genbank Accession](genbank_accession.md) page.
         
-     - **Column 3:** Path to the genome (required for both lite and full modes).
-     - **Column 4:** Patient ID (required for full mode).
-     - **Column 5:** Collection date in the format `yyyy-mm-dd` (required for full mode).
-    - Example metadata file for full mode: 
-      
-      [Example Input Metadata File](example/example_metadata.txt)
+      - **Column 3:** Path to the genome (always required).
+      - **Column 4:** Patient ID (required for `--epi_mode True`).
+      - **Column 5:** Collection date in the format `yyyy-mm-dd` (required for `--epi_mode True`).
+    - Example metadata file with all five columns:
+      - [Example Input Metadata File](example/example_metadata.txt)
 
 3. **Species(--species):**
 
@@ -140,7 +139,8 @@ options:
       to `<OUTPUT>/whatsgnu/db`.
 4. **Bakta Database Type(--bakta_db_type) and Path(--bakta_db_path):**
     - Specify the type of Bakta database (`full` or `light`, default is `full`).
-    - Path to an existing Bakta database. If not provided, the database will be downloaded to `<OUTPUT>/bakta/db`.
+    - Path to an existing Bakta database. If not provided, or if the path contains no `bakta.db`, the database will be downloaded to `<OUTPUT>/bakta_db`.
+    - A provided Bakta database must contain AMRFinderPlus database release `2025-07-16.1` (read from `amrfinderplus-db/latest/version.txt`). THRESHER checks this before the run starts and, if the release is missing or different, stops with instructions for installing it. Databases downloaded by THRESHER are set to this release automatically.
 5. **SNP Coverage Threshold(--snp_coverage_threshold):**
     - Minimum alignment coverage percentage (0-100) required for pairwise SNP distances to be included in analysis (default: 80). Genome pairs with alignment coverage below this threshold are excluded from downstream cladebreaker analysis.
     - Low-coverage alignments can produce artificially low SNP counts, as unaligned regions are not compared and potential variants in those regions go undetected. This can lead to falsely inflated genomic similarity between genomically distantly related genomes. The default threshold of 80% balances sensitivity with reliability.
@@ -152,8 +152,8 @@ options:
     - Default methods are `ultrafast`, with default replicate numbers of 1000 for ultrafast and 100 for nonparametric.
 8. **CladeBreaker(--use_cladebreaker):**
     - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
-    - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
-    - `True` or `False`, default is `True`.
+    - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from strains represented among public genomes.
+    - `True` or `False` (case-insensitive), default is `True`.
 9. **Threshold Floor(--threshold_floor):**
     - The floor of the range tested to search for the optimal phylothreshold (default: 5).
     - This parameter sets the lower limit of SNP phylothresholds considered when determining the optimal phylothreshold for defining strains within hierarchical clustering groups.
@@ -173,12 +173,12 @@ options:
     - `plateau`: Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group.
     - `peak`: Phylothreshold set at the peak number of clones defined within the group.
     - `discrepancy`: Phylothreshold set at the point where the discrepancy is minimized within the group.
-    - `public`: Phylothreshold set at the first time a public genome is included in any strain within the group.
+    - `public`: Phylothreshold set at the first time a public genome is included in any strain within the group, using only good-quality public–study SNP distances. If the group has no good-quality public–study SNP distances, the threshold ceiling is used.
 14. **Plateau Length(--plateau_length):**
     - Specify the plateau length for the plateau endpoint method (default is 15). Only used when the endpoint method is `plateau`.
 15. **Threads(--threads / -t):**
-    - Number of threads to use (default is the maximum available).
-    - The default thread count is 1, which may result in lengthy runtimes. It is highly recommended to increase the thread count to improve performance, regardless of dataset size.
+    - Number of threads to use (default: 1).
+    - The default of 1 thread may result in lengthy runtimes. It is highly recommended to increase the thread count to improve performance, regardless of dataset size.
     - Bakta genome annotation runs `{threads}` parallel jobs, each requiring approximately 10 GB of RAM. Ensure your system has sufficient memory to support the requested thread count.
 16. **Prefix(--prefix):**
     - Prefix for config file, output files, and analysis naming. If not provided, defaults to a timestamp in the format `YYYY_MM_DD_HHMMSS`.
@@ -308,7 +308,7 @@ The strain composition files generated by all 4 endpoint methods contain the fol
     
     - Colored dots: Each dot represents a comparison between two strains. Blue dots indicate strain pairs within the same hierarchical clustering group. Red dots indicate strain pairs from different hierarchical clustering groups. 
 
-    - Doted line: A vertical dotted line at gSNP distance of 100.
+    - Dotted line: A horizontal dotted line at 100 SNPs.
 
 15. **Sanity Check Tables:**
 

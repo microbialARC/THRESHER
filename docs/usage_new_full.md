@@ -116,7 +116,7 @@ options:
    - All new genome assemblies must belong to the same species; otherwise, Panaroo will fail to generate a core genome alignment due to insufficient shared core genes, and the pipeline will terminate at this step.
 3. **Existing THRESHER Strain Identifier Directory(--thresher_output):**
 
-    - Path to the existing THRESHER strain_identifier directory.
+    - Path to the existing THRESHER directory from a previous `full` or `new-full` run.
     - The existing analysis directory should contain the previous transmission cluster results.
     - (epi_mode should be 'True' in the prior run)
 
@@ -137,9 +137,9 @@ options:
     - Available options: `full`, `light`
     - Default is `full`
 - **Bakta Database Path(--bakta_db_path):**
-    - The path of the directory where the existing Bakta database locates.
-    - If provided, the Bakta database will not be downloaded.
-    - If not provided, defaults to `<OUTPUT>/bakta/db`
+    - The directory containing an existing Bakta database.
+    - If provided, the Bakta database will not be downloaded. It must contain AMRFinderPlus database release `2025-07-16.1`; THRESHER checks this before the run starts and stops with installation instructions if it does not.
+    - If not provided, or if the path contains no `bakta.db`, defaults to `<OUTPUT>/bakta_db`.
 - **SNP Coverage Threshold(--snp_coverage_threshold):**
     - Minimum alignment coverage percentage (0-100) required for pairwise SNP distances to be included in analysis (default: 80). Genome pairs with alignment coverage below this threshold are excluded from downstream cladebreaker analysis.
     - Low-coverage alignments can produce artificially low SNP counts, as unaligned regions are not compared and potential variants in those regions go undetected. This can lead to falsely inflated genomic similarity between genomically distantly related genomes. The default threshold of 80% balances sensitivity with reliability.
@@ -168,8 +168,8 @@ options:
     - If method is `nonparametric`, default is 100.
 - **CladeBreaker(--use_cladebreaker):**
     - Whether or not to use CladeBreaker to restrain the strain composition using the closely related genomes in the WhatsGNU database.
-    - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from globally circulating strains. 
-    - `True` or `False`, default is `True`.
+    - Enable when investigating putative novel or locally-restricted strains that should be genomically distinct from strains represented among public genomes.
+    - `True` or `False` (case-insensitive), default is `True`.
 - **Threshold Floor(--threshold_floor):**
     - The floor of the range tested to search for the optimal phylothreshold (default: 5).
     - This parameter sets the lower limit of SNP phylothresholds considered when determining the optimal phylothreshold for defining strains within hierarchical clustering groups.

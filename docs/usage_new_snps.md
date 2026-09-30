@@ -51,7 +51,7 @@ options:
     - How do I know the Genbank accession for my genomes? See the [Genbank Accession](genbank_accession.md) page.
 3. **Existing THRESHER Output Directory(--thresher_output):** 
 
-    The path to the existing THRESHER Strain Identifier full-pipeline or new-full output directory containing the previous analysis results.
+    The path to the output directory of a previous THRESHER `full` or `new-full` run.
 4. **Species(--species):** 
 
     The bacterial species being analyzed (e.g., sau, sepi, cdiff, kp).

@@ -61,7 +61,7 @@ options:
 
 7. **Conda Environment Directory(--conda_prefix):**
 
-   Directory for conda environments needed for this analysis. If not provided, defaults to `OUTPUT/conda_envs`. You can reuse the conda environments from previous THRESHER runs to save time and disk space.
+   Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`. You can reuse the conda environments from previous THRESHER runs to save time and disk space.
 
 ## Output
 1. **New Strain Compositions:**
@@ -115,7 +115,7 @@ options:
     
     - Colored dots: Each dot represents a comparison between two strains. Blue dots indicate strain pairs within the same hierarchical clustering group. Red dots indicate strain pairs from different hierarchical clustering groups. 
 
-    - Doted line: A vertical dotted line at gSNP distance of 100.
+    - Doted line: A horizontal dotted line at gSNP distance of 100.
 
 3. **Sanity Check Tables:**
 

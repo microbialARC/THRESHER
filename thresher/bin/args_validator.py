@@ -160,20 +160,20 @@ def validate_full(args):
         args.prefix = time.strftime("%Y_%m_%d_%H%M%S")
         print(f"Prefix not provided, using default prefix: current timestamp in the format of YYYY_MM_DD_HHMMSS, which is {args.prefix}")
     
-    # Check conda prefix
-    if not args.conda_prefix:
-        print(f"Conda environment path not provided, using default path: {args.output}/conda_envs_{args.prefix}")
-        args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
-
     # Check output directory
     if not args.output:
-        print(f"Output directory not provided, creating a directory named 'thresher_strain_identifier_output_{args.prefix} under current working directory({os.getcwd()}) as output directory")
-        args.output = os.path.abspath(os.path.join(os.getcwd(), f"thresher_strain_identifier_output_{args.prefix}"))
+        print(f"Output directory not provided, creating a directory named 'thresher_full_output_{args.prefix} under current working directory({os.getcwd()}) as output directory")
+        args.output = os.path.abspath(os.path.join(os.getcwd(), f"thresher_full_output_{args.prefix}"))
 
     if not os.path.exists(args.output):
         print(f"Output directory {args.output} does not exist, creating it.")
         os.makedirs(args.output)
         args.output = os.path.abspath(args.output)
+
+    # Check conda prefix
+    if not args.conda_prefix:
+        print(f"Conda environment path not provided, using default path: {args.output}/conda_envs_{args.prefix}")
+        args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
 
     # Check species
     if not args.species:
@@ -371,8 +371,8 @@ def validate_redo_endpoint(args):
 
     # Check output directory
     if not args.output:
-        print(f"Output directory not provided, creating a directory named 'thresher_strain_identifier_redo_endpoint_{args.prefix} under current working directory({os.getcwd()}) as output directory")
-        args.output = os.path.abspath(os.path.join(os.getcwd(), f"thresher_strain_identifier_redo_endpoint_{args.prefix}"))
+        print(f"Output directory not provided, creating a directory named 'thresher_redo_endpoint_output_{args.prefix}' under current working directory({os.getcwd()}) as output directory")
+        args.output = os.path.abspath(os.path.join(os.getcwd(), f"thresher_redo_endpoint_output_{args.prefix}"))
     if not os.path.exists(args.output):
         print(f"Output directory {args.output} does not exist, creating it.")
         os.makedirs(args.output)
@@ -527,11 +527,6 @@ def validate_new_snps(args):
         print("Prefix not provided, using default prefix: current timestamp in the format of YYYY_MM_DD_HHMMSS")
         args.prefix = time.strftime("%Y_%m_%d_%H%M%S")
     
-    # Check conda prefix
-    if not args.conda_prefix:
-        print("Conda environment path not provided, using default path: <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>")
-        args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
-
     # Check output directory
     if not args.output:
         print(f"Output directory not provided, creating a directory named 'thresher_new_snps_{args.prefix} under current working directory({os.getcwd()}) as output directory")
@@ -540,6 +535,13 @@ def validate_new_snps(args):
         print(f"Output directory {args.output} does not exist, creating it.")
         os.makedirs(args.output)
         args.output = os.path.abspath(args.output)
+
+    # Check conda prefix
+        if not args.conda_prefix:
+            print("Conda environment path not provided, using default path: <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>")
+            args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
+
+    
 # Validate arguments for new-full mode
 def validate_new_full(args):
     """Validate the arguments used in new-full function"""
@@ -683,11 +685,6 @@ def validate_new_full(args):
         args.prefix = time.strftime("%Y_%m_%d_%H%M%S")
         print(f"Prefix not provided, using default prefix: current timestamp in the format of YYYY_MM_DD_HHMMSS, which is {args.prefix}")
     
-    # Check conda prefix
-    if not args.conda_prefix:
-        print(f"Conda environment path not provided, using default path: {args.output}/conda_envs_{args.prefix}")
-        args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
-    
     # Check output directory
     if not args.output:
         print(f"Output directory not provided, creating a directory named 'thresher_new_full_{args.prefix}' under current working directory({os.getcwd()}) as output directory")
@@ -698,6 +695,12 @@ def validate_new_full(args):
         os.makedirs(args.output)
         args.output = os.path.abspath(args.output)
 
+    # Check conda prefix
+    if not args.conda_prefix:
+        print(f"Conda environment path not provided, using default path: {args.output}/conda_envs_{args.prefix}")
+        args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
+
+        
     # Check species
     if not args.species:
         raise ValidationError("Species must be provided")
