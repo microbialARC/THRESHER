@@ -7,7 +7,7 @@ rule mummer4_new_full_cmd:
         new_genome_names = list(new_genome_path_dict.keys()),
         output_dir = config["output"]
     output:
-        expand(os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report"), genome_name=new_genome_path_dict.keys())
+        expand(os.path.join(config["output"], "mummer4_study", "scripts", "dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys())
     shell:
         """
         mkdir -p {params.output_dir}/mummer4_study/
@@ -81,7 +81,10 @@ rule mummer4_new_full_single:
         mummer4_new_full_single_result = os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report")
     params:
         output_dir = config["output"]
-
+    shell:
+        """
+        bash {input.mummer4_new_full_single_cmd} > /dev/null 2>&1
+        """
 
 rule mummer4_new_full_all:
     input:

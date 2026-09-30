@@ -69,6 +69,8 @@ def new_snps_config(args):
         'prefix': args.prefix,
         'species': args.species,
         'new_metadata': args.new_metadata,
+        # Transmission clusters are extended only when the previous run determined them
+        'epi_mode': os.path.exists(os.path.join(args.thresher_output, "thresher", "output", "clusters_summary.RDS")),
         "original_metadata": args.original_metadata,
         'snp_coverage_threshold': args.snp_coverage_threshold,
         'thresher_output': args.thresher_output,
@@ -90,6 +92,8 @@ def new_full_config(args):
         'prefix': args.prefix,
         'original_metadata': args.original_metadata,
         'new_metadata': args.new_metadata,
+        # Transmission clusters are extended only when the previous run determined them
+        'epi_mode': os.path.exists(os.path.join(args.thresher_output, "thresher", "output", "clusters_summary.RDS")),
         'output': args.output,
         'species': args.species,
         'whatsgnu_db_path': args.whatsgnu_db_path,

@@ -11,7 +11,7 @@ options:
                         Path to the existing THRESHER directory.
                         The existing analysis directory should contain the previous analysis results.
   --output OUTPUT       Path to output directory.
-                        If not provided, defaults to thresher_strain_identifier_redo_endpoint_<YYYY_MM_DD_HHMMSS> under the current working directory.
+                        If not provided, defaults to thresher_strain_identifier_redo_endpoint_output_<YYYY_MM_DD_HHMMSS> under the current working directory.
   --endpoint ENDPOINT   The endpoint method to use for determing clusters and making plots.
                         Available Options: [plateau, peak, discrepancy, public]
                         plateau : Phylothreshold set at a plateau where further increases no longer change the number or composition of strains within the group
@@ -21,16 +21,15 @@ options:
                         Default is plateau.
   --prefix PREFIX       Prefix for config files. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
   --conda_prefix CONDA_PREFIX
-                        Directory for conda environments needed for this analysis. If not provided, defaults to <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>
+                        Directory for conda environments needed for this analysis. If not provided, defaults to <THRESHER_OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>
 ```
 ## Required Input
 1. **Original Metadata File(--original_metadata):**
 
-   Path to the original input file used for the THRESHER redo-endpoint.
+   Path to the original input metadata file used for the THRESHER full run.
 2. **Existing THRESHER Output Directory(--thresher_output):**
    
-   Path to the original input file used for the THRESHER full run.
-
+   Path to the existing THRESHER output directory containing the previous analysis results.
 3. **Endpoint Method(--endpoint):**
    
    The endpoint method to use for determining clusters and making plots. Available options are:
@@ -42,7 +41,7 @@ options:
 ## Optional Input
 1. **Output Directory(--output):**
    
-   Path to the output directory. If not provided, defaults to `thresher_redo_endpoint_<YYYY_MM_DD_HHMMSS>` under the current working directory.
+   Path to the output directory. If not provided, defaults to `thresher_redo_endpoint_output_<YYYY_MM_DD_HHMMSS>` under the current working directory.
 
 2. **Prefix(--prefix):**
 

@@ -2,12 +2,12 @@ rule thresher_new_snps:
     conda:
         os.path.join(BASE_PATH,"envs/R_env.yaml")
     input:
-        snp_matrix_new_snps = os.path.join(config["output"], "mummer4", "snp_matrix_new_snps.RDS")
+        snp_matrix_new_snps = os.path.join(config["output"], "mummer4", "study_snp_matrix_new.RDS")
     params:
         thresher_output = config["thresher_output"],
         new_metadata = config["new_metadata"],
         original_metadata = config["original_metadata"],
-        new_snp_matrix = os.path.join(config["output"], "mummer4", "snp_matrix_new_snps.RDS"),
+        new_snp_matrix = os.path.join(config["output"], "mummer4", "study_snp_matrix_new.RDS"),
         output_dir = os.path.join(config["output"],"thresher","output")
     threads:
         config["threads"]

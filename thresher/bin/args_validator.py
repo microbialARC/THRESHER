@@ -68,14 +68,12 @@ def validate_bakta_db(args):
     elif args.bakta_db_type not in {"full", "light"}:
         print("Unsupported Bakta database type, using default 'full'")
         args.bakta_db_type = "full"
-
 # Validate the function argument
 def validate_function(args):
     """Validate the function argument"""
     valid_modes = {"full", "redo-endpoint", "new-snps", "new-full", "cladebreaker-off"}
     if args.command not in valid_modes:
         raise ValidationError(f"Mode must be one of: {', '.join(valid_modes)}")
-
 # Validate arguments for full-pipeline mode
 def validate_full(args):
     """Validate the arguments used in full-pipeline function"""
@@ -428,13 +426,13 @@ def validate_new_snps(args):
     if os.path.exists(os.path.join(args.thresher_output,  "thresher", "output", "clusters_summary.RDS")):
         print("Previous THRESHER output contains cluster summary file.")
         # Check if patient_id is complete
-        if not new_metadata_df["patient_id"].isnull().any():
+        if new_metadata_df["patient_id"].isnull().any():
             raise ValidationError("Patient ID column contains missing values.")
         else:
             unique_new_patient_count = new_metadata_df['patient_id'].nunique(dropna=True)
             print(f"Number of unique patient IDs in new metadata file: {unique_new_patient_count}")
         # Check if collection_date is complete
-        if not new_metadata_df["collection_date"].isnull().any():
+        if new_metadata_df["collection_date"].isnull().any():
             raise ValidationError("Collection date column contains missing values.")
     else:
         print("Previous THRESHER output does not contain cluster summary file. Transmission clusters will not be determined.")
@@ -537,11 +535,9 @@ def validate_new_snps(args):
         args.output = os.path.abspath(args.output)
 
     # Check conda prefix
-        if not args.conda_prefix:
-            print("Conda environment path not provided, using default path: <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>")
-            args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
-
-    
+    if not args.conda_prefix:
+        print("Conda environment path not provided, using default path: <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>")
+        args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
 # Validate arguments for new-full mode
 def validate_new_full(args):
     """Validate the arguments used in new-full function"""
@@ -592,13 +588,13 @@ def validate_new_full(args):
     if os.path.exists(os.path.join(args.thresher_output,  "thresher", "output", "clusters_summary.RDS")):
         print("Previous THRESHER output contains cluster summary file.")
         # Check if patient_id is complete
-        if not new_metadata_df["patient_id"].isnull().any():
+        if new_metadata_df["patient_id"].isnull().any():
             raise ValidationError("Patient ID column contains missing values.")
         else:
             unique_new_patient_count = new_metadata_df['patient_id'].nunique(dropna=True)
             print(f"Number of unique patient IDs in new metadata file: {unique_new_patient_count}")
         # Check if collection_date is complete
-        if not new_metadata_df["collection_date"].isnull().any():
+        if new_metadata_df["collection_date"].isnull().any():
             raise ValidationError("Collection date column contains missing values.")
     else:
         print("Previous THRESHER output does not contain cluster summary file. Transmission clusters will not be determined.")
@@ -870,12 +866,6 @@ def validate_cladebreaker_off(args):
         print("Prefix not provided, using default prefix: current timestamp in the format of YYYY_MM_DD_HHMMSS")
         args.prefix = time.strftime("%Y_%m_%d_%H%M%S")
     
-    # Check conda prefix
-    if not args.conda_prefix:
-        print("Conda environment path not provided, using default path: <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>")
-        args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
-    
-
     # Check the value of threshold_ceiling
     if type(args.threshold_ceiling) is not int:
         print("Threshold ceiling(--threshold_ceiling) must be a positive integer, using default 500")
@@ -964,4 +954,9 @@ def validate_cladebreaker_off(args):
         print(f"Output directory {args.output} does not exist, creating it.")
         os.makedirs(args.output)
         args.output = os.path.abspath(args.output)
+    
+    # Check conda prefix
+    if not args.conda_prefix:
+        print("Conda environment path not provided, using default path: <OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>")
+        args.conda_prefix = os.path.abspath(f"{args.output}/conda_envs_{args.prefix}")
     

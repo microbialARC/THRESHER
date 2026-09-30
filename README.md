@@ -18,9 +18,6 @@ THRESHER is a framework that replaces fixed cutoffs with data-driven phylothresh
 - [Conda Environment Management](docs/conda_environment_management.md)
 - [Resuming Interrupted Runs](docs/resuming_interrupted_runs.md)
 
-## **Development Status**
-Please be advised that this pipeline is still in its early development stage. It is subject to significant changes in terms of options, outputs, and other functionalities. Users should be prepared for potential modifications and updates in future releases.
-
 ## Authors
 
 **Qianxuan (Sean) She**

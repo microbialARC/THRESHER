@@ -66,7 +66,7 @@ rule all:
         [os.path.join(config["output"],"blastx","mrsa","output","summary","blastx_MRSA_public_strains.csv")] if config["species"] == "sau" else [],
         # MLST
         expand(os.path.join(config["output"], "mlst","raw","{genome_name}_mlst.csv"),genome_name=new_genome_path_dict.keys()),
-        os.path.join(config["output"], "mlst","raw","mlst_raw.txt"),
+        os.path.join(config["output"], "mlst","raw","mlst_raw.csv"),
         os.path.join(config["output"], "mlst","summary","mlst_results.csv")
 
 # For the rules, if the suffix is "_new", it means the rule is designed for both new_snps and new_full workflows

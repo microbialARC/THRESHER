@@ -59,7 +59,7 @@ update_public_snp_matrix <- function(output_list,
                                        metadata$V1[metadata$V3 == reference_genome_path]
                                      }
                                      
-                                     sorted_output_df$subject[n] <- reference_genome_name
+                                     sorted_output_df$reference[n] <- reference_genome_name
                                      
                                      #query
                                      query_genome_path <- strsplit(ori_output_df$V1[4*n-3],

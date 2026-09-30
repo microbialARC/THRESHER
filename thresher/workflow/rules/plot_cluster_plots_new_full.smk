@@ -3,7 +3,7 @@ rule plot_cluster_plots_new_full:
         os.path.join(BASE_PATH,"envs/R_env.yaml")
     input:
         plateau_strains_rds = os.path.join(config["output"], "thresher", "output",  "plateau_strains.RDS"),
-        peak_strain_rds = os.path.join(config["output"],  "thresher", "output", "peak_strains.RDS"),
+        peak_strains_rds = os.path.join(config["output"],  "thresher", "output", "peak_strains.RDS"),
         public_strains_rds = os.path.join(config["output"],  "thresher", "output", "public_strains.RDS"),
         discrepancy_strains_rds = os.path.join(config["output"],  "thresher", "output", "discrepancy_strains.RDS"),
         new_mlst_results = os.path.join(config["output"], "mlst","summary","mlst_results.csv")

@@ -7,7 +7,7 @@ rule mummer4_new_snps_cmd:
         new_genome_names = list(new_genome_path_dict.keys()),
         output_dir = config["output"]
     output:
-        mummer4_new_snps_cmd = expand(os.path.join(config["output"], "mummer4_study", "scripts", "dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys())
+        mummer4_new_snps_cmd = expand(os.path.join(config["output"], "mummer4", "scripts", "dnadiff_{genome_name}.sh"), genome_name=new_genome_path_dict.keys())
     shell:
         """
         mkdir -p {params.output_dir}/mummer4/
@@ -76,9 +76,9 @@ rule mummer4_new_snps_single:
     conda:
         os.path.join(BASE_PATH,"envs/mummer4.yaml")
     input:
-        mummer4_new_snps_single_cmd = os.path.join(config["output"], "mummer4_study", "scripts", "dnadiff_{genome_name}.sh")
+        mummer4_new_snps_single_cmd = os.path.join(config["output"], "mummer4", "scripts", "dnadiff_{genome_name}.sh")
     output:
-        mummer4_new_snps_single_result = os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report")
+        mummer4_new_snps_single_result = os.path.join(config["output"], "mummer4", "{genome_name}_concatenated.report")
     params:
         output_dir = config["output"]
     shell:
@@ -88,9 +88,9 @@ rule mummer4_new_snps_single:
 
 rule mummer4_new_snps_all:
     input:
-        mummer4_new_snps_results = expand(os.path.join(config["output"], "mummer4_study", "{genome_name}_concatenated.report"),genome_name=new_genome_path_dict.keys())
+        mummer4_new_snps_results = expand(os.path.join(config["output"], "mummer4", "{genome_name}_concatenated.report"),genome_name=new_genome_path_dict.keys())
     output:
-        mummer4_new_snps_done = os.path.join(config["output"], "mummer4_study", ".mummer4_new_snps_complete")
+        mummer4_new_snps_done = os.path.join(config["output"], "mummer4", ".mummer4_new_snps_complete")
     shell:
         """
         touch {output.mummer4_new_snps_done}
