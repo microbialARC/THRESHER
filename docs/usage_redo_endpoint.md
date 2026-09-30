@@ -49,7 +49,7 @@ options:
 
 3. **Conda Environment Directory(--conda_prefix):**
 
-    Directory for conda environments needed for this analysis. If not provided, defaults to `<OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`. You can reuse the conda environments from previous THRESHER runs to save time and disk space.
+    Directory for conda environments needed for this analysis. If not provided, defaults to `<THRESHER_OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`. You can reuse the conda environments from previous THRESHER runs to save time and disk space.
 
 ## Output
 1. **Config Files:**

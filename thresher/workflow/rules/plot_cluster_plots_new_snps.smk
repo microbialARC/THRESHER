@@ -3,7 +3,7 @@ rule plot_cluster_plots_new_snps:
         os.path.join(BASE_PATH,"envs/R_env.yaml")
     input:
         new_plateau_strains_rds = os.path.join(config["output"], "thresher", "output",  "new_plateau.RDS"),
-        new_peak_strain_rds = os.path.join(config["output"],  "thresher", "output", "new_peak.RDS"),
+        new_peak_strains_rds = os.path.join(config["output"],  "thresher", "output", "new_peak.RDS"),
         new_public_strains_rds = os.path.join(config["output"],  "thresher", "output", "new_public.RDS"),
         new_discrepancy_strains_rds = os.path.join(config["output"],  "thresher", "output", "new_discrepancy.RDS"),
         new_mlst_results = os.path.join(config["output"], "mlst","summary","mlst_results.csv")
@@ -14,7 +14,7 @@ rule plot_cluster_plots_new_snps:
         genomes_summary_csv = [os.path.join(config["output"], "thresher", "output","genomes_summary_new_snps.csv")]
     params:
         original_plateau_strains_rds = os.path.join(config["thresher_output"], "thresher", "output",  "plateau_strains.RDS"),
-        original_peak_strain_rds = os.path.join(config["thresher_output"], "thresher", "output", "peak_strains.RDS"),
+        original_peak_strains_rds = os.path.join(config["thresher_output"], "thresher", "output", "peak_strains.RDS"),
         original_public_strains_rds = os.path.join(config["thresher_output"], "thresher", "output", "public_strains.RDS"),
         original_discrepancy_strains_rds = os.path.join(config["thresher_output"], "thresher", "output", "discrepancy_strains.RDS"),
         thresher_output = config["thresher_output"],

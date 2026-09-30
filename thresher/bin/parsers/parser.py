@@ -285,7 +285,7 @@ The existing analysis directory should contain the previous analysis results."""
         type=str,
         required=False,
         help = """Path to output directory.
-If not provided, defaults to thresher_redo_endpoint_<YYYY_MM_DD_HHMMSS> under the current working directory."""
+If not provided, defaults to thresher_redo_endpoint_output_<YYYY_MM_DD_HHMMSS> under the current working directory."""
         )
         
     redo_parser.add_argument(
@@ -666,7 +666,7 @@ The existing analysis directory should contain the previous analysis results."""
     cladebreaker_off_parser.add_argument(
         "--output",
         type=str,
-        required=True,
+        required=False,
         help="""Path to output directory.
 If not provided, defaults to thresher_cladebreaker_off_<YYYY_MM_DD_HHMMSS> under the current working directory.""")
     
