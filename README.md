@@ -18,6 +18,11 @@ THRESHER is a framework that replaces fixed cutoffs with data-driven phylothresh
 - [Conda Environment Management](docs/conda_environment_management.md)
 - [Resuming Interrupted Runs](docs/resuming_interrupted_runs.md)
 
+## Citation
+### Preprint
+She Q, Feder A, Theiller E, Zackular JP, Moustafa AM, Planet PJ. THRESHER: A tool for evidence-based, phylogeny-corrected SNP thresholds for whole genome molecular epidemiology. *medRxiv*. 2026. doi: [10.64898/2026.10.07.26364951](https://doi.org/10.64898/2026.10.07.26364951)
+
+
 ## Authors
 
 **Qianxuan (Sean) She**
