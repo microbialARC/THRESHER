@@ -19,6 +19,11 @@ options:
                         discrepancy: Phylothreshold set at the point where the discrepancy is minimized within the group.
                         public: Phylothreshold set at the first time a public genome is included in any strain within the group.
                         Default is plateau.
+  --plateau_length PLATEAU_LENGTH
+                        The plateau length for the plateau endpoint method.
+                        Only used when endpoint method is 'plateau'.
+                        If provided, plateau strains are recomputed from the existing THRESHER intermediate files with this length.
+                        If not provided, the plateau strains from the existing THRESHER run (and its plateau length) are reused.
   --prefix PREFIX       Prefix for config files. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS
   --conda_prefix CONDA_PREFIX
                         Directory for conda environments needed for this analysis. If not provided, defaults to <THRESHER_OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>
@@ -43,11 +48,22 @@ options:
    
    Path to the output directory. If not provided, defaults to `thresher_redo_endpoint_output_<YYYY_MM_DD_HHMMSS>` under the current working directory.
 
-2. **Prefix(--prefix):**
+2. **Plateau Length(--plateau_length):**
+
+    The plateau length for the plateau endpoint method. Only used when the endpoint method is `plateau`.
+    - If provided, the plateau strains are recomputed from `<THRESHER_OUTPUT>/thresher/input/thresher_input.RDS` with the new plateau length, using the singleton SNP distance threshold recorded in the existing run's config (`<THRESHER_OUTPUT>/config/config_*.yaml`, default 100 if not found).
+    - If not provided, the plateau strains from the existing THRESHER run (and its plateau length) are reused.
+
+    Example: rerun the plateau endpoint with a plateau length of 20:
+    ```
+    thresher redo-endpoint --original_metadata metadata.tsv --thresher_output thresher_full_output --endpoint plateau --plateau_length 20
+    ```
+
+3. **Prefix(--prefix):**
 
     Prefix for config files. If not provided, defaults to timestamp: `YYYY_MM_DD_HHMMSS`.
 
-3. **Conda Environment Directory(--conda_prefix):**
+4. **Conda Environment Directory(--conda_prefix):**
 
     Directory for conda environments needed for this analysis. If not provided, defaults to `<THRESHER_OUTPUT>/conda_envs_<YYYY_MM_DD_HHMMSS>`. You can reuse the conda environments from previous THRESHER runs to save time and disk space.
 
@@ -63,3 +79,7 @@ options:
     - Cluster plots: `plots/Cluster{Cluster ID}.pdf` (for each cluster)
     - Persistence plot PDF: `plots/PersistencePlot_redo_endpoint.pdf`
     - Persistence plot R object: `plots/PersistencePlot_redo_endpoint.RDS`(R object)
+3. **Recomputed Plateau Strains (only when `--plateau_length` is provided):**
+  - `files/plateau_strains.RDS`(R object)
+  - `files/plateau_strains.csv`
+  - Plateau thresholds: `files/group_plateau.csv`

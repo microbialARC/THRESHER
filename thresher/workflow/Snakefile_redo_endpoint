@@ -9,7 +9,12 @@ rule all:
         [os.path.join(config["output"], "plots", "PersistencePlot_redo_endpoint.pdf")],
         [os.path.join(config["output"], "plots", "PersistencePlot_redo_endpoint.RDS")],
         [os.path.join(config["output"], "files", "clusters_summary_redo_endpoint.RDS")],
-        [os.path.join(config["output"], "files", "clusters_summary_redo_endpoint.csv")]
+        [os.path.join(config["output"], "files", "clusters_summary_redo_endpoint.csv")],
+        # Recomputed plateau strains, only when a new plateau length is provided
+        [os.path.join(config["output"], "files", "plateau_strains.csv"),
+         os.path.join(config["output"], "files", "group_plateau.csv")] if config.get("plateau_length") else []
 
+if config.get("plateau_length"):
+    include: os.path.join(BASE_PATH, "rules", "thresher_plateau_redo_endpoint.smk")
 include: os.path.join(BASE_PATH, "rules", "plot_cluster_plots_redo_endpoint.smk")
 include: os.path.join(BASE_PATH, "rules", "plot_persistence_plot_redo_endpoint.smk")

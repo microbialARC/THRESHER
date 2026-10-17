@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import time
 import re
+import yaml
 from thresher.bin.parse_genome_name import parse_genome_name
 from thresher.bin.as_bool import as_bool
 
@@ -357,7 +358,31 @@ def validate_redo_endpoint(args):
     if args.endpoint not in {"plateau", "peak", "discrepancy", "public"}:
         print("Unsupported endpoint method, using default method 'plateau'")
         args.endpoint = "plateau"
-    
+
+    # Check plateau length
+    # Not provided: reuse plateau_strains.RDS from the existing THRESHER run
+    # Provided: recompute plateau strains from the existing thresher_input.RDS with the new plateau length
+    args.singleton_threshold = None
+    if args.plateau_length is not None and args.endpoint != "plateau":
+        print(f"Plateau length(--plateau_length) is only used when endpoint method is 'plateau', ignoring it for endpoint method '{args.endpoint}'")
+        args.plateau_length = None
+    elif args.plateau_length is not None:
+        if args.plateau_length < 1:
+            raise ValidationError("Plateau length(--plateau_length) must be a positive integer")
+        thresher_input_rds = os.path.join(args.thresher_output, "thresher", "input", "thresher_input.RDS")
+        if not os.path.exists(thresher_input_rds):
+            raise ValidationError(f"Recomputing plateau strains with a new plateau length requires {thresher_input_rds}, which was not found")
+        # The plateau method needs the singleton threshold of the existing THRESHER run
+        args.singleton_threshold = previous_singleton_threshold(args.thresher_output)
+        if args.singleton_threshold is None:
+            print(f"Singleton SNP distance threshold of the existing THRESHER run not found in {os.path.join(args.thresher_output, 'config')}, using default 100")
+            args.singleton_threshold = 100
+        else:
+            print(f"Using singleton SNP distance threshold of the existing THRESHER run: {args.singleton_threshold}")
+        print(f"Plateau strains will be recomputed with plateau length {args.plateau_length}")
+    elif args.endpoint == "plateau":
+        print("Plateau length(--plateau_length) not provided, reusing the plateau strains of the existing THRESHER run")
+
     # Check prefix
     if not args.prefix:
         print("Prefix not provided, using default prefix: current timestamp in the format of YYYY_MM_DD_HHMMSS")
@@ -375,6 +400,22 @@ def validate_redo_endpoint(args):
         print(f"Output directory {args.output} does not exist, creating it.")
         os.makedirs(args.output)
         args.output = os.path.abspath(args.output)
+# Read the singleton threshold used by an existing THRESHER run from its config files
+def previous_singleton_threshold(thresher_output):
+    """Return the singleton_threshold recorded in <thresher_output>/config/config_*.yaml.
+    Returns None if no config records it or the configs disagree."""
+    config_dir = os.path.join(thresher_output, "config")
+    if not os.path.isdir(config_dir):
+        return None
+    thresholds = set()
+    for config_name in os.listdir(config_dir):
+        if not (config_name.startswith("config_") and config_name.endswith(".yaml")):
+            continue
+        with open(os.path.join(config_dir, config_name)) as config_handle:
+            config = yaml.safe_load(config_handle) or {}
+        if isinstance(config.get("singleton_threshold"), int):
+            thresholds.add(config["singleton_threshold"])
+    return thresholds.pop() if len(thresholds) == 1 else None
 # Validate arguments for new-snps mode
 def validate_new_snps(args):
     """Validate the arguments used in new-snps function"""

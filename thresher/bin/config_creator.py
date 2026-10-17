@@ -51,6 +51,9 @@ def redo_endpoint_config(args):
         'original_metadata': args.original_metadata,
         'thresher_output': args.thresher_output,
         'endpoint': args.endpoint,
+        # None: reuse the existing plateau strains; otherwise recompute them with this plateau length
+        'plateau_length': args.plateau_length,
+        'singleton_threshold': args.singleton_threshold,
         'output': args.output,
         'prefix': args.prefix,
     }

@@ -303,6 +303,17 @@ Default is plateau."""
     )
 
     redo_parser.add_argument(
+        "--plateau_length",
+        type=int,
+        required=False,
+        default=None,
+        help="""The plateau length for the plateau endpoint method.
+Only used when endpoint method is 'plateau'.
+If provided, plateau strains are recomputed from the existing THRESHER intermediate files with this length.
+If not provided, the plateau strains from the existing THRESHER run (and its plateau length) are reused."""
+    )
+
+    redo_parser.add_argument(
         "--prefix",
         default=None,
         help = "Prefix for config files. If not provided, defaults to timestamp: YYYY_MM_DD_HHMMSS"

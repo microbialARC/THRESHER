@@ -3,7 +3,8 @@ rule plot_cluster_plots_redo_endpoint:
         os.path.join(BASE_PATH,"envs/R_env.yaml")
     input:
         peak_strains_rds = os.path.join(config["thresher_output"], "thresher", "output",  "peak_strains.RDS"),
-        plateau_strains_rds = os.path.join(config["thresher_output"], "thresher", "output",  "plateau_strains.RDS"),
+        # Plateau strains recomputed with the new plateau length if provided, otherwise those of the existing run
+        plateau_strains_rds = os.path.join(config["output"], "files", "plateau_strains.RDS") if config.get("plateau_length") else os.path.join(config["thresher_output"], "thresher", "output",  "plateau_strains.RDS"),
         public_strains_rds = os.path.join(config["thresher_output"],  "thresher", "output", "public_strains.RDS"),
         discrepancy_strains_rds = os.path.join(config["thresher_output"],  "thresher", "output", "discrepancy_strains.RDS"),
         mlst_results = os.path.join(config["thresher_output"], "mlst","summary","mlst_results.csv")

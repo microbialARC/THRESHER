@@ -198,7 +198,8 @@ output_dir <- snakemake@params[["output_dir"]]
 ncores <- snakemake@threads
 system(paste0("mkdir -p ",output_dir))
 setwd(dir = output_dir)
-hierarchical_clustering_groups <- readRDS(hierarchical_clustering_groups_path)
+# hc_groups is not an input in redo-endpoint mode (cladebreaker-off outputs do not contain it)
+hierarchical_clustering_groups <- if(!is.null(hierarchical_clustering_groups_path)) readRDS(hierarchical_clustering_groups_path) else NULL
 thresher_input <- readRDS(thresher_input_path)
 
 final_strains <- get_plateau_strains(thresher_input,
